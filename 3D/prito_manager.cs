@@ -186,8 +186,8 @@ public class Prito_1 : MonoBehaviour
             up.transform.SetParent(UIBase.transform);
 
             up.transform.position = StartPos;
-            currentPoints.Add(up);
-            pointString.Add("up");
+            currentPoints.Add(up); // 생성된 Image Prefab을 리스트에 저장!
+            pointString.Add("up"); // 그리고 어느 방향키인지 여부도 따로 만들어서 저장!
             count++;
         }
         else if(RandomInt == 1)
