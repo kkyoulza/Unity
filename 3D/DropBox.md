@@ -11,3 +11,18 @@
 - 따라서 색깔별 Prefab을 만들어 두어, 동적으로 Prefab을 변경하는 방법을 적용해 보려 한다. --> 성공!
 
 
+<hr>
+
+### 흰색 큐브 Prefab이 생성되는 모습
+
+![dropBox1](https://user-images.githubusercontent.com/66288087/181695599-1b50a1ea-2ba9-4cf7-a4f5-6ce43b0a7f7e.JPG)
+
+
+### 빨간색 큐브 Prefab이 생성되는 모습
+
+![dropBox2](https://user-images.githubusercontent.com/66288087/181695604-1a272177-775d-4d4f-b516-6fa6b64c1d23.JPG)
+
+
+#### 하나의 Prefab에 색을 바꿔 씌우는 것이 아니라 두 개의 Prefab을 각각 만들어 두었다.
+
+![dropBox3](https://user-images.githubusercontent.com/66288087/181695606-d68f4929-0635-4dd1-a031-fa5e31de68f8.JPG)
