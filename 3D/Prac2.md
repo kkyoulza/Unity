@@ -36,6 +36,10 @@
 
 또한 Muscles & Settings를 눌러 근육 테스트를 할 수 있으며, 극한의 자세들을 테스트하여 포인트들을 점검할 수 있다. 
 
+![image](https://user-images.githubusercontent.com/66288087/182103406-ec30b664-cfb4-4a07-a0b5-952ed49bee9e.png)
+
+그리고 Animation 부분에서 Loop Time에 체크 해 준다. (계속해서 움직이면 반복되어야 하기 때문)
+
 나머지 fbx 파일도 humanoid로 바꾸어 주었다.
 
 그런데, 애니메이션의 스킨 색이 적용되지 않았음을 볼 수 있다. 아래 사진에서 Extract Texture를 통하여 텍스처를 내보내 주게 되면
@@ -88,7 +92,7 @@ Motion Field를 9개 추가 해 준다.
 
 마지막 세 번째 행은 Idle 상태이다. 기본적으로 X = 0,Y = 0 일때 정면 Idle이며, X = -1, Y = 0 (Idle 왼쪽 회전), X = 1, Y = 0 (Idle 오른쪽 회전) 이다.
 
-이제 상태에 맞게 앞서 다운로드 받고 가공한 fbx파일을 넣어 주도록 하자.
+이제 상태에 맞게 앞서 다운로드 받고 가공한 fbx파일 속에 있는 애니메이션 파일을 넣어 주도록 하자.
 
 ![image](https://user-images.githubusercontent.com/66288087/182100004-3b58cae3-aed9-449d-8e3f-8c23ae03d9ee.png)
 
@@ -96,12 +100,13 @@ Motion Field를 9개 추가 해 준다.
 
 그리고 Animator 좌측에서 Parameter를 2개 만들어 준 다음, X, Y에 대응시켜 준다.
 
-
-
+그러면 이제 Blend Tree에 대한 준비는 끝났다. 이제 Blend Tree Parameter를 조절할 코드를 만들어 보도록 하자.
 
 <hr>
 
 ### 4. Blender Tree 작동 코드 작성
+
+
 
 
 
@@ -110,4 +115,7 @@ Motion Field를 9개 추가 해 준다.
 
 ### 5. 플레이어 추적 3인칭 카메라 구현 도전
 
+
 - 아이디어 : 우선 플레이어의 자식으로 카메라를 옮긴 다음에 좌표계를 초기화 하고, 좌/우 방향키(Horizon)가 입력될 때 Rotation만 바꾸어 주면 되지 않을까 생각한다.
+
+
