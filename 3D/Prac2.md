@@ -106,9 +106,53 @@ Motion Field를 9개 추가 해 준다.
 
 ### 4. Blender Tree 작동 코드 작성
 
+우선 Player 안에 넣을 코드이기 때문에 Player 내부 Animator Component를 private로 받아서 쓰게 된다.
 
 
+```
 
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CharAni : MonoBehaviour
+{
+    private Animator CharAnimation = null;
+
+    private int HorFloat = Animator.StringToHash("Horz");
+    private int VerFloat = Animator.StringToHash("Vert");
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        CharAnimation = GetComponent<Animator>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        float Ver = Input.GetAxis("Vertical");
+        float Hor = Input.GetAxis("Horizontal");
+
+        CharAnimation.SetFloat(HorFloat, Hor, 0.2f, Time.deltaTime);
+        CharAnimation.SetFloat(VerFloat, Ver, 0.2f, Time.deltaTime);
+
+    }
+}
+
+```
+
+CharAnimation = GetComponent<Animator>(); 를 통해서 Player에 있는 Animator를 가져오게 되며, Animator.StringToHash를 사용하여 SetFloat에서 Animator의 Parameter 값을 처리하는 시간을 줄였다.
+
+또한, Input.GetAxis를 통해서 가로 키(←,→/a,d)와 세로 키(↑,↓,w,s)를 받을 때 받는 float 값을 SetFloat를 통하여 실시간으로 Parameter에 값이 전달되게 하였다.
+
+코드를 Player에 넣은 후 실행을 해 보도록 하자
+
+![image](https://user-images.githubusercontent.com/66288087/182120058-38f14ecd-269e-4cce-b18b-54124ba09300.png)
+
+플레이어가 잘 움직이고 있음을 볼 수 있다.
+  
+그렇지만 플레이어가 먼 거리를 갔을 때는 플레이어가 잘 보이지 않는다는 점이 걸리게 된다. 따라서 플레이어 뒤에 카메라가 계속 따라다니게 하고자 한다.
 
 <hr>
 
