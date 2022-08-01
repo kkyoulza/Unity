@@ -60,6 +60,41 @@ Window → Anomation → Anomator 를 통해서 Animator를 만들어 준다.
 
 빈 Animator가 생기면 Player에 드래그 해 주어 Component로 추가 해 준다.
 
+Animator 속에 Blend Tree를 추가 해 준다.
+
+![2_11](https://user-images.githubusercontent.com/66288087/182098689-01bed1f0-dba0-4e93-881b-925c396a5c82.jpg)
+
+우리는 앞으로 가면서 좌/우로 틀수 있어야 하기에 2D 좌표계가 적절한 설정일 듯 하다. 따라서 2D Cartesian으로 설정 해 준다.
+
+![2_10](https://user-images.githubusercontent.com/66288087/182099074-296140b9-4eb5-422c-a7d0-99ea3d02a789.JPG)
+
+그리고 Motion Field를 추가 해 주면 위 사진과 같이 된다.
+
+Motion Field를 9개 추가 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/182099200-11707d30-d380-453d-b52d-a8e717f698ba.png)
+
+그러면 위 사진과 같이 한 Field가 각 좌표를 차지하고 있는 모습을 볼 수 있을 것이다.
+
+이제 아래와 같이 좌표계를 먼저 정리 해 주도록 하자.
+
+![image](https://user-images.githubusercontent.com/66288087/182099481-00df213a-3b57-4a36-aaeb-4dbfd8adbc12.png)
+
+그러면 이렇게 9개의 위치를 잡게 된 것을 볼 수 있을 것이다.
+
+맨 위부터 셀 때 첫 번째 행은 달리고 있는 상태이다. 순서대로 **달리면서 왼쪽 회전 / 앞으로 달림 / 달리면서 오른쪽 회전** 이다.
+
+두 번째 행은 걷는 상태이며 달리는 것과 유사하게 사용할 수 있다.
+
+마지막 세 번째 행은 Idle 상태이다. 기본적으로 X = 0,Y = 0 일때 정면 Idle이며, X = -1, Y = 0 (Idle 왼쪽 회전), X = 1, Y = 0 (Idle 오른쪽 회전) 이다.
+
+이제 상태에 맞게 앞서 다운로드 받고 가공한 fbx파일을 넣어 주도록 하자.
+
+![image](https://user-images.githubusercontent.com/66288087/182100004-3b58cae3-aed9-449d-8e3f-8c23ae03d9ee.png)
+
+위에 있던 그림이랑 순서는 다르지만 좌표 위치는 같게 삽입하였다.
+
+그리고 Animator 좌측에서 Parameter를 2개 만들어 준 다음, X, Y에 대응시켜 준다.
 
 
 
