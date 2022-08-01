@@ -30,9 +30,9 @@
 
 또한, 위 Configure을 누르게 되면 아래 사진과 같이 세부적으로 관절(?)포인트 설정이 가능하게 나온다.
 
-여기서 테스트를 통하여 제대로 포인트가 설정되었는지 확인할 수 있다.
-
 ![2_4](https://user-images.githubusercontent.com/66288087/182066834-8e123b69-1050-4771-a2b6-1069ab94ff1d.JPG)
 
+![2_5](https://user-images.githubusercontent.com/66288087/182069830-8e13d941-bd5f-45a5-8408-8ad75ff893a1.JPG)
 
+또한 Muscles & Settings를 눌러 근육 테스트를 할 수 있으며, 극한의 자세들을 테스트하여 포인트들을 점검할 수 있다. 
 
