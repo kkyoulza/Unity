@@ -163,6 +163,8 @@ CharAnimation = GetComponent<Animator>(); 를 통해서 Player에 있는 Animato
 
 - 아이디어 : 우선 플레이어의 자식으로 카메라를 옮긴 다음에 좌표계를 초기화 하고, 좌/우 방향키(Horizon)가 입력될 때 Rotation만 바꾸어 주면 되지 않을까 생각한다.
 
+(그런데 Player 하위에 넣기만 해도 카메라가 따라 다니는 형태가 나왔다. 흔들리는 부분만 줄이게 되면 좋을 것 같다.)
+
 ![image](https://user-images.githubusercontent.com/66288087/182122114-d406e3a2-59f0-43fb-9801-041f505bbb57.png)
 
 우선 카메라를 Player 하위에 넣어 준다.
