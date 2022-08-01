@@ -54,6 +54,14 @@
 
 ### 3. 애니메이터 제작 및 Blender Tree 설정
 
+![2_9](https://user-images.githubusercontent.com/66288087/182095755-b2835882-2c5c-4d76-8c8b-46e8160f1251.jpg)
+
+Window → Anomation → Anomator 를 통해서 Animator를 만들어 준다.
+
+빈 Animator가 생기면 Player에 드래그 해 주어 Component로 추가 해 준다.
+
+
+
 
 
 <hr>
