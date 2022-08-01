@@ -6,7 +6,7 @@
 
 ### 1. 애니메이션 소스 준비
 
-#### 준비물 : 애니메이션 소스(fbx)는 [이곳](https://www.mixamo.com/#/) 에서 받아서 사용하였다.
+#### 준비물 : 애니메이션 소스(fbx)는 [이곳](https://www.mixamo.com/#/) 에서 받아 사용하였다.
 
 ![2_1](https://user-images.githubusercontent.com/66288087/182062799-7f475d63-752b-43d4-a30d-ad0ad9cf6ff6.JPG)
 
