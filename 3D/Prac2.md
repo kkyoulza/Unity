@@ -109,8 +109,8 @@ Motion Field를 9개 추가 해 준다.
 우선 Player 안에 넣을 코드이기 때문에 Player 내부 Animator Component를 private로 받아서 쓰게 된다.
 
 
-```
-
+<pre>
+<code>
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -139,8 +139,9 @@ public class CharAni : MonoBehaviour
 
     }
 }
+</code>
+</pre>
 
-```
 
 CharAnimation = GetComponent<Animator>(); 를 통해서 Player에 있는 Animator를 가져오게 되며, Animator.StringToHash를 사용하여 SetFloat에서 Animator의 Parameter 값을 처리하는 시간을 줄였다.
 
@@ -162,4 +163,34 @@ CharAnimation = GetComponent<Animator>(); 를 통해서 Player에 있는 Animato
 
 - 아이디어 : 우선 플레이어의 자식으로 카메라를 옮긴 다음에 좌표계를 초기화 하고, 좌/우 방향키(Horizon)가 입력될 때 Rotation만 바꾸어 주면 되지 않을까 생각한다.
 
+![image](https://user-images.githubusercontent.com/66288087/182122114-d406e3a2-59f0-43fb-9801-041f505bbb57.png)
 
+우선 카메라를 Player 하위에 넣어 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/182122604-81ae518c-67e3-4662-a8de-27ef8aa2d83b.png)
+
+그 다음, 카메라 Inspector에서 좌표 Reset을 해 주면 아래 사진과 같이 된다.
+
+![image](https://user-images.githubusercontent.com/66288087/182122709-be400432-cdfd-4edb-b948-3ea43fcbbc75.png)
+
+카메라가 Player의 바닥에 있음을 볼 수 있다.
+
+![image](https://user-images.githubusercontent.com/66288087/182123153-241b9c64-f095-4f43-81af-5db14ce31626.png)
+
+이제 카메라의 좌표를 고쳐 보도록 하자. 플레이어의 살짝 뒤, 위에 있으며 아래로 Rotation이 적용되게 하면 아래 사진과 같이 된다.
+
+![image](https://user-images.githubusercontent.com/66288087/182123331-7876d5eb-c9e2-4aec-bc38-47aa162ac882.png)
+
+이제 움직여 보도록 하자.
+
+![image](https://user-images.githubusercontent.com/66288087/182123403-c5043196-8ac0-4f3a-bd2b-980a2dff0b4e.png)
+
+회전도 잘 이루어지고, 플레이어의 뒤를 카메라가 잘 따라가고 있음을 볼 수 있다.
+
+한 가지 단점이라면 카메라가 너무 흔들린다는 점이다. 이 것은 다음에 코드를 통해 개선을 해 보던지 해야할 것 같다.
+
+<hr>
+
+간단한 연습이지만 너무 글을 늘어지게 쓴 것 같다. 
+
+이 것을 발판 삼아 추후에 다양한 3D 컨텐츠를 만들어 보고자 한다.
