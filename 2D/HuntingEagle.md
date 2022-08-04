@@ -100,7 +100,7 @@ Update 부분만 변하였기에 그 부분만 가져오게 되었다.
 
 그리고 마우스가 눌리게 되면(Input.GetMouseButton(0)) ray가 발사되며 "Touchable"이라는 이름의 레이어를 가지는 물체의 Collider를 감지하게 된다.
 
-여기서 1 << LayerMask.NameToLayer("Touchable") 이 부분에서는 비트 연산자가 사용되었는데, LayerMask는 비트 연산자를 사용해서 레이어를 감지하게 된다. ([이곳](https://nakedgang.tistory.com/80)을 참고하였다.)
+여기서 **1 << LayerMask.NameToLayer("Touchable")** 이 부분에서는 **비트 연산자**가 사용되었는데, **LayerMask**는 위 사진에서도 봤던 레이어 번호를 그대로 사용하지 않고 **2를 레이어 번호 수 만큼 제곱시킨 수**를 사용해서 레이어를 감지하게 된다. ([이곳](https://nakedgang.tistory.com/80)을 참고하였다.)
 
 즉, 8번 레이어라면 2의 8제곱인 256인 것이다. 따라서, 00000000001 에서 왼쪽으로 LayerMask.NameToLayer("Touchable")만큼 비트를 이동하라는 의미이다.
 
