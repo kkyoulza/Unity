@@ -102,11 +102,11 @@ Update 부분만 변하였기에 그 부분만 가져오게 되었다.
 
 여기서 1 << LayerMask.NameToLayer("Touchable") 이 부분에서는 비트 연산자가 사용되었는데, LayerMask는 비트 연산자를 사용해서 레이어를 감지하게 된다. ([이곳](https://nakedgang.tistory.com/80)을 참고하였다.)
 
-즉, 8번 레이어라면 2의 8제곱인 256인 것이다. 따라서, 0000000001 에서 왼쪽으로 LayerMask.NameToLayer("Touchable")만큼 비트를 이동하라는 의미이다.
+즉, 8번 레이어라면 2의 8제곱인 256인 것이다. 따라서, 00000000001 에서 왼쪽으로 LayerMask.NameToLayer("Touchable")만큼 비트를 이동하라는 의미이다.
 
 LayerMask.NameToLayer("Touchable") 는 유니티 화면에 나오는 10진수 그대로 나오게 된다.
 
-LayerMask.NameToLayer("Touchable") 이 부분 대신에 2의 제곱을 한 숫자를 그대로 넣어도 나오게 된다.
+1 << LayerMask.NameToLayer("Touchable") 이 부분 대신에 2의 제곱을 한 숫자를 그대로 넣어도 나오게 된다.
 
 ![image](https://user-images.githubusercontent.com/66288087/182822161-6d3c3409-c61c-4671-94db-102f74e66317.png)
 
