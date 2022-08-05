@@ -118,7 +118,7 @@ LayerMask.NameToLayer("Touchable") 는 유니티 화면에 나오는 10진수 �
 
 <hr>
 
-### 4. 스코어 보드 생성 및 물체 난이도 분화
+### 3. 스코어 보드 생성 및 물체 난이도 분화
 
 우선 타겟을 맞추었을 때 스코어가 올라가게끔 하는 시스템을 만들어 보자.
 
@@ -170,7 +170,23 @@ Target.cs 코드이다.
 
 여기서 beHit() 함수를 통하여 hit여부를 true로 만들어 준 다음, update에 있는 if문을 통해서 Manager에 있는 ScoreManager.cs 의 함수를 불러 와 점수를 가산 해 준다.
 
-그리고 
+그리고 위에 있던 MousePointer.cs도 아래와 같이 일부를 수정 해 준다.
+
+<pre>
+<code>
+if (hitDrawer)
+{
+    Debug.Log("터치!");
+    hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
+}
+</code>
+</pre>
+
+**hitDrawer.collider.gameObject** 이 부분을 통하여 Ray를 맞은 타겟의 GameObject를 가져올 수 있으며 Target.cs 내의 beHit()을 실행시킨다.
+
+그 다음에 해당 타겟은 제거된다.
+
+아래는 Manager에서 점수를 더해주는 역할을 하는 ScoreManager.cs이다.
 
 <pre>
 <code>
@@ -232,15 +248,53 @@ public class ScoreManager : MonoBehaviour
 </code>
 </pre>
 
+1점을 더해주는 타겟은 SetOne(), 2점을 더해주는 타겟은 SetTwo()를 실행하여 적절하게 더해 주는 역할을 한다.
 
+![image](https://user-images.githubusercontent.com/66288087/183029145-303f2f9d-fcfb-45af-9200-df3c99ec2f74.png)
 
-
+위 그림을 보면 타겟을 맞춘 후에 오른쪽 위에 있는 스코어보드가 가산되었음을 볼 수 있다.
 
 
 <hr>
 
-### 3. 이동하는 물체 만들기(RigidBody2D 적용)
+### 4. 이동하는 물체 만들기(RigidBody2D 적용)
 
+물체가 가만히 있는데 그것을 맞추는 것은 재미가 없을 것이다. 따라서 물체에도 움직임을 주어서 움직이게끔 해 줄 것이다.
+
+테스트를 위하여 물체를 생성하는 버튼과 함수를 만들어 주도록 하자.
+
+함수는 ScoreManager.cs 하단에 추가하였다. (SetTwo() 아래)
+
+<pre>
+<code>
+public void SpawnTarget()
+    {
+        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+        RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
+        RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
+
+        Target = Instantiate(TargetPrefab, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+
+        if(RandomFloatX > 0)
+            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
+        else
+            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
+    }
+</code>
+</pre>
+
+Target의 RigidBody2D 에서 Body Type을 Dynamic으로 바꾸어 주게 되어 이제 중력의 영향을 받게 되었다.
+
+위 함수에서 랜덤으로 좌표를 설정한 뒤, 왼쪽에 생성되면 오른쪽으로 힘을 주고, 그 반대면 왼쪽으로 힘을 주는 코드를 넣어 주었다.
+
+
+![image](https://user-images.githubusercontent.com/66288087/183029806-4333ac4d-c576-42e5-be77-ed95f7828d09.png)
+
+버튼은 위 사진과 같이 Anchor를 왼쪽 위로 설정하여 배치시켰다.
+
+![image](https://user-images.githubusercontent.com/66288087/183029893-6764d4d5-adfb-4417-8ae9-7e90d279fb54.png)
+
+Button Component에서 OnClick()시에 SpawnTarget()이 실행되게 설정하였다.
 
 
 
