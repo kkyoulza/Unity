@@ -40,6 +40,8 @@ Input.mousePosition을 통하여 마우스 포인터의 위치를 가져온 다�
 
 Prefab이 들어갈 GameObject와 생성된 GameObject가 할당 될 부분을 만들어 주어 Instantiate를 한 다음에도 위치를 쉽게 가져올 수 있게 하였다.
 
+위 코드는 빈 오브젝트를 만들어 삽입하면 된다.
+
 ![image](https://user-images.githubusercontent.com/66288087/182818568-263ee2da-1465-4512-af17-be3f2a9085eb.png)
 
 추후에 디자인은 바뀔수도 있다.
@@ -55,6 +57,8 @@ Prefab이 들어갈 GameObject와 생성된 GameObject가 할당 될 부분을 �
 ![image](https://user-images.githubusercontent.com/66288087/182819270-eebdd300-21e7-4935-a8fa-c853b5a8e8ab.png)
 
 우선 대상이 될 물체를 만들어 준다.
+
+RigidBody2D와 CircleCollider2D를 추가 해 주고, 테스트를 위해 RigidBody2D에서 Body Type을 Kinematic으로 바꾸어 준다.
 
 그리고 물체 Inspector에서 Layer를 새롭게 하나 만들어 준다.
 
@@ -114,7 +118,119 @@ LayerMask.NameToLayer("Touchable") 는 유니티 화면에 나오는 10진수 �
 
 <hr>
 
-### 3. 이동하는 물체 만들기(RigidBody2D 적용)
+### 4. 스코어 보드 생성 및 물체 난이도 분화
+
+우선 타겟을 맞추었을 때 스코어가 올라가게끔 하는 시스템을 만들어 보자.
+
+처음에는 타겟 자체에서 스코어 보드를 통제를 하게끔 하려 했지만 Prefab화가 되면 스크립트에 세팅 해 놓은 UI Text가 초기화 되는 바람에 결국 그 기능은 Manager로 넘기게 되었다.
+
+![image](https://user-images.githubusercontent.com/66288087/183019287-25adf7df-30f3-4150-b1b9-71577e7deb43.png)
+
+위 그림과 같이 Manager가 맞았음을 인지하고 중간에서 점수를 가산시켜주는 역할을 해 주어야 한다.
+
+우선 타겟이 맞았을 때 맞았다는 사실을 전해주기 위해서 Target Prefab에 들어 갈 코드를 작성 해 보도록 하자.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Target : MonoBehaviour
+{
+    bool hit = false; // 맞았는지 여부를 나타냄
+    GameObject Manager;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        Manager = GameObject.Find("Manager");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(hit == true)
+        {
+            Manager.GetComponent<ScoreManager>().SetOne();
+            Destroy(gameObject); // 터치시 삭제
+        }
+    }
+
+    public void beHit()
+    {
+        hit = true;
+    }
+    
+}
+</code>
+</pre>
+
+Target.cs 코드이다.
+
+여기서 beHit() 함수를 통하여 hit여부를 true로 만들어 준 다음, update에 있는 if문을 통해서 Manager에 있는 ScoreManager.cs 의 함수를 불러 와 점수를 가산 해 준다.
+
+그리고 
+
+<pre>
+<code>
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class ScoreManager : MonoBehaviour
+{
+    int TargetNum = 0; // 맞춰진 타겟의 종류!
+    int cntScore;
+    public Text Score;
+    float RandomFloatX,RandomFloatY;
+    public GameObject TargetPrefab;
+    private GameObject Target;
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+        switch (TargetNum)
+        {
+            case 1:
+                cntScore = int.Parse(Score.text);
+                cntScore += 1;
+                Score.text = cntScore.ToString();
+                TargetNum = 0;
+                break;
+            case 2:
+                cntScore = int.Parse(Score.text);
+                cntScore += 2;
+                Score.text = cntScore.ToString();
+                TargetNum = 0;
+                break;
+        }
+
+    }
+
+    public void SetOne()
+    {
+        TargetNum = 1;
+    }
+
+    public void SetTwo()
+    {
+        TargetNum = 2;
+    }
+
+}
+</code>
+</pre>
 
 
 
@@ -123,7 +239,7 @@ LayerMask.NameToLayer("Touchable") 는 유니티 화면에 나오는 10진수 �
 
 <hr>
 
-### 4. 스코어 보드 생성 및 물체 난이도 분화
+### 3. 이동하는 물체 만들기(RigidBody2D 적용)
 
 
 
