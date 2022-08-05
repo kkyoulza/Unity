@@ -296,8 +296,9 @@ Target의 RigidBody2D 에서 Body Type을 Dynamic으로 바꾸어 주게 되어 
 
 Button Component에서 OnClick()시에 SpawnTarget()이 실행되게 설정하였다.
 
+![test](https://user-images.githubusercontent.com/66288087/183033457-3f7fbf1a-c09d-4f2c-8c2a-9bc1330e2525.gif)
 
-
+실행하면 위와 같이 된다.
 
 
 <hr>
