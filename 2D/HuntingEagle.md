@@ -300,6 +300,91 @@ Button Component에서 OnClick()시에 SpawnTarget()이 실행되게 설정하�
 
 실행하면 위와 같이 된다.
 
+#### +알파 : 랜덤 움직임 구현하기
+
+#### 4-1. Case1 - 스크립트를 새로 만들어 일정 시간마다 움직임의 방향을 랜덤으로 부여하는 방법
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+
+public class TargetMove : MonoBehaviour
+{
+    Rigidbody2D rigid;
+    float changeTime = 0f;
+    int RandomMove;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        rigid = GetComponent<Rigidbody2D>();        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+        changeTime += Time.deltaTime;
+
+        if (changeTime > 0.5f)
+        {
+            RandomMove = UnityEngine.Random.Range(0, 4);
+
+            switch (RandomMove)
+            {
+                case 0:
+                    ToRight();
+                    changeTime = 0f;
+                    break;
+                case 1:
+                    ToLeft();
+                    changeTime = 0f;
+                    break;
+                case 2:
+                    ToUp();
+                    changeTime = 0f;
+                    break;
+                case 3:
+                    ToDown();
+                    changeTime = 0f;
+                    break;
+            }
+
+        }
+        
+
+    }
+
+    public void ToRight()
+    {
+        rigid.AddForce(new Vector2(500, 0));
+    }
+
+    public void ToLeft()
+    {
+        rigid.AddForce(new Vector2(-500, 0));
+    }
+
+    public void ToUp()
+    {
+        rigid.AddForce(new Vector2(0,500));
+    }
+
+    public void ToDown()
+    {
+        rigid.AddForce(new Vector2(0,-500));
+    }
+
+
+}
+</code>
+</pre>
+
+일정 시간마다 다른 방향으로 힘을 받게 만들었다. 저 상태에서 주기를 조정하고 화면 밖으로 나가려 하면 무조건 화면 안쪽으로 순간이동 or 화면 안쪽으로의 방향으로 힘을 받게 만들면 좋을 것 같다.
+
 
 <hr>
 
