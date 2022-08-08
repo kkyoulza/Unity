@@ -302,7 +302,7 @@ Button Component에서 OnClick()시에 SpawnTarget()이 실행되게 설정하�
 
 #### +알파 : 랜덤 움직임 구현하기
 
-#### 4-1. Case1 - 스크립트를 새로 만들어 일정 시간마다 움직임의 방향을 랜덤으로 부여하는 방법
+#### 4-1. 스크립트를 새로 만들어 일정 시간마다 움직임의 방향을 랜덤으로 부여하는 방법
 
 <pre>
 <code>
@@ -385,10 +385,211 @@ public class TargetMove : MonoBehaviour
 
 일정 시간마다 다른 방향으로 힘을 받게 만들었다. 저 상태에서 주기를 조정하고 화면 밖으로 나가려 하면 무조건 화면 안쪽으로 순간이동 or 화면 안쪽으로의 방향으로 힘을 받게 만들면 좋을 것 같다.
 
+#### 4-2. 4-1방법의 코드 보완 ( 화면 범위 안에 존재하게 하기 + 최대 속도 설정 및 제한(최대 속도를 통해 난이도 조절) )
+
+- 코드
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System;
+
+public class TargetMove : MonoBehaviour
+{
+    Rigidbody2D rigid;
+    float changeTime = 0f;
+    int RandomMove;
+    float TargetA_MaxVel = 10f;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        rigid = GetComponent<Rigidbody2D>();        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+        changeTime += Time.deltaTime;
+
+        if (transform.position.x < -8.3f)
+        {
+            ToRight();
+
+        }
+
+        if (transform.position.x > 8.3f)
+        {
+            ToLeft();
+
+        }
+
+        if (transform.position.y > 4.4f)
+        {
+            ToDown();
+
+        }
+
+        if (transform.position.y < -4.4f)
+        {
+            ToUp();
+        }
+
+
+
+        if (changeTime > 2.0f)
+        {
+            Debug.Log(rigid.velocity);
+            RandomMove = UnityEngine.Random.Range(0, 3);
+
+            switch (RandomMove)
+            {
+                case 0:
+                    ToRight();
+                    changeTime = 0f;
+                    break;
+                case 1:
+                    ToLeft();
+                    changeTime = 0f;
+                    break;
+                case 2:
+                    ToDown();
+                    changeTime = 0f;
+                    break;
+                case 3:
+                    ToUp();
+                    changeTime = 0f;
+                    break;
+            }
+
+        }
+        
+
+    }
+
+    public void ToRight()
+    {
+        
+        if(rigid.velocity.x < TargetA_MaxVel) // 오른쪽 방향(+ x 방향)으로 최대 속도 미만일 경우, 
+        {
+            rigid.AddForce(new Vector2(50, 0));
+        }
+        else
+        {
+            rigid.velocity = new Vector2(TargetA_MaxVel, rigid.velocity.y);
+        }
+        
+
+    }
+
+    public void ToLeft()
+    {
+        if (rigid.velocity.x > TargetA_MaxVel*(-1))
+        {
+            rigid.AddForce(new Vector2(-50, 0));
+        }
+        else
+        {
+            rigid.velocity = new Vector2(TargetA_MaxVel*(-1), rigid.velocity.y);
+        }
+    }
+
+    public void ToUp()
+    {
+        if(rigid.velocity.y < TargetA_MaxVel)
+        {
+            rigid.AddForce(new Vector2(0, 100));
+        }
+        else
+        {
+            rigid.velocity = new Vector2(rigid.velocity.x, TargetA_MaxVel);
+        }
+        
+    }
+
+    public void ToDown()
+    {
+        if (rigid.velocity.y > TargetA_MaxVel*(-1))
+        {
+            rigid.AddForce(new Vector2(0, -100));
+        }
+        else
+        {
+            rigid.velocity = new Vector2(rigid.velocity.x, TargetA_MaxVel*(-1));
+        }
+    }
+
+}
+</code>
+</pre>
+
+최대 속도를 설정한 뒤, 최대 속도 미만이면 AddForce를 통하여 해당 방향으로 힘을 주는 함수 4개를 제작하였다.
+
+화면 범위 밖에 나가게 되면 반대 방향으로 힘을 주는 것이 우선순위가 되게 하였다.
+
+타겟들의 속도를 Debug.Log()를 통하여 출력함으로써 속도를 확인 해 본 결과 아래 사진과 같이 최대 제한속도 10f 에서 13f 정도의 속도로 제한 속도의 30%정도를 초과하는 범위의 속도를 가짐을 볼 수 있다.
+
+![image](https://user-images.githubusercontent.com/66288087/183368110-641d9455-4615-4ddb-9a25-8c4f5cb0453d.png)
+
 
 <hr>
 
 ### 5. 물체 디자인 및 애니메이션 적용
+
+#### Asperite를 이용한 간단한 도트 디자인
+
+Asperite를 이용하여 도트를 찍게 된다.
+
+![image](https://user-images.githubusercontent.com/66288087/183372086-a19da19a-3bd1-493e-88b0-b4309a3174b5.png)
+
+간단하게 디자인을 마치고 프로펠러가 돌아가는 모습을 프레임을 추가하여 그려준다.
+
+![image](https://user-images.githubusercontent.com/66288087/183372747-12bd9d47-6733-42f7-9db0-a1d1875c0577.png)
+
+export sprite sheet를 통하여 유니티에서도 사용할 수 있게 저장 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/183372938-7bd64362-91fd-4db8-81cc-e03ff4234467.png)
+
+Asset을 불러 온 다음, 위 사진과 같이 Multiple, Pixels per unit, Filter Mode를 바꾸어 준다.
+
+Pixels Per Unit은 화면에 드래그 하여 바꾸어 가면서 적절한 숫자를 맞추어 준다.
+
+그리고 Sprite Editor를 통하여 세부 설정으로 들어 가 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/183373664-815697c3-4486-4911-9560-245095d2ec79.png)
+
+Slice를 눌러 sprite를 적절하게 잘라준다. 동일한 위치에 물체를 위치시켜야 한다.
+
+![image](https://user-images.githubusercontent.com/66288087/183374028-cbd13259-4642-4645-a551-e378212518bf.png)
+
+위와 같이 나눠진 것들을 드래그 하여 화면으로 드래그 해 주면 애니메이터 파일이 생성되게 된다. (애니메이션을 생성 할 범위만 드래그 해야 한다.)
+
+기본적으로 드래그하여 생성된 애니메이션이 첫 애니메이션이면 Idle 상태가 된다.
+
+이제 해당 오브젝트를 Prefab으로 만들고 스크립트를 적용시켜 보도록 하자.(대상 Prefab자리도 다 바꾸어야 한다.)
+
+4번이 같이 적용된 상태의 게임 플레이 화면은 아래와 같다.
+
+![image](https://user-images.githubusercontent.com/66288087/183376054-1bd86021-9abc-4f54-9233-42427f5162ed.png)
+
+움짤로 따지는 못했지만 화면 밖으로 프로펠러 슬라임이 나가지 않는 모습이다.
+
+4번 코드에 있는 최대 속도와 ScoreManager.cs 내부에 있는 것들을 조절하여 (Tag를 통하여 대상을 구분할 예정) 난이도에 따라서 점수를 차등적으로 얻을 수 있게 할 예정이다.
+
+
++ 알파 : 대상을 맞추었을 때 사라지는 애니메이션 만들기
+
+
+#### 5-1. 파괴되는 애니메이션 도트 디자인
+
+
+
+
+
+#### 5-2. Sprite 가공 및 애니메이션 적용(트리거 사용)
+
 
 
 
@@ -397,7 +598,15 @@ public class TargetMove : MonoBehaviour
 
 ### 6. 물체 생성기 구축
 
+이제 다양한 난이도의 대상들의 디자인 및 태그로 구분을 하였다면 이제 수동으로 버튼을 눌러 생성하는 것이 아닌, 스테이지가 일정 시간이 지나면 자동으로 시작되게끔 만들어 주도록 하자.
 
+스테이지 카운트 다운, 클리어, 클리어하지 못함을 알려주는 것도 디자인 해야 할 것이다.
+
+
+
+
+
++ 알파 : 총알의 개수를 제한하여 총알의 개수를 가시적으로 나타낼 수 있는 기능도 추가할 것(총알 디자인도 하자)
 
 
 
