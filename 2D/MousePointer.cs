@@ -31,13 +31,12 @@ public class MousePointer : MonoBehaviour
             float distance = Mathf.Infinity; // Ray 내에서 감지할 최대 거리
 
             // RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, distance); // 다 잡음 
-            RaycastHit2D hitDrawer = Physics2D.Raycast(ray.origin, ray.direction, distance, 2048); // drawer 레이어만 잡음
+            RaycastHit2D hitDrawer = Physics2D.Raycast(ray.origin, ray.direction, distance, 1 << LayerMask.NameToLayer("Touchable")); // 1 << LayerMask.NameToLayer("Touchable") 대신 2048을 써도 됨
 
             if (hitDrawer)
             {
                 Debug.Log("터치!");
-                Debug.Log(1 << LayerMask.NameToLayer("Touchable"));
-                Debug.Log(LayerMask.NameToLayer("Touchable"));
+                hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
             }
 
         }
