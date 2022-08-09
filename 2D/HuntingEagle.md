@@ -254,6 +254,127 @@ public class ScoreManager : MonoBehaviour
 
 위 그림을 보면 타겟을 맞춘 후에 오른쪽 위에 있는 스코어보드가 가산되었음을 볼 수 있다.
 
+<20220809추가>
+
+그렇다면 어떤 물체는 1점 올려주고, 어떤 물체는 2점 올려주고.. 그런 것을 어떻게 구분할 수 있을까?
+
+![image](https://user-images.githubusercontent.com/66288087/183624042-796afaa1-4849-4f84-9eb0-cfb080b9e2c9.png)
+
+Tag 기능을 이용하였다.
+
+Prefab에 Tag를 설정 해 두어 Tag를 통하여 점수를 주는 것을 구분하였다.
+
+
+ScoreManager.cs
+
+<pre>
+<code>
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class ScoreManager : MonoBehaviour
+{
+    int TargetNum = 0; // 맞춰진 타겟의 종류!
+    int cntScore;
+    int Rand_Spawn;
+    public Text Score;
+    float RandomFloatX,RandomFloatY;
+    public GameObject TargetPrefab1;
+    public GameObject TargetPrefab2;
+    public GameObject TargetPrefab3;
+    public GameObject Bomb1;
+    private GameObject Target;
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+        switch (TargetNum)
+        {
+            case -1: // 점수가 깎이는 물체를 맞췄을 경우
+                cntScore = int.Parse(Score.text);
+                if (cntScore > 0) // 깎일 점수가 있다면?
+                {
+                    cntScore -= 1; // cut!
+                    Score.text = cntScore.ToString();
+                }
+                TargetNum = 0;
+                break;
+            case 1:
+                cntScore = int.Parse(Score.text);
+                cntScore += 1;
+                Score.text = cntScore.ToString();
+                TargetNum = 0;
+                break;
+            case 2:
+                cntScore = int.Parse(Score.text);
+                cntScore += 2;
+                Score.text = cntScore.ToString();
+                TargetNum = 0;
+                break;
+        }
+
+    }
+
+    public void SetOne()
+    {
+        TargetNum = 1;
+    }
+
+    public void SetTwo()
+    {
+        TargetNum = 2;
+    }
+
+    public void MinusOne()
+    {
+        TargetNum = -1;
+    }
+
+    public void SpawnTarget()
+    {
+        Rand_Spawn = UnityEngine.Random.Range(0,3);
+        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+        RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
+        RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
+
+        if(Rand_Spawn >= 0 && Rand_Spawn < 2) // 테스트용이긴 하지만 랜덤으로 다른 종류의 Prefab이 생성되게 하였다.
+        {
+            Target = Instantiate(TargetPrefab1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+        }
+        else if(Rand_Spawn == 2)
+        {
+            Target = Instantiate(Bomb1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+        }
+
+
+        if (RandomFloatX > 0)
+            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
+        else
+            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
+    }
+
+}
+</code>
+</pre>
+
+
+코드에서 볼 수 있듯이 맞추면 점수가 깎이게 되는 폭탄도 추가하였다. 테스트용으로 생성 버튼을 누를 경우 25%의 확률로 나오게 설정 해 놓았다.
+
+![image](https://user-images.githubusercontent.com/66288087/183623012-f1900147-3044-4a62-a008-7dfb19e65cfa.png)
+
+디자인은 추후에 변경될 수 있다.
+
 
 <hr>
 
@@ -607,6 +728,127 @@ Slice를 눌러 sprite를 적절하게 잘라준다. 동일한 위치에 물체�
 
 
 + 알파 : 총알의 개수를 제한하여 총알의 개수를 가시적으로 나타낼 수 있는 기능도 추가할 것(총알 디자인도 하자)
+
+총알 관리자(BulletManager.cs)를 추가하여 남은 총알의 개수가 1개 이상일 경우에만 대상을 맞출 수 있게 하였다.
+
+이와 더불어 기존 코드들의 일부분도 수정할 부분이 생겼다.
+
+우선 BulletManager.cs
+
+<pre>
+<code>
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class BulletManager : MonoBehaviour
+{
+    int remainedBullet = 0; // 남은 총알 개수
+    public Text bulletText;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        bulletText.text = remainedBullet.ToString(); // 실시간으로 남은 총알 개수를 최신화 해 준다.
+    }
+
+    public void AddBullet(int count)
+    {
+        this.remainedBullet = count;
+    }
+
+    public void discountBullet(int count)
+    {
+        this.remainedBullet -= count;
+    }
+
+    public int GetBulletCount()
+    {
+        return this.remainedBullet;
+    }
+
+}
+
+
+</code>
+</pre>
+
+MousePointer.cs
+
+<pre>
+<code>
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MousePointer : MonoBehaviour
+{
+    public GameObject pointerPrefab;
+    private GameObject pointerRed;
+    Vector2 mousePos;
+    BulletManager bullet;
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        pointerRed = Instantiate(pointerPrefab) as GameObject;
+        bullet = GetComponent<BulletManager>(); // 총알 매니저 컴포넌트를 불러 온다.
+        Cursor.visible = false;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        mousePos = Input.mousePosition;
+        mousePos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
+        pointerRed.transform.position = mousePos;
+        Ray2D ray = new Ray2D(mousePos, Vector2.zero); // 원점 ~ 포인터로 발사되는 레이저
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Debug.Log(mousePos);
+
+            float distance = Mathf.Infinity; // Ray 내에서 감지할 최대 거리
+
+            // RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, distance); // 다 잡음 
+            RaycastHit2D hitDrawer = Physics2D.Raycast(ray.origin, ray.direction, distance, 1 << LayerMask.NameToLayer("Touchable")); // 1 << LayerMask.NameToLayer("Touchable") 대신 2048을 써도 됨
+            
+            if(bullet.GetBulletCount() > 0) // 남은 총알 개수를 불러 온 다음 쏠 수 있는 총알이 있다면(1 이상)
+            {
+                bullet.discountBullet(1); // 총알 차감
+                if (hitDrawer)
+                {
+                    Debug.Log("터치!");
+                    hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
+                }
+
+            }
+            else // 총알이 없다면 실제 시나리오에서는 대상을 다 맞췄는지 여부를 계산 한 다음 이동!
+            {
+                Debug.Log("남은 총알이 없습니다!");
+            }
+
+
+        }
+
+    }
+}
+
+
+</code>
+</pre>
+
+
 
 
 
