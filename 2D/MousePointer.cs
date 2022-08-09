@@ -6,13 +6,15 @@ public class MousePointer : MonoBehaviour
 {
     public GameObject pointerPrefab;
     private GameObject pointerRed;
-    Vector2 mousePos;
+    Vector3 mousePos;
+    BulletManager bullet;
 
 
     // Start is called before the first frame update
     void Start()
     {
         pointerRed = Instantiate(pointerPrefab) as GameObject;
+        bullet = GetComponent<BulletManager>();
         Cursor.visible = false;
     }
 
@@ -21,6 +23,7 @@ public class MousePointer : MonoBehaviour
     {
         mousePos = Input.mousePosition;
         mousePos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
+        mousePos.z = -1;
         pointerRed.transform.position = mousePos;
         Ray2D ray = new Ray2D(mousePos, Vector2.zero); // 원점 ~ 포인터로 발사되는 레이저
 
@@ -32,12 +35,22 @@ public class MousePointer : MonoBehaviour
 
             // RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, distance); // 다 잡음 
             RaycastHit2D hitDrawer = Physics2D.Raycast(ray.origin, ray.direction, distance, 1 << LayerMask.NameToLayer("Touchable")); // 1 << LayerMask.NameToLayer("Touchable") 대신 2048을 써도 됨
-
-            if (hitDrawer)
+            
+            if(bullet.GetBulletCount() > 0)
             {
-                Debug.Log("터치!");
-                hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
+                bullet.discountBullet(1); // 총알 차감
+                if (hitDrawer)
+                {
+                    Debug.Log("터치!");
+                    hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
+                }
+
             }
+            else
+            {
+                Debug.Log("남은 총알이 없습니다!");
+            }
+
 
         }
 
