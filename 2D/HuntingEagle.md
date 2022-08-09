@@ -254,7 +254,7 @@ public class ScoreManager : MonoBehaviour
 
 위 그림을 보면 타겟을 맞춘 후에 오른쪽 위에 있는 스코어보드가 가산되었음을 볼 수 있다.
 
-<20220809추가>
+##### <20220809추가>
 
 그렇다면 어떤 물체는 1점 올려주고, 어떤 물체는 2점 올려주고.. 그런 것을 어떻게 구분할 수 있을까?
 
@@ -263,6 +263,54 @@ public class ScoreManager : MonoBehaviour
 Tag 기능을 이용하였다.
 
 Prefab에 Tag를 설정 해 두어 Tag를 통하여 점수를 주는 것을 구분하였다.
+
+Target.cs
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Target : MonoBehaviour
+{
+    bool hit = false; // 맞았는지 여부를 나타냄
+    GameObject Manager;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        Manager = GameObject.Find("Manager");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(hit == true)
+        {
+            if(this.tag == "Score1") // 태그에 따라서 물체를 구분한다.
+            {
+                Manager.GetComponent<ScoreManager>().SetOne();
+            }
+            else if(this.tag == "Minus1")
+            {
+                Manager.GetComponent<ScoreManager>().MinusOne();
+            }
+
+            Destroy(gameObject); // 터치시 삭제
+        }
+    }
+
+    public void beHit()
+    {
+        hit = true;
+    }
+
+    
+
+}
+</code>
+</pre>
 
 
 ScoreManager.cs
@@ -737,7 +785,6 @@ Slice를 눌러 sprite를 적절하게 잘라준다. 동일한 위치에 물체�
 
 <pre>
 <code>
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -776,8 +823,6 @@ public class BulletManager : MonoBehaviour
     }
 
 }
-
-
 </code>
 </pre>
 
@@ -785,7 +830,6 @@ MousePointer.cs
 
 <pre>
 <code>
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -843,14 +887,20 @@ public class MousePointer : MonoBehaviour
 
     }
 }
-
-
 </code>
 </pre>
 
+그리고 버튼과 총알 개수를 나타내는 텍스트UI를 추가하였다.
 
+![image](https://user-images.githubusercontent.com/66288087/183625020-93d3bebe-16d1-432c-b406-59d164572970.png)
 
+실행 결과, 총알이 없는 상태에서는 아무리 클릭 해도 점수의 변동이 없음을 볼 수 있다.
 
+![image](https://user-images.githubusercontent.com/66288087/183625206-732d43ae-d3a6-43fa-b568-5d0efe0be5cb.png)
+
+총알을 충전하게 되면 이렇게 점수를 얻고 차감됨을 볼 수 있다.
+
+지금은 생성 버튼을 누를 때도 총알이 나가지만 실전에서는 자동으로 생성되므로 괜찮다.
 
 
 <hr>
