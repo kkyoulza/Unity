@@ -838,7 +838,7 @@ public class MousePointer : MonoBehaviour
 {
     public GameObject pointerPrefab;
     private GameObject pointerRed;
-    Vector2 mousePos;
+    Vector3 mousePos;
     BulletManager bullet;
 
 
@@ -855,6 +855,7 @@ public class MousePointer : MonoBehaviour
     {
         mousePos = Input.mousePosition;
         mousePos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
+        mousePos.z = -1; // 마우스 포인터가 대상 물체의 앞에 나오게끔!
         pointerRed.transform.position = mousePos;
         Ray2D ray = new Ray2D(mousePos, Vector2.zero); // 원점 ~ 포인터로 발사되는 레이저
 
