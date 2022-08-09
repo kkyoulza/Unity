@@ -18,7 +18,15 @@ public class Target : MonoBehaviour
     {
         if(hit == true)
         {
-            Manager.GetComponent<ScoreManager>().SetOne();
+            if(this.tag == "Score1")
+            {
+                Manager.GetComponent<ScoreManager>().SetOne();
+            }
+            else if(this.tag == "Minus1")
+            {
+                Manager.GetComponent<ScoreManager>().MinusOne();
+            }
+
             Destroy(gameObject); // 터치시 삭제
         }
     }
@@ -27,7 +35,5 @@ public class Target : MonoBehaviour
     {
         hit = true;
     }
-
-    
 
 }
