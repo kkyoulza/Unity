@@ -469,6 +469,8 @@ Button Component에서 OnClick()시에 SpawnTarget()이 실행되게 설정하�
 
 실행하면 위와 같이 된다.
 
+<hr>
+
 #### +알파 : 랜덤 움직임 구현하기
 
 #### 4-1. 스크립트를 새로 만들어 일정 시간마다 움직임의 방향을 랜덤으로 부여하는 방법
@@ -705,7 +707,7 @@ public class TargetMove : MonoBehaviour
 
 <hr>
 
-### 5. 물체 디자인 및 애니메이션 적용
+### 5. 물체 디자인 및 애니메이션 적용 + (사운드)
 
 #### Asperite를 이용한 간단한 도트 디자인
 
@@ -747,6 +749,7 @@ Slice를 눌러 sprite를 적절하게 잘라준다. 동일한 위치에 물체�
 
 4번 코드에 있는 최대 속도와 ScoreManager.cs 내부에 있는 것들을 조절하여 (Tag를 통하여 대상을 구분할 예정) 난이도에 따라서 점수를 차등적으로 얻을 수 있게 할 예정이다.
 
+<hr>
 
 + 알파 : 대상을 맞추었을 때 사라지는 애니메이션 만들기
 
@@ -760,7 +763,125 @@ Slice를 눌러 sprite를 적절하게 잘라준다. 동일한 위치에 물체�
 #### 5-2. Sprite 가공 및 애니메이션 적용(트리거 사용)
 
 
+<hr>
 
++ 사운드 적용
+
+사운드는 Unity Asset Store에서 적절한 것들을 가져 와 사용하였다.
+
+Manager에 SoundManager.cs를 하나 더 만들어 효과음을 내는 것으로 사용하였다.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SoundManager : MonoBehaviour
+{
+    AudioSource audio;
+
+    public AudioClip Score1;
+    public AudioClip Score2;
+    public AudioClip Score3;
+    public AudioClip Minus1;
+    public AudioClip Minus2;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        audio = GetComponent<AudioSource>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void PlayScore1()
+    {
+        audio.clip = Score1;
+        audio.Play();
+    }
+
+    public void PlayScore2()
+    {
+        audio.clip = Score2;
+        audio.Play();
+    }
+
+    public void PlayScore3()
+    {
+        audio.clip = Score3;
+        audio.Play();
+    }
+
+    public void PlayMinus1()
+    {
+        audio.clip = Minus1;
+        audio.Play();
+    }
+
+    public void PlayMinus2()
+    {
+        audio.clip = Minus2;
+        audio.Play();
+    }
+
+}
+</code>
+</pre>
+
+Target.cs 에서 SoundManager와 연결시켜 준다.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Target : MonoBehaviour
+{
+    bool hit = false; // 맞았는지 여부를 나타냄
+    GameObject Manager;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        Manager = GameObject.Find("Manager");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(hit == true)
+        {
+            if(this.tag == "Score1") // Tag Check
+            {
+                Manager.GetComponent<SoundManager>().PlayScore1();
+                Manager.GetComponent<ScoreManager>().SetOne();
+            }
+            else if(this.tag == "Minus1")
+            {
+                Manager.GetComponent<SoundManager>().PlayMinus1();
+                Manager.GetComponent<ScoreManager>().MinusOne();
+            }
+
+            Destroy(gameObject); // 터치시 삭제
+        }
+    }
+
+    public void beHit()
+    {
+        hit = true;
+    }
+
+}
+</code>
+</pre>
+
+BGM은 MainCamera에 Audio Source를 추가하여 넣어 준다. BGM과 효과음이 추가되었음을 볼 수 있다.
 
 
 <hr>
@@ -773,7 +894,7 @@ Slice를 눌러 sprite를 적절하게 잘라준다. 동일한 위치에 물체�
 
 
 
-
+<hr>
 
 + 알파 : 총알의 개수를 제한하여 총알의 개수를 가시적으로 나타낼 수 있는 기능도 추가할 것(총알 디자인도 하자)
 
@@ -902,6 +1023,104 @@ public class MousePointer : MonoBehaviour
 총알을 충전하게 되면 이렇게 점수를 얻고 차감됨을 볼 수 있다.
 
 지금은 생성 버튼을 누를 때도 총알이 나가지만 실전에서는 자동으로 생성되므로 괜찮다.
+
+<hr>
+
+220810 - 총알의 Max 개수를 10개로 제한하고, 총알의 개수가 0개일 때만 테스트로 리필할 수 있게 하였다.
+
+결과물은 다음 사진과 같다.
+
+![image](https://user-images.githubusercontent.com/66288087/183871282-dd52d88b-2737-4a8f-9c9c-d2a86054e052.png)
+
+총알이 10개가 충전되어 가득 찬 모습이다.
+
+![image](https://user-images.githubusercontent.com/66288087/183871404-0fbbd2db-1ad3-4310-8238-67cd86dee4dd.png)
+
+총알을 쏘게 되면 총알 그림이 사라지고 있다.
+
+총알 그림을 소환하고 없애는 방식은 프리토 구애의 춤 구현 시도에서 사용했던 방법을 사용하여 구현하였다.
+
+BulletManager.cs
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class BulletManager : MonoBehaviour
+{
+    int remainedBullet = 0;
+    public Text bulletText;
+    List<string> BulletImgName = new List<string>();
+    public Image BulletImg;
+    
+    public GameObject UIBase;
+    
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        bulletText.text = remainedBullet.ToString();
+    }
+
+    public void AddBullet(int count)
+    {
+        if(remainedBullet == 0)
+        {
+            BulletImgName.Clear();
+            this.remainedBullet = count;
+            SetBulletUI();
+        }
+        else
+        {
+            Debug.Log("총알이 다 떨어졌을 때 충전할 수 있습니다.");
+
+        }
+        
+    }
+
+    public void discountBullet(int count)
+    {
+        this.remainedBullet -= count;
+
+        Destroy(GameObject.Find(BulletImgName[remainedBullet]));
+
+    }
+
+    public int GetBulletCount()
+    {
+        return this.remainedBullet;
+    }
+
+    public void SetBulletUI()
+    {
+        for(int i = 0; i < remainedBullet; i++)
+        {
+            Vector3 offSet = UIBase.transform.position + new Vector3(340 - i * 50, -160, 0);
+
+            Image BulletImsi = Instantiate(BulletImg);
+            BulletImsi.transform.SetParent(UIBase.transform,false);
+            BulletImsi.name = "BulImge" + i;
+            BulletImsi.transform.position = offSet;
+
+            BulletImgName.Add(BulletImsi.name);
+
+        }
+    }
+
+}
+</code>
+</pre>
+
+Canvas에서 Image를 만들고 Sprite를 총알 그림으로 바꾸어 준 다음 Prefab화를 해 주어 코드에서 활용하였다.(BulletImg)
 
 
 <hr>
