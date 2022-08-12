@@ -8,7 +8,11 @@ public class TargetMove : MonoBehaviour
     Rigidbody2D rigid;
     float changeTime = 0f;
     int RandomMove;
-    float TargetA_MaxVel = 10f;
+    float TargetA_MaxVel = 8f;
+
+    float Bomb1_MaxVel = 6.5f;
+
+    float MaxVel; // Tag에 따라서 MaxVel 값을 설정 해 주기 위함
 
     // Start is called before the first frame update
     void Start()
@@ -99,29 +103,25 @@ public class TargetMove : MonoBehaviour
 
         }
         
-
     }
 
-    public void horizonChange()
-    {
-        rigid.velocity = new Vector2(rigid.velocity.x*(-1), rigid.velocity.y);
-    }
-    public void verticalChange()
-    {
-        rigid.velocity = new Vector2(rigid.velocity.x, rigid.velocity.y * (-1));
-    }
 
     public void ToRight()
     {
         // /*
+
+        if (this.tag == "Score1")
+            MaxVel = TargetA_MaxVel;
+        else if (this.tag == "Minus1")
+            MaxVel = Bomb1_MaxVel;
         
-        if(rigid.velocity.x < TargetA_MaxVel)
+        if(rigid.velocity.x < MaxVel)
         {
             rigid.AddForce(new Vector2(50, 0));
         }
         else
         {
-            rigid.velocity = new Vector2(TargetA_MaxVel, rigid.velocity.y);
+            rigid.velocity = new Vector2(MaxVel, rigid.velocity.y);
         }
         // */
 
@@ -131,38 +131,56 @@ public class TargetMove : MonoBehaviour
 
     public void ToLeft()
     {
-        if (rigid.velocity.x > TargetA_MaxVel*(-1))
+
+        if (this.tag == "Score1")
+            MaxVel = TargetA_MaxVel;
+        else if (this.tag == "Minus1")
+            MaxVel = Bomb1_MaxVel;
+
+        if (rigid.velocity.x > MaxVel * (-1))
         {
             rigid.AddForce(new Vector2(-50, 0));
         }
         else
         {
-            rigid.velocity = new Vector2(TargetA_MaxVel*(-1), rigid.velocity.y);
+            rigid.velocity = new Vector2(MaxVel * (-1), rigid.velocity.y);
         }
     }
 
     public void ToUp()
     {
-        if(rigid.velocity.y < TargetA_MaxVel)
+
+        if (this.tag == "Score1")
+            MaxVel = TargetA_MaxVel;
+        else if (this.tag == "Minus1")
+            MaxVel = Bomb1_MaxVel;
+
+        if (rigid.velocity.y < MaxVel)
         {
             rigid.AddForce(new Vector2(0, 100));
         }
         else
         {
-            rigid.velocity = new Vector2(rigid.velocity.x, TargetA_MaxVel);
+            rigid.velocity = new Vector2(rigid.velocity.x, MaxVel);
         }
         
     }
 
     public void ToDown()
     {
-        if (rigid.velocity.y > TargetA_MaxVel*(-1))
+
+        if (this.tag == "Score1")
+            MaxVel = TargetA_MaxVel;
+        else if (this.tag == "Minus1")
+            MaxVel = Bomb1_MaxVel;
+
+        if (rigid.velocity.y > MaxVel * (-1))
         {
             rigid.AddForce(new Vector2(0, -100));
         }
         else
         {
-            rigid.velocity = new Vector2(rigid.velocity.x, TargetA_MaxVel*(-1));
+            rigid.velocity = new Vector2(rigid.velocity.x, MaxVel * (-1));
         }
     }
 
