@@ -1127,18 +1127,295 @@ Canvas에서 Image를 만들고 Sprite를 총알 그림으로 바꾸어 준 다�
 
 ### 7. 게임 시작 ~ 퇴장 시나리오 구축
 
+게임에 대한 진행을 주관하는 코드를 구현하여 게임 시나리오를 구축 해 보도록 하겠다.
+
+게임 진행을 주관하는 Stage Manager.cs를 만들어 주었다.
+
+Score Manager.cs에 있던 Spawn 함수를 가져와서 스테이지에 맞게 다듬어 주었다.
+
+<pre>
+<code>
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using System;
+
+public class StageManager : MonoBehaviour
+{
+    float RandomFloatX, RandomFloatY; // 생성 위치
+    
+    public GameObject TargetPrefab1; // 타겟 1
+    public GameObject TargetPrefab2; // 타겟 2
+    public GameObject TargetPrefab3; // 타겟 3
+    public GameObject Bomb1; // 폭탄 1
+    private GameObject Target; // 동적으로 생성 된 타겟
 
 
+    private List<String> Target1Name = new List<String>();
+    private List<String> Bomb1Name = new List<String>();
+
+    int remainTarget1 = -1; // 남은 타겟의 수를 실시간으로 갱신해 주기 위한 것, 이 것이 0이 되면 다음 스테이지로 간다.
+    // -1 > 체크를 하지 않는 상태
 
 
+    // Start is called before the first frame update
+    void Start()
+    {
+        Stage1();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        Stage1Check();
+    }
+
+    public void SpawnTarget1(int num)
+    {
+        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+        RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
+        RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
+
+        Target = Instantiate(TargetPrefab1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+
+        Target.name = "Target1_" + num; // 이름 + 숫자를 적용하여 이름 변경(스테이지 초기화 시 마다 숫자 초기화)
+        Target1Name.Add(Target.name); // 리스트에 저장(게임 오버시에나 폭탄이 남았을 때 제거하기 위함)
+
+        if (RandomFloatX > 0)
+            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
+        else
+            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
+    }
+
+    public void SpawnBomb1(int num)
+    {
+        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+        RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
+        RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
+
+        Target = Instantiate(Bomb1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+
+        Target.name = "Bomb1_" + num; // 이름 + 숫자를 적용하여 이름 변경(스테이지 초기화 시 마다 숫자 초기화)
+        Bomb1Name.Add(Target.name); // 리스트에 저장(게임 오버시에나 폭탄이 남았을 때 제거하기 위함)
+
+        if (RandomFloatX > 0)
+            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
+        else
+            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
+    }
+
+    public void Stage1()
+    {
+        remainTarget1 = 10;
+        for(int i = 0; i < 10; i++)
+        {
+            SpawnTarget1(i); // 타겟 10개 소환
+            Debug.Log("타겟" + i + "개 소환");
+            if (i < 5) // 폭탄 5개 소환
+                SpawnBomb1(i);
+        }
+
+    }
+
+    public void Stage1Check()
+    {
+        if(remainTarget1 == 0)
+        {
+            Debug.Log("스테이지 1 클리어! 폭탄을 제거합니다.");
+            for(int i = 0; i < Bomb1Name.Count; i++)
+            {
+                try
+                {
+                    Destroy(GameObject.Find(Bomb1Name[i]));
+                }
+                catch
+                {
+                    Debug.Log("이미 맞춘 폭탄이 있어서 다음 것을 제거합니다!");
+                    continue;
+                }
+
+            }
+            Bomb1Name.Clear();
+            Target1Name.Clear();
+
+            remainTarget1 = -1; // checkOff상태로 변경!
+        }
+    }
+
+    public void MinusTarget1()
+    {
+        remainTarget1--;
+    }
+
+}
 
 
+</code>
+</pre>
+
+함수는 다음과 같이 설정하였다.
+
+1. 스테이지 시작 함수
+2. 타겟 생성 함수
+3. 폭탄 생성 함수
+4. 스테이지 클리어 여부 체크 함수
+5. 남은 타겟 개수를 갱신해 주는 함수
+6. 시간 초과시 게임 오버를 체킹하는 함수(구현 예정)
+
+우선 스테이지 생성 함수에는 2번과 3번 함수를 for문을 통해서 설정된 개수만큼 객체를 spawn 해 주는 역할을 한다.
+
+그리고 클리어, 게임 오버시에 남은 객체들을 제거 해 주기 위하여 생성된 객체의 이름을 저장 해 주는 List를 만들어 주었다.
+
+그리고 남은 타겟 수를 넣을 변수를 만들어 주고(클리어 여부 체크를 위함) 커서로 타켓을 클릭했을 때, 개수가 줄어들게 만들어 준다.
+
+또한, Update에 남은 타겟 수가 0이 되면 스테이지를 클리어 판정을 하고 남은 타겟 변수를 -1로 하여 계속하여 클리어가 되는 현상을 방지하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/184317972-1979ff8a-cde5-4e37-b8f7-63079aa549ee.png)
+
+클리어시에 나오는 Log
 
 
+Target.cs 변경점
+
+<pre>
+<code>
+
+void Update()
+    {
+        if(hit == true)
+        {
+            if(this.tag == "Score1") // Tag Check
+            {
+                Manager.GetComponent<SoundManager>().PlayScore1();
+                Manager.GetComponent<StageManager>().MinusTarget1();
+                Manager.GetComponent<ScoreManager>().SetOne();
+            }
+            else if(this.tag == "Minus1")
+            {
+                Manager.GetComponent<SoundManager>().PlayMinus1();
+                Manager.GetComponent<ScoreManager>().MinusOne();
+            }
+
+            Destroy(gameObject); // 터치시 삭제
+        }
+    }
+
+</code>
+</pre>
+
+ScoreManager.cs 변경
+
+<pre>
+<code>
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class ScoreManager : MonoBehaviour
+{
+    int TargetNum = 0; // 맞춰진 타겟의 종류!
+    int cntScore;
+
+    public Text Score;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+        switch (TargetNum)
+        {
+            case -1:
+                cntScore = int.Parse(Score.text);
+                if (cntScore > 0)
+                {
+                    cntScore -= 1;
+                    Score.text = cntScore.ToString();
+                }
+                TargetNum = 0;
+                break;
+            case 1:
+                cntScore = int.Parse(Score.text);
+                cntScore += 1;
+                Score.text = cntScore.ToString();
+                TargetNum = 0;
+                break;
+            case 2:
+                cntScore = int.Parse(Score.text);
+                cntScore += 2;
+                Score.text = cntScore.ToString();
+                TargetNum = 0;
+                break;
+        }
+
+    }
+
+    public void SetOne()
+    {
+        TargetNum = 1;
+    }
+
+    public void SetTwo()
+    {
+        TargetNum = 2;
+    }
+
+    public void MinusOne()
+    {
+        TargetNum = -1;
+    }
+
+    
+
+}
 
 
+</code>
+</pre>
+
+또한, TargetMove.cs에서도 타겟의 tag별로 속도를 다르게 하기 위해서 최대 속도를 넣을 변수를 하나 만들고 태그별로 최대 속도를 다르게 할 수 있게 하였다.
+
+(if문을 아낄 수 있는 방법)
+
+아래 코드는 TargetMove.cs의 일부이다. Down,Right,Left,Up 모두 같게 적용하였다.
+
+<pre>
+<code>
+
+public void ToDown()
+    {
+
+        if (this.tag == "Score1")
+            MaxVel = TargetA_MaxVel;
+        else if (this.tag == "Minus1")
+            MaxVel = Bomb1_MaxVel;
+
+        if (rigid.velocity.y > MaxVel * (-1))
+        {
+            rigid.AddForce(new Vector2(0, -100));
+        }
+        else
+        {
+            rigid.velocity = new Vector2(rigid.velocity.x, MaxVel * (-1));
+        }
+    }
+
+</code>
+</pre>
 
 
+<hr>
 
+이제 6번 함수 구현과 더불어 다음 스테이지로 넘어가는 것 구현 + 모든 스테이지를 클리어 했을 때 원래의 맵으로 돌아가게 하는 것도 구현 할 예정이다.
 
 
