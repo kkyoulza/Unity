@@ -21,6 +21,7 @@ public class Target : MonoBehaviour
             if(this.tag == "Score1") // Tag Check
             {
                 Manager.GetComponent<SoundManager>().PlayScore1();
+                Manager.GetComponent<StageManager>().MinusTarget1();
                 Manager.GetComponent<ScoreManager>().SetOne();
             }
             else if(this.tag == "Minus1")
