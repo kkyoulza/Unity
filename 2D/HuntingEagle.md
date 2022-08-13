@@ -1418,4 +1418,87 @@ public void ToDown()
 
 이제 6번 함수 구현과 더불어 다음 스테이지로 넘어가는 것 구현 + 모든 스테이지를 클리어 했을 때 원래의 맵으로 돌아가게 하는 것도 구현 할 예정이다.
 
+220813
+
+총알을 다 소비하였는데 타겟이 남아 있는 경우에는 게임 오버가 된다. 그 부분을 추가하였다.
+
+StageManager.cs 중...
+
+<pre>
+<code>
+public void GameOverCheck()
+    {
+        if((GetComponent<BulletManager>().GetBulletCount() == 0) && remainTarget1 > 0)
+        {
+            //타겟이 남았을 때 총알을 다 소비하였다면..!
+            Debug.Log("총알을 다 소비하였습니다! 게임 오버!");
+
+            GameOver.SetActive(true);
+
+            for (int i = 0; i < Target1Name.Count; i++)
+            {
+                try
+                {
+                    Destroy(GameObject.Find(Target1Name[i]));
+                }
+                catch
+                {
+                    Debug.Log("맞춘 타겟이 있어서 스킵!");
+                    continue;
+                }
+
+            }
+
+            for (int i = 0; i < Bomb1Name.Count; i++)
+            {
+                try
+                {
+                    Destroy(GameObject.Find(Bomb1Name[i]));
+                }
+                catch
+                {
+                    Debug.Log("이미 맞춘 폭탄이 있어서 다음 것을 제거합니다!");
+                    continue;
+                }
+
+            }
+            Bomb1Name.Clear();
+            Target1Name.Clear();
+
+            remainTarget1 = -1; // checkOff상태로 변경!
+
+
+            Invoke("BackToTheMap", 2); // 2초후 BackToTheMap 호출
+
+
+
+        }
+    }
+    
+public void BackToTheMap()
+{
+    SceneManager.LoadScene("MainMap");
+}
+</code>
+</pre>
+
+그리고 해당 함수를 Update에 위치시키면 게임 오버 여부를 판단 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/184470077-18cb0b9d-801d-452f-8733-65e7c5fd9a8d.png)
+
+게임 오버
+
+![image](https://user-images.githubusercontent.com/66288087/184470089-c5c0acfa-5e06-4cb6-9277-ebcbd946237e.png)
+
+그리고 원래의 횡스크롤 맵으로 돌아가게 된다.
+
+횡스크롤 맵은 현재 연습하고 있는 맵으로써 다른 미니게임들과도 연계할 예정이다.
+
+<hr>
+
++알파 : 스토리 추가하기
+
+기존 횡스크롤 맵에서 NPC 제작
+
+
 
