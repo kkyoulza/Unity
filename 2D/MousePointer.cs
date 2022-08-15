@@ -29,7 +29,7 @@ public class MousePointer : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            Debug.Log(mousePos);
+            //Debug.Log(mousePos);
 
             float distance = Mathf.Infinity; // Ray 내에서 감지할 최대 거리
 
@@ -38,12 +38,17 @@ public class MousePointer : MonoBehaviour
             
             if(bullet.GetBulletCount() > 0)
             {
-                bullet.discountBullet(1); // 총알 차감
-                if (hitDrawer)
+                
+                if (hitDrawer) // 맞았을 때는 Stage에서 총알 차감!
                 {
                     Debug.Log("터치!");
                     hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
                 }
+                else
+                {
+                    bullet.discountBullet(); // 안맞았을 때 총알 차감
+                }
+
 
             }
             else
