@@ -751,16 +751,44 @@ Slice를 눌러 sprite를 적절하게 잘라준다. 동일한 위치에 물체�
 
 <hr>
 
-+ 알파 : 대상을 맞추었을 때 사라지는 애니메이션 만들기
+#### + 알파 : 대상을 맞추었을 때 사라지는 애니메이션 만들기
 
 
 #### 5-1. 파괴되는 애니메이션 도트 디자인
 
+Asperite를 이용하여 슬라임이 피격되어 사라지는 애니메이션을 제작하였다.
 
+![image](https://user-images.githubusercontent.com/66288087/184605577-fde4e0a2-e059-47d6-a14f-26a8c06a3369.png)
 
+완성본은 아래와 같다.
+
+![Target1_Destroy](https://user-images.githubusercontent.com/66288087/184605101-5d4e630f-9408-401b-a5c5-b10bc814329c.gif)
+
+이제 Asperite에서 Sprite Sheet로 Export하여 Unity에 넣어 보도록 하자.
 
 
 #### 5-2. Sprite 가공 및 애니메이션 적용(트리거 사용)
+
+Unity에 넣어 주어 앞서 애니메이션을 적용한 것과 같이 Multiple + Pixel 조정 + Slice를 해 준 다음 애니메이션을 생성 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/184605371-51294daf-0238-45ae-81d7-d028d99bf092.png)
+
+애니메이션을 제작 한 다음, 일부 프레임을 제거하였다. 13프레임 -> 5프레임 으로 반 이상을 대폭 줄임으로써 빠르게 터지는 것을 표현하였다.
+
+여기서 애니메이션을 적용하는 것에 문제가 생기게 되었다.
+
+![image](https://user-images.githubusercontent.com/66288087/184606042-fac77cbc-06cf-45a8-adb9-a154be9486be.png)
+
+코드에서 볼 수 있듯이 애니메이션 트리거를 적용한 뒤 바로 Destroy를 적용하게 되면 애니메이션이 재생되지 못하고 사라지게 되어 애니메이션을 만든 의미가 없어지게 된다.
+
+그래서 Invoke를 이용하여 Destroy를 따로 빼 내어 만들어 낸 함수를 애니메이션이 끝난 뒤에 실행되게끔 하면 아래 그림과 같이 클릭 판정 뒤에 나오는 파괴 애니메이션에서 중복으로 클릭이 가능한 현상이 발생하게 된다.
+
+![image](https://user-images.githubusercontent.com/66288087/184607843-1081ffb4-5c51-47e2-9499-bba7c1e65b7c.png)
+
+따라서 삭제중임을 알려 주는 tag(DeleteState)를 하나 추가 해 주어 클릭 판정이 나면 태그를 바로 변경시킨 다음에 애니메이션을 재생시켜서 중복으로 클릭되는 현상을 방지하였다.
+
+
+
 
 
 <hr>
