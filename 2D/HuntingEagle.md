@@ -930,113 +930,112 @@ BGM은 MainCamera에 Audio Source를 추가하여 넣어 준다. BGM과 효과�
 
 우선 BulletManager.cs
 
-<pre>
-<code>
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+<details>
+    <summary>BulletManager.cs (펼치기)</summary>
+   
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.UI;
 
-public class BulletManager : MonoBehaviour
-{
-    int remainedBullet = 0; // 남은 총알 개수
-    public Text bulletText;
-
-    // Start is called before the first frame update
-    void Start()
+    public class BulletManager : MonoBehaviour
     {
-        
-    }
+        int remainedBullet = 0; // 남은 총알 개수
+        public Text bulletText;
 
-    // Update is called once per frame
-    void Update()
-    {
-        bulletText.text = remainedBullet.ToString(); // 실시간으로 남은 총알 개수를 최신화 해 준다.
-    }
-
-    public void AddBullet(int count)
-    {
-        this.remainedBullet = count;
-    }
-
-    public void discountBullet(int count)
-    {
-        this.remainedBullet -= count;
-    }
-
-    public int GetBulletCount()
-    {
-        return this.remainedBullet;
-    }
-
-}
-</code>
-</pre>
-
-MousePointer.cs
-
-<pre>
-<code>
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class MousePointer : MonoBehaviour
-{
-    public GameObject pointerPrefab;
-    private GameObject pointerRed;
-    Vector3 mousePos;
-    BulletManager bullet;
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        pointerRed = Instantiate(pointerPrefab) as GameObject;
-        bullet = GetComponent<BulletManager>(); // 총알 매니저 컴포넌트를 불러 온다.
-        Cursor.visible = false;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        mousePos = Input.mousePosition;
-        mousePos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
-        mousePos.z = -1; // 마우스 포인터가 대상 물체의 앞에 나오게끔!
-        pointerRed.transform.position = mousePos;
-        Ray2D ray = new Ray2D(mousePos, Vector2.zero); // 원점 ~ 포인터로 발사되는 레이저
-
-        if (Input.GetMouseButtonDown(0))
+        // Start is called before the first frame update
+        void Start()
         {
-            Debug.Log(mousePos);
-
-            float distance = Mathf.Infinity; // Ray 내에서 감지할 최대 거리
-
-            // RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, distance); // 다 잡음 
-            RaycastHit2D hitDrawer = Physics2D.Raycast(ray.origin, ray.direction, distance, 1 << LayerMask.NameToLayer("Touchable")); // 1 << LayerMask.NameToLayer("Touchable") 대신 2048을 써도 됨
-            
-            if(bullet.GetBulletCount() > 0) // 남은 총알 개수를 불러 온 다음 쏠 수 있는 총알이 있다면(1 이상)
-            {
-                bullet.discountBullet(1); // 총알 차감
-                if (hitDrawer)
-                {
-                    Debug.Log("터치!");
-                    hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
-                }
-
-            }
-            else // 총알이 없다면 실제 시나리오에서는 대상을 다 맞췄는지 여부를 계산 한 다음 이동!
-            {
-                Debug.Log("남은 총알이 없습니다!");
-            }
-
 
         }
 
+        // Update is called once per frame
+        void Update()
+        {
+            bulletText.text = remainedBullet.ToString(); // 실시간으로 남은 총알 개수를 최신화 해 준다.
+        }
+
+        public void AddBullet(int count)
+        {
+            this.remainedBullet = count;
+        }
+
+        public void discountBullet(int count)
+        {
+            this.remainedBullet -= count;
+        }
+
+        public int GetBulletCount()
+        {
+            return this.remainedBullet;
+        }
+
     }
-}
-</code>
-</pre>
+</details>
+
+    
+<details>
+    <summary>MousePointer.cs (펼치기)</summary>
+    
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+
+    public class MousePointer : MonoBehaviour
+    {
+        public GameObject pointerPrefab;
+        private GameObject pointerRed;
+        Vector3 mousePos;
+        BulletManager bullet;
+
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            pointerRed = Instantiate(pointerPrefab) as GameObject;
+            bullet = GetComponent<BulletManager>(); // 총알 매니저 컴포넌트를 불러 온다.
+            Cursor.visible = false;
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            mousePos = Input.mousePosition;
+            mousePos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
+            mousePos.z = -1; // 마우스 포인터가 대상 물체의 앞에 나오게끔!
+            pointerRed.transform.position = mousePos;
+            Ray2D ray = new Ray2D(mousePos, Vector2.zero); // 원점 ~ 포인터로 발사되는 레이저
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                Debug.Log(mousePos);
+
+                float distance = Mathf.Infinity; // Ray 내에서 감지할 최대 거리
+
+                // RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, distance); // 다 잡음 
+                RaycastHit2D hitDrawer = Physics2D.Raycast(ray.origin, ray.direction, distance, 1 << LayerMask.NameToLayer("Touchable")); // 1 << LayerMask.NameToLayer("Touchable") 대신 2048을 써도 됨
+
+                if(bullet.GetBulletCount() > 0) // 남은 총알 개수를 불러 온 다음 쏠 수 있는 총알이 있다면(1 이상)
+                {
+                    bullet.discountBullet(1); // 총알 차감
+                    if (hitDrawer)
+                    {
+                        Debug.Log("터치!");
+                        hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
+                    }
+
+                }
+                else // 총알이 없다면 실제 시나리오에서는 대상을 다 맞췄는지 여부를 계산 한 다음 이동!
+                {
+                    Debug.Log("남은 총알이 없습니다!");
+                }
+
+
+            }
+
+        }
+    }
+</details>
 
 그리고 버튼과 총알 개수를 나타내는 텍스트UI를 추가하였다.
 
@@ -1066,85 +1065,84 @@ public class MousePointer : MonoBehaviour
 
 총알 그림을 소환하고 없애는 방식은 프리토 구애의 춤 구현 시도에서 사용했던 방법을 사용하여 구현하였다.
 
-BulletManager.cs
 
-<pre>
-<code>
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-
-public class BulletManager : MonoBehaviour
-{
-    int remainedBullet = 0;
-    public Text bulletText;
-    List<string> BulletImgName = new List<string>();
-    public Image BulletImg;
+<details>
+    <summary>BulletManager.cs (펼치기)</summary>
     
-    public GameObject UIBase;
-    
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.UI;
 
-    // Start is called before the first frame update
-    void Start()
+    public class BulletManager : MonoBehaviour
     {
-        
-    }
+        int remainedBullet = 0;
+        public Text bulletText;
+        List<string> BulletImgName = new List<string>();
+        public Image BulletImg;
 
-    // Update is called once per frame
-    void Update()
-    {
-        bulletText.text = remainedBullet.ToString();
-    }
+        public GameObject UIBase;
 
-    public void AddBullet(int count)
-    {
-        if(remainedBullet == 0)
+
+        // Start is called before the first frame update
+        void Start()
         {
-            BulletImgName.Clear();
-            this.remainedBullet = count;
-            SetBulletUI();
-        }
-        else
-        {
-            Debug.Log("총알이 다 떨어졌을 때 충전할 수 있습니다.");
 
         }
-        
-    }
 
-    public void discountBullet(int count)
-    {
-        this.remainedBullet -= count;
-
-        Destroy(GameObject.Find(BulletImgName[remainedBullet]));
-
-    }
-
-    public int GetBulletCount()
-    {
-        return this.remainedBullet;
-    }
-
-    public void SetBulletUI()
-    {
-        for(int i = 0; i < remainedBullet; i++)
+        // Update is called once per frame
+        void Update()
         {
-            Vector3 offSet = UIBase.transform.position + new Vector3(340 - i * 50, -160, 0);
+            bulletText.text = remainedBullet.ToString();
+        }
 
-            Image BulletImsi = Instantiate(BulletImg);
-            BulletImsi.transform.SetParent(UIBase.transform,false);
-            BulletImsi.name = "BulImge" + i;
-            BulletImsi.transform.position = offSet;
+        public void AddBullet(int count)
+        {
+            if(remainedBullet == 0)
+            {
+                BulletImgName.Clear();
+                this.remainedBullet = count;
+                SetBulletUI();
+            }
+            else
+            {
+                Debug.Log("총알이 다 떨어졌을 때 충전할 수 있습니다.");
 
-            BulletImgName.Add(BulletImsi.name);
+            }
 
         }
-    }
 
-}
-</code>
-</pre>
+        public void discountBullet(int count)
+        {
+            this.remainedBullet -= count;
+
+            Destroy(GameObject.Find(BulletImgName[remainedBullet]));
+
+        }
+
+        public int GetBulletCount()
+        {
+            return this.remainedBullet;
+        }
+
+        public void SetBulletUI()
+        {
+            for(int i = 0; i < remainedBullet; i++)
+            {
+                Vector3 offSet = UIBase.transform.position + new Vector3(340 - i * 50, -160, 0);
+
+                Image BulletImsi = Instantiate(BulletImg);
+                BulletImsi.transform.SetParent(UIBase.transform,false);
+                BulletImsi.name = "BulImge" + i;
+                BulletImsi.transform.position = offSet;
+
+                BulletImgName.Add(BulletImsi.name);
+
+            }
+        }
+
+    }
+</details>
 
 Canvas에서 Image를 만들고 Sprite를 총알 그림으로 바꾸어 준 다음 Prefab화를 해 주어 코드에서 활용하였다.(BulletImg)
 
@@ -1159,127 +1157,125 @@ Canvas에서 Image를 만들고 Sprite를 총알 그림으로 바꾸어 준 다�
 
 Score Manager.cs에 있던 Spawn 함수를 가져와서 스테이지에 맞게 다듬어 주었다.
 
-<pre>
-<code>
-
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-using System;
-
-public class StageManager : MonoBehaviour
-{
-    float RandomFloatX, RandomFloatY; // 생성 위치
+<details>
+    <summary>StageManager.cs (펼치기)</summary>
     
-    public GameObject TargetPrefab1; // 타겟 1
-    public GameObject TargetPrefab2; // 타겟 2
-    public GameObject TargetPrefab3; // 타겟 3
-    public GameObject Bomb1; // 폭탄 1
-    private GameObject Target; // 동적으로 생성 된 타겟
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.UI;
+    using System;
 
-
-    private List<String> Target1Name = new List<String>();
-    private List<String> Bomb1Name = new List<String>();
-
-    int remainTarget1 = -1; // 남은 타겟의 수를 실시간으로 갱신해 주기 위한 것, 이 것이 0이 되면 다음 스테이지로 간다.
-    // -1 > 체크를 하지 않는 상태
-
-
-    // Start is called before the first frame update
-    void Start()
+    public class StageManager : MonoBehaviour
     {
-        Stage1();
-    }
+        float RandomFloatX, RandomFloatY; // 생성 위치
 
-    // Update is called once per frame
-    void Update()
-    {
-        Stage1Check();
-    }
+        public GameObject TargetPrefab1; // 타겟 1
+        public GameObject TargetPrefab2; // 타겟 2
+        public GameObject TargetPrefab3; // 타겟 3
+        public GameObject Bomb1; // 폭탄 1
+        private GameObject Target; // 동적으로 생성 된 타겟
 
-    public void SpawnTarget1(int num)
-    {
-        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
-        RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
-        RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
 
-        Target = Instantiate(TargetPrefab1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+        private List<String> Target1Name = new List<String>();
+        private List<String> Bomb1Name = new List<String>();
 
-        Target.name = "Target1_" + num; // 이름 + 숫자를 적용하여 이름 변경(스테이지 초기화 시 마다 숫자 초기화)
-        Target1Name.Add(Target.name); // 리스트에 저장(게임 오버시에나 폭탄이 남았을 때 제거하기 위함)
+        int remainTarget1 = -1; // 남은 타겟의 수를 실시간으로 갱신해 주기 위한 것, 이 것이 0이 되면 다음 스테이지로 간다.
+        // -1 > 체크를 하지 않는 상태
 
-        if (RandomFloatX > 0)
-            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
-        else
-            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
-    }
 
-    public void SpawnBomb1(int num)
-    {
-        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
-        RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
-        RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
-
-        Target = Instantiate(Bomb1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
-
-        Target.name = "Bomb1_" + num; // 이름 + 숫자를 적용하여 이름 변경(스테이지 초기화 시 마다 숫자 초기화)
-        Bomb1Name.Add(Target.name); // 리스트에 저장(게임 오버시에나 폭탄이 남았을 때 제거하기 위함)
-
-        if (RandomFloatX > 0)
-            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
-        else
-            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
-    }
-
-    public void Stage1()
-    {
-        remainTarget1 = 10;
-        for(int i = 0; i < 10; i++)
+        // Start is called before the first frame update
+        void Start()
         {
-            SpawnTarget1(i); // 타겟 10개 소환
-            Debug.Log("타겟" + i + "개 소환");
-            if (i < 5) // 폭탄 5개 소환
-                SpawnBomb1(i);
+            Stage1();
         }
 
-    }
-
-    public void Stage1Check()
-    {
-        if(remainTarget1 == 0)
+        // Update is called once per frame
+        void Update()
         {
-            Debug.Log("스테이지 1 클리어! 폭탄을 제거합니다.");
-            for(int i = 0; i < Bomb1Name.Count; i++)
+            Stage1Check();
+        }
+
+        public void SpawnTarget1(int num)
+        {
+            UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+            RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
+            RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
+
+            Target = Instantiate(TargetPrefab1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+
+            Target.name = "Target1_" + num; // 이름 + 숫자를 적용하여 이름 변경(스테이지 초기화 시 마다 숫자 초기화)
+            Target1Name.Add(Target.name); // 리스트에 저장(게임 오버시에나 폭탄이 남았을 때 제거하기 위함)
+
+            if (RandomFloatX > 0)
+                Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
+            else
+                Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
+        }
+
+        public void SpawnBomb1(int num)
+        {
+            UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+            RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
+            RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
+
+            Target = Instantiate(Bomb1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+
+            Target.name = "Bomb1_" + num; // 이름 + 숫자를 적용하여 이름 변경(스테이지 초기화 시 마다 숫자 초기화)
+            Bomb1Name.Add(Target.name); // 리스트에 저장(게임 오버시에나 폭탄이 남았을 때 제거하기 위함)
+
+            if (RandomFloatX > 0)
+                Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
+            else
+                Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
+        }
+
+        public void Stage1()
+        {
+            remainTarget1 = 10;
+            for(int i = 0; i < 10; i++)
             {
-                try
-                {
-                    Destroy(GameObject.Find(Bomb1Name[i]));
-                }
-                catch
-                {
-                    Debug.Log("이미 맞춘 폭탄이 있어서 다음 것을 제거합니다!");
-                    continue;
-                }
-
+                SpawnTarget1(i); // 타겟 10개 소환
+                Debug.Log("타겟" + i + "개 소환");
+                if (i < 5) // 폭탄 5개 소환
+                    SpawnBomb1(i);
             }
-            Bomb1Name.Clear();
-            Target1Name.Clear();
 
-            remainTarget1 = -1; // checkOff상태로 변경!
         }
+
+        public void Stage1Check()
+        {
+            if(remainTarget1 == 0)
+            {
+                Debug.Log("스테이지 1 클리어! 폭탄을 제거합니다.");
+                for(int i = 0; i < Bomb1Name.Count; i++)
+                {
+                    try
+                    {
+                        Destroy(GameObject.Find(Bomb1Name[i]));
+                    }
+                    catch
+                    {
+                        Debug.Log("이미 맞춘 폭탄이 있어서 다음 것을 제거합니다!");
+                        continue;
+                    }
+
+                }
+                Bomb1Name.Clear();
+                Target1Name.Clear();
+
+                remainTarget1 = -1; // checkOff상태로 변경!
+            }
+        }
+
+        public void MinusTarget1()
+        {
+            remainTarget1--;
+        }
+
     }
+</details>
 
-    public void MinusTarget1()
-    {
-        remainTarget1--;
-    }
-
-}
-
-
-</code>
-</pre>
 
 함수는 다음과 같이 설정하였다.
 
@@ -1302,13 +1298,12 @@ public class StageManager : MonoBehaviour
 
 클리어시에 나오는 Log
 
-
-Target.cs 변경점
-
-<pre>
-<code>
-
-void Update()
+Target.cs 변경
+    
+<details>
+    <summary>Target.cs 변경점 Code (펼치기)</summary>
+    
+    void Update()
     {
         if(hit == true)
         {
@@ -1328,86 +1323,80 @@ void Update()
         }
     }
 
-</code>
-</pre>
+</details>
+
 
 ScoreManager.cs 변경
 
-<pre>
-<code>
+<details>
+    <summary>ScoreManager.cs 변경점 Code (펼치기)</summary>
+    
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.UI;
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-
-public class ScoreManager : MonoBehaviour
-{
-    int TargetNum = 0; // 맞춰진 타겟의 종류!
-    int cntScore;
-
-    public Text Score;
-
-    // Start is called before the first frame update
-    void Start()
+    public class ScoreManager : MonoBehaviour
     {
-        
-    }
+        int TargetNum = 0; // 맞춰진 타겟의 종류!
+        int cntScore;
 
-    // Update is called once per frame
-    void Update()
-    {
+        public Text Score;
 
-        switch (TargetNum)
+        // Start is called before the first frame update
+        void Start()
         {
-            case -1:
-                cntScore = int.Parse(Score.text);
-                if (cntScore > 0)
-                {
-                    cntScore -= 1;
-                    Score.text = cntScore.ToString();
-                }
-                TargetNum = 0;
-                break;
-            case 1:
-                cntScore = int.Parse(Score.text);
-                cntScore += 1;
-                Score.text = cntScore.ToString();
-                TargetNum = 0;
-                break;
-            case 2:
-                cntScore = int.Parse(Score.text);
-                cntScore += 2;
-                Score.text = cntScore.ToString();
-                TargetNum = 0;
-                break;
+
         }
 
+        // Update is called once per frame
+        void Update()
+        {
+
+            switch (TargetNum)
+            {
+                case -1:
+                    cntScore = int.Parse(Score.text);
+                    if (cntScore > 0)
+                    {
+                        cntScore -= 1;
+                        Score.text = cntScore.ToString();
+                    }
+                    TargetNum = 0;
+                    break;
+                case 1:
+                    cntScore = int.Parse(Score.text);
+                    cntScore += 1;
+                    Score.text = cntScore.ToString();
+                    TargetNum = 0;
+                    break;
+                case 2:
+                    cntScore = int.Parse(Score.text);
+                    cntScore += 2;
+                    Score.text = cntScore.ToString();
+                    TargetNum = 0;
+                    break;
+            }
+
+        }
+
+        public void SetOne()
+        {
+            TargetNum = 1;
+        }
+
+        public void SetTwo()
+        {
+            TargetNum = 2;
+        }
+
+        public void MinusOne()
+        {
+            TargetNum = -1;
+        }
     }
-
-    public void SetOne()
-    {
-        TargetNum = 1;
-    }
-
-    public void SetTwo()
-    {
-        TargetNum = 2;
-    }
-
-    public void MinusOne()
-    {
-        TargetNum = -1;
-    }
-
-    
-
-}
-
-
-</code>
-</pre>
+</details>
 
 또한, TargetMove.cs에서도 타겟의 tag별로 속도를 다르게 하기 위해서 최대 속도를 넣을 변수를 하나 만들고 태그별로 최대 속도를 다르게 할 수 있게 하였다.
 
@@ -1415,10 +1404,10 @@ public class ScoreManager : MonoBehaviour
 
 아래 코드는 TargetMove.cs의 일부이다. Down,Right,Left,Up 모두 같게 적용하였다.
 
-<pre>
-<code>
-
-public void ToDown()
+<details>
+    <summary>ToDown() 함수 (펼치기)</summary>
+    
+    public void ToDown()
     {
 
         if (this.tag == "Score1")
@@ -1435,10 +1424,7 @@ public void ToDown()
             rigid.velocity = new Vector2(rigid.velocity.x, MaxVel * (-1));
         }
     }
-
-</code>
-</pre>
-
+</details>
 
 <hr>
 
@@ -1450,9 +1436,10 @@ public void ToDown()
 
 StageManager.cs 중...
 
-<pre>
-<code>
-public void GameOverCheck()
+<details>
+    <summary> (펼치기)</summary>
+    
+    public void GameOverCheck()
     {
         if((GetComponent<BulletManager>().GetBulletCount() == 0) && remainTarget1 > 0)
         {
@@ -1501,10 +1488,13 @@ public void GameOverCheck()
         }
     }
     
-public void BackToTheMap()
-{
-    SceneManager.LoadScene("MainMap");
-}
+    public void BackToTheMap()
+    {
+        SceneManager.LoadScene("MainMap");
+    }
+</details>
+    
+
 </code>
 </pre>
 
