@@ -131,22 +131,22 @@ LayerMask.NameToLayer("Touchable") 는 유니티 화면에 나오는 10진수 �
 
 <details>
     <summary>Target.cs (펼치기)</summary>
-    
+       
     using System.Collections;
     using System.Collections.Generic;
     using UnityEngine;
-
+    
     public class Target : MonoBehaviour
     {
         bool hit = false; // 맞았는지 여부를 나타냄
         GameObject Manager;
-
-        // Start is called before the first frame update
+        
+        // Start is Called before the first update
         void Start()
         {
             Manager = GameObject.Find("Manager");
         }
-
+        
         // Update is called once per frame
         void Update()
         {
@@ -156,13 +156,13 @@ LayerMask.NameToLayer("Touchable") 는 유니티 화면에 나오는 10진수 �
                 Destroy(gameObject); // 터치시 삭제
             }
         }
-
+        
         public void beHit()
         {
             hit = true;
         }
-
     }
+</code>   
 </details>
 
 Target.cs 코드이다.
@@ -179,7 +179,7 @@ Target.cs 코드이다.
         Debug.Log("터치!");
         hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
     }
-
+    </code>
 </details>
 
 **hitDrawer.collider.gameObject** 이 부분을 통하여 Ray를 맞은 타겟의 GameObject를 가져올 수 있으며 Target.cs 내의 beHit()을 실행시킨다.
@@ -246,6 +246,7 @@ Target.cs 코드이다.
         }
 
     }
+    </code>
 </details>
 
 1점을 더해주는 타겟은 SetOne(), 2점을 더해주는 타겟은 SetTwo()를 실행하여 적절하게 더해 주는 역할을 한다.
@@ -306,8 +307,10 @@ Prefab에 Tag를 설정 해 두어 Tag를 통하여 점수를 주는 것을 구�
         }
 
     }
+    </code>
 </details>
        
+    
 <details>
     <summary>ScoreManager.cs (펼치기)</summary>
     
@@ -407,6 +410,7 @@ Prefab에 Tag를 설정 해 두어 Tag를 통하여 점수를 주는 것을 구�
         }
 
     }
+    </code>
 </details>
 
 코드에서 볼 수 있듯이 맞추면 점수가 깎이게 되는 폭탄도 추가하였다. 테스트용으로 생성 버튼을 누를 경우 25%의 확률로 나오게 설정 해 놓았다.
@@ -442,6 +446,7 @@ Prefab에 Tag를 설정 해 두어 Tag를 통하여 점수를 주는 것을 구�
         else
             Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
     }
+    </code>
 </details>
 
 Target의 RigidBody2D 에서 Body Type을 Dynamic으로 바꾸어 주게 되어 이제 중력의 영향을 받게 되었다.
@@ -544,6 +549,7 @@ Button Component에서 OnClick()시에 SpawnTarget()이 실행되게 설정하�
 
 
     }
+    </code>
 </details>
 
 일정 시간마다 다른 방향으로 힘을 받게 만들었다. 저 상태에서 주기를 조정하고 화면 밖으로 나가려 하면 무조건 화면 안쪽으로 순간이동 or 화면 안쪽으로의 방향으로 힘을 받게 만들면 좋을 것 같다.
@@ -684,6 +690,7 @@ Button Component에서 OnClick()시에 SpawnTarget()이 실행되게 설정하�
         }
 
     }
+    </code>
 </details>
 
 최대 속도를 설정한 뒤, 최대 속도 미만이면 AddForce를 통하여 해당 방향으로 힘을 주는 함수 4개를 제작하였다.
@@ -855,6 +862,7 @@ Manager에 SoundManager.cs를 하나 더 만들어 효과음을 내는 것으로
         }
 
     }
+    </code>
 </details>
 
 Target.cs 에서 SoundManager와 연결시켜 준다.
@@ -904,6 +912,7 @@ Target.cs 에서 SoundManager와 연결시켜 준다.
         }
 
     }
+    </code>
 </details>
 
 
@@ -971,6 +980,7 @@ BGM은 MainCamera에 Audio Source를 추가하여 넣어 준다. BGM과 효과�
         }
 
     }
+    </code>
 </details>
 
     
@@ -1035,6 +1045,7 @@ BGM은 MainCamera에 Audio Source를 추가하여 넣어 준다. BGM과 효과�
 
         }
     }
+    </code>
 </details>
 
 그리고 버튼과 총알 개수를 나타내는 텍스트UI를 추가하였다.
@@ -1274,6 +1285,7 @@ Score Manager.cs에 있던 Spawn 함수를 가져와서 스테이지에 맞게 �
         }
 
     }
+                                                   
 </details>
 
 
@@ -1424,6 +1436,7 @@ ScoreManager.cs 변경
             rigid.velocity = new Vector2(rigid.velocity.x, MaxVel * (-1));
         }
     }
+    </code>
 </details>
 
 <hr>
@@ -1437,7 +1450,7 @@ ScoreManager.cs 변경
 StageManager.cs 중...
 
 <details>
-    <summary> (펼치기)</summary>
+    <summary> StageManager내 함수 일부(펼치기)</summary>
     
     public void GameOverCheck()
     {
@@ -1492,11 +1505,9 @@ StageManager.cs 중...
     {
         SceneManager.LoadScene("MainMap");
     }
+    </code>
 </details>
-    
 
-</code>
-</pre>
 
 그리고 해당 함수를 Update에 위치시키면 게임 오버 여부를 판단 해 준다.
 
@@ -1536,7 +1547,4 @@ StageManager.cs 중...
 따라서 대상을 맞추었을 때 총알이 감소하는 것을 따로 빼내어 남은 타겟 수 감소 바로 뒤에 배치시켰다. (한 개의 함수로 묶어서 선후관계를 명확하게 하였다.)
 
 수정된 코드는 코드 파일에서 볼 수 있다.
-
-
-### 2. 대상이 초반에 겹쳐 있는 현상
 
