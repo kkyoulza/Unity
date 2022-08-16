@@ -6,35 +6,34 @@
 <hr>
 
 ### 1. Input.mousePosition을 이용한 저격 커서 만들기
+<details>
+    <summary>MousePointer.cs 코드 초안</summary><!-- Summary 밑에는 무조건 한 줄을 띄우기-->
+    
+    public GameObject pointerPrefab;
+    private GameObject pointerRed;
+    Vector2 mousePos;
 
-<pre>
-<code>
-public GameObject pointerPrefab;
-private GameObject pointerRed;
-Vector2 mousePos;
 
-
-// Start is called before the first frame update
-void Start()
-{
-    pointerRed = Instantiate(pointerPrefab) as GameObject;
-    Cursor.visible = false;
-}
-
-void Update()
+    // Start is called before the first frame update
+    void Start()
     {
-        mousePos = Input.mousePosition;
-        mousePos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
-        pointerRed.transform.position = mousePos;
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            Debug.Log(mousePos);
-        }
-
+        pointerRed = Instantiate(pointerPrefab) as GameObject;
+        Cursor.visible = false;
     }
-</code>
-</pre>
+
+    void Update()
+        {
+            mousePos = Input.mousePosition;
+            mousePos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
+            pointerRed.transform.position = mousePos;
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                Debug.Log(mousePos);
+            }
+
+        }
+</details>
 
 Input.mousePosition을 통하여 마우스 포인터의 위치를 가져온 다음, 그곳에 시작 시에 생성한 Prefab을 위치시켜 저격 커서가 마우스를 따라 다니게끔 하였다.
 
@@ -68,35 +67,35 @@ RigidBody2D와 CircleCollider2D를 추가 해 주고, 테스트를 위해 RigidB
 
 그 다음, RayCast를 활용한 부분을 1번에 나왔던 코드에 보강시켜 주면 아래와 같은 코드가 나오게 된다.
 
-<pre>
-<code>
-void Update()
-    {
-        mousePos = Input.mousePosition;
-        mousePos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
-        pointerRed.transform.position = mousePos;
-        Ray2D ray = new Ray2D(mousePos, Vector2.zero); // 원점 ~ 포인터
-
-        if (Input.GetMouseButtonDown(0))
+<details>
+    <summary>MousePointer.cs Update부분 (펼쳐서 볼 수 있다.)</summary>
+    
+    void Update()
         {
-            Debug.Log(mousePos);
+            mousePos = Input.mousePosition;
+            mousePos = UnityEngine.Camera.main.ScreenToWorldPoint(mousePos);
+            pointerRed.transform.position = mousePos;
+            Ray2D ray = new Ray2D(mousePos, Vector2.zero); // 원점 ~ 포인터
 
-            float distance = Mathf.Infinity; // Ray 내에서 감지할 최대 거리
-            
-            RaycastHit2D hitDrawer = Physics2D.Raycast(ray.origin, ray.direction, distance, 1 << LayerMask.NameToLayer("Touchable")); // Touchable 레이어만 잡는다.
-
-            if (hitDrawer)
+            if (Input.GetMouseButtonDown(0))
             {
-                Debug.Log("터치!");
-                Debug.Log(1 << LayerMask.NameToLayer("Touchable"));
-                Debug.Log(LayerMask.NameToLayer("Touchable"));
+                Debug.Log(mousePos);
+
+                float distance = Mathf.Infinity; // Ray 내에서 감지할 최대 거리
+
+                RaycastHit2D hitDrawer = Physics2D.Raycast(ray.origin, ray.direction, distance, 1 << LayerMask.NameToLayer("Touchable")); // Touchable 레이어만 잡는다.
+
+                if (hitDrawer)
+                {
+                    Debug.Log("터치!");
+                    Debug.Log(1 << LayerMask.NameToLayer("Touchable"));
+                    Debug.Log(LayerMask.NameToLayer("Touchable"));
+                }
+
             }
 
         }
-
-    }
-</code>
-</pre>
+</details>
 
 Update 부분만 변하였기에 그 부분만 가져오게 되었다.
 
@@ -130,41 +129,41 @@ LayerMask.NameToLayer("Touchable") 는 유니티 화면에 나오는 10진수 �
 
 우선 타겟이 맞았을 때 맞았다는 사실을 전해주기 위해서 Target Prefab에 들어 갈 코드를 작성 해 보도록 하자.
 
-<pre>
-<code>
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class Target : MonoBehaviour
-{
-    bool hit = false; // 맞았는지 여부를 나타냄
-    GameObject Manager;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        Manager = GameObject.Find("Manager");
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if(hit == true)
-        {
-            Manager.GetComponent<ScoreManager>().SetOne();
-            Destroy(gameObject); // 터치시 삭제
-        }
-    }
-
-    public void beHit()
-    {
-        hit = true;
-    }
+<details>
+    <summary>Target.cs (펼치기)</summary>
     
-}
-</code>
-</pre>
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+
+    public class Target : MonoBehaviour
+    {
+        bool hit = false; // 맞았는지 여부를 나타냄
+        GameObject Manager;
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            Manager = GameObject.Find("Manager");
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            if(hit == true)
+            {
+                Manager.GetComponent<ScoreManager>().SetOne();
+                Destroy(gameObject); // 터치시 삭제
+            }
+        }
+
+        public void beHit()
+        {
+            hit = true;
+        }
+
+    }
+</details>
 
 Target.cs 코드이다.
 
@@ -172,15 +171,16 @@ Target.cs 코드이다.
 
 그리고 위에 있던 MousePointer.cs도 아래와 같이 일부를 수정 해 준다.
 
-<pre>
-<code>
-if (hitDrawer)
-{
-    Debug.Log("터치!");
-    hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
-}
-</code>
-</pre>
+<details>
+    <summary>MousePointer.cs 중 일부(펼치기)</summary>
+    
+    if (hitDrawer)
+    {
+        Debug.Log("터치!");
+        hitDrawer.collider.gameObject.GetComponent<Target>().beHit();
+    }
+
+</details>
 
 **hitDrawer.collider.gameObject** 이 부분을 통하여 Ray를 맞은 타겟의 GameObject를 가져올 수 있으며 Target.cs 내의 beHit()을 실행시킨다.
 
@@ -188,65 +188,65 @@ if (hitDrawer)
 
 아래는 Manager에서 점수를 더해주는 역할을 하는 ScoreManager.cs이다.
 
-<pre>
-<code>
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+<details>
+    <summary>ScoreManager.cs 초안(펼치기)</summary>
 
-public class ScoreManager : MonoBehaviour
-{
-    int TargetNum = 0; // 맞춰진 타겟의 종류!
-    int cntScore;
-    public Text Score;
-    float RandomFloatX,RandomFloatY;
-    public GameObject TargetPrefab;
-    private GameObject Target;
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.UI;
 
-
-    // Start is called before the first frame update
-    void Start()
+    public class ScoreManager : MonoBehaviour
     {
-        
-    }
+        int TargetNum = 0; // 맞춰진 타겟의 종류!
+        int cntScore;
+        public Text Score;
+        float RandomFloatX,RandomFloatY;
+        public GameObject TargetPrefab;
+        private GameObject Target;
 
-    // Update is called once per frame
-    void Update()
-    {
 
-        switch (TargetNum)
+        // Start is called before the first frame update
+        void Start()
         {
-            case 1:
-                cntScore = int.Parse(Score.text);
-                cntScore += 1;
-                Score.text = cntScore.ToString();
-                TargetNum = 0;
-                break;
-            case 2:
-                cntScore = int.Parse(Score.text);
-                cntScore += 2;
-                Score.text = cntScore.ToString();
-                TargetNum = 0;
-                break;
+
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+            switch (TargetNum)
+            {
+                case 1:
+                    cntScore = int.Parse(Score.text);
+                    cntScore += 1;
+                    Score.text = cntScore.ToString();
+                    TargetNum = 0;
+                    break;
+                case 2:
+                    cntScore = int.Parse(Score.text);
+                    cntScore += 2;
+                    Score.text = cntScore.ToString();
+                    TargetNum = 0;
+                    break;
+            }
+
+        }
+
+        public void SetOne()
+        {
+            TargetNum = 1;
+        }
+
+        public void SetTwo()
+        {
+            TargetNum = 2;
         }
 
     }
-
-    public void SetOne()
-    {
-        TargetNum = 1;
-    }
-
-    public void SetTwo()
-    {
-        TargetNum = 2;
-    }
-
-}
-</code>
-</pre>
+</details>
 
 1점을 더해주는 타겟은 SetOne(), 2점을 더해주는 타겟은 SetTwo()를 실행하여 적절하게 더해 주는 역할을 한다.
 
@@ -263,159 +263,151 @@ public class ScoreManager : MonoBehaviour
 Tag 기능을 이용하였다.
 
 Prefab에 Tag를 설정 해 두어 Tag를 통하여 점수를 주는 것을 구분하였다.
-
-Target.cs
-
-<pre>
-<code>
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class Target : MonoBehaviour
-{
-    bool hit = false; // 맞았는지 여부를 나타냄
-    GameObject Manager;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        Manager = GameObject.Find("Manager");
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if(hit == true)
-        {
-            if(this.tag == "Score1") // 태그에 따라서 물체를 구분한다.
-            {
-                Manager.GetComponent<ScoreManager>().SetOne();
-            }
-            else if(this.tag == "Minus1")
-            {
-                Manager.GetComponent<ScoreManager>().MinusOne();
-            }
-
-            Destroy(gameObject); // 터치시 삭제
-        }
-    }
-
-    public void beHit()
-    {
-        hit = true;
-    }
-
+ 
+<details>
+    <summary>Target.cs (펼치기)</summary>
     
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
 
-}
-</code>
-</pre>
-
-
-ScoreManager.cs
-
-<pre>
-<code>
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-
-public class ScoreManager : MonoBehaviour
-{
-    int TargetNum = 0; // 맞춰진 타겟의 종류!
-    int cntScore;
-    int Rand_Spawn;
-    public Text Score;
-    float RandomFloatX,RandomFloatY;
-    public GameObject TargetPrefab1;
-    public GameObject TargetPrefab2;
-    public GameObject TargetPrefab3;
-    public GameObject Bomb1;
-    private GameObject Target;
-
-
-    // Start is called before the first frame update
-    void Start()
+    public class Target : MonoBehaviour
     {
-        
-    }
+        bool hit = false; // 맞았는지 여부를 나타냄
+        GameObject Manager;
 
-    // Update is called once per frame
-    void Update()
-    {
-
-        switch (TargetNum)
+        // Start is called before the first frame update
+        void Start()
         {
-            case -1: // 점수가 깎이는 물체를 맞췄을 경우
-                cntScore = int.Parse(Score.text);
-                if (cntScore > 0) // 깎일 점수가 있다면?
+            Manager = GameObject.Find("Manager");
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            if(hit == true)
+            {
+                if(this.tag == "Score1") // 태그에 따라서 물체를 구분한다.
                 {
-                    cntScore -= 1; // cut!
-                    Score.text = cntScore.ToString();
+                    Manager.GetComponent<ScoreManager>().SetOne();
                 }
-                TargetNum = 0;
-                break;
-            case 1:
-                cntScore = int.Parse(Score.text);
-                cntScore += 1;
-                Score.text = cntScore.ToString();
-                TargetNum = 0;
-                break;
-            case 2:
-                cntScore = int.Parse(Score.text);
-                cntScore += 2;
-                Score.text = cntScore.ToString();
-                TargetNum = 0;
-                break;
+                else if(this.tag == "Minus1")
+                {
+                    Manager.GetComponent<ScoreManager>().MinusOne();
+                }
+
+                Destroy(gameObject); // 터치시 삭제
+            }
         }
 
-    }
-
-    public void SetOne()
-    {
-        TargetNum = 1;
-    }
-
-    public void SetTwo()
-    {
-        TargetNum = 2;
-    }
-
-    public void MinusOne()
-    {
-        TargetNum = -1;
-    }
-
-    public void SpawnTarget()
-    {
-        Rand_Spawn = UnityEngine.Random.Range(0,3);
-        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
-        RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
-        RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
-
-        if(Rand_Spawn >= 0 && Rand_Spawn < 2) // 테스트용이긴 하지만 랜덤으로 다른 종류의 Prefab이 생성되게 하였다.
+        public void beHit()
         {
-            Target = Instantiate(TargetPrefab1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
-        }
-        else if(Rand_Spawn == 2)
-        {
-            Target = Instantiate(Bomb1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+            hit = true;
         }
 
-
-        if (RandomFloatX > 0)
-            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
-        else
-            Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
     }
+</details>
+       
+<details>
+    <summary>ScoreManager.cs (펼치기)</summary>
+    
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEngine.UI;
 
-}
-</code>
-</pre>
+    public class ScoreManager : MonoBehaviour
+    {
+        int TargetNum = 0; // 맞춰진 타겟의 종류!
+        int cntScore;
+        int Rand_Spawn;
+        public Text Score;
+        float RandomFloatX,RandomFloatY;
+        public GameObject TargetPrefab1;
+        public GameObject TargetPrefab2;
+        public GameObject TargetPrefab3;
+        public GameObject Bomb1;
+        private GameObject Target;
 
+
+        // Start is called before the first frame update
+        void Start()
+        {
+
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
+            switch (TargetNum)
+            {
+                case -1: // 점수가 깎이는 물체를 맞췄을 경우
+                    cntScore = int.Parse(Score.text);
+                    if (cntScore > 0) // 깎일 점수가 있다면?
+                    {
+                        cntScore -= 1; // cut!
+                        Score.text = cntScore.ToString();
+                    }
+                    TargetNum = 0;
+                    break;
+                case 1:
+                    cntScore = int.Parse(Score.text);
+                    cntScore += 1;
+                    Score.text = cntScore.ToString();
+                    TargetNum = 0;
+                    break;
+                case 2:
+                    cntScore = int.Parse(Score.text);
+                    cntScore += 2;
+                    Score.text = cntScore.ToString();
+                    TargetNum = 0;
+                    break;
+            }
+
+        }
+
+        public void SetOne()
+        {
+            TargetNum = 1;
+        }
+
+        public void SetTwo()
+        {
+            TargetNum = 2;
+        }
+
+        public void MinusOne()
+        {
+            TargetNum = -1;
+        }
+
+        public void SpawnTarget()
+        {
+            Rand_Spawn = UnityEngine.Random.Range(0,3);
+            UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+            RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
+            RandomFloatY = UnityEngine.Random.Range(-4.4f, 4.4f);
+
+            if(Rand_Spawn >= 0 && Rand_Spawn < 2) // 테스트용이긴 하지만 랜덤으로 다른 종류의 Prefab이 생성되게 하였다.
+            {
+                Target = Instantiate(TargetPrefab1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+            }
+            else if(Rand_Spawn == 2)
+            {
+                Target = Instantiate(Bomb1, new Vector2(RandomFloatX, RandomFloatY), Quaternion.identity) as GameObject;
+            }
+
+
+            if (RandomFloatX > 0)
+                Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(-500, 0));
+            else
+                Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
+        }
+
+    }
+</details>
 
 코드에서 볼 수 있듯이 맞추면 점수가 깎이게 되는 폭탄도 추가하였다. 테스트용으로 생성 버튼을 누를 경우 25%의 확률로 나오게 설정 해 놓았다.
 
