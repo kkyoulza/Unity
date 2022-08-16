@@ -426,9 +426,10 @@ Prefab에 Tag를 설정 해 두어 Tag를 통하여 점수를 주는 것을 구�
 
 함수는 ScoreManager.cs 하단에 추가하였다. (SetTwo() 아래)
 
-<pre>
-<code>
-public void SpawnTarget()
+<details>
+    <summary>ScoreManager.cs 내부 SpawnTarget()</summary>
+    
+    public void SpawnTarget()
     {
         UnityEngine.Random.InitState(DateTime.Now.Millisecond);
         RandomFloatX = UnityEngine.Random.Range(-8.2f, 8.4f);
@@ -441,8 +442,7 @@ public void SpawnTarget()
         else
             Target.GetComponent<Rigidbody2D>().AddForce(new Vector2(500, 0));
     }
-</code>
-</pre>
+</details>
 
 Target의 RigidBody2D 에서 Body Type을 Dynamic으로 바꾸어 주게 되어 이제 중력의 영향을 받게 되었다.
 
@@ -467,226 +467,224 @@ Button Component에서 OnClick()시에 SpawnTarget()이 실행되게 설정하�
 
 #### 4-1. 스크립트를 새로 만들어 일정 시간마다 움직임의 방향을 랜덤으로 부여하는 방법
 
-<pre>
-<code>
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System;
+<details>
+    <summary>TargetMove.cs (펼치기)</summary>
+    
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using System;
 
-public class TargetMove : MonoBehaviour
-{
-    Rigidbody2D rigid;
-    float changeTime = 0f;
-    int RandomMove;
-
-    // Start is called before the first frame update
-    void Start()
+    public class TargetMove : MonoBehaviour
     {
-        rigid = GetComponent<Rigidbody2D>();        
-    }
+        Rigidbody2D rigid;
+        float changeTime = 0f;
+        int RandomMove;
 
-    // Update is called once per frame
-    void Update()
-    {
-        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
-        changeTime += Time.deltaTime;
-
-        if (changeTime > 0.5f)
+        // Start is called before the first frame update
+        void Start()
         {
-            RandomMove = UnityEngine.Random.Range(0, 4);
+            rigid = GetComponent<Rigidbody2D>();        
+        }
 
-            switch (RandomMove)
+        // Update is called once per frame
+        void Update()
+        {
+            UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+            changeTime += Time.deltaTime;
+
+            if (changeTime > 0.5f)
             {
-                case 0:
-                    ToRight();
-                    changeTime = 0f;
-                    break;
-                case 1:
-                    ToLeft();
-                    changeTime = 0f;
-                    break;
-                case 2:
-                    ToUp();
-                    changeTime = 0f;
-                    break;
-                case 3:
-                    ToDown();
-                    changeTime = 0f;
-                    break;
+                RandomMove = UnityEngine.Random.Range(0, 4);
+
+                switch (RandomMove)
+                {
+                    case 0:
+                        ToRight();
+                        changeTime = 0f;
+                        break;
+                    case 1:
+                        ToLeft();
+                        changeTime = 0f;
+                        break;
+                    case 2:
+                        ToUp();
+                        changeTime = 0f;
+                        break;
+                    case 3:
+                        ToDown();
+                        changeTime = 0f;
+                        break;
+                }
+
             }
 
+
         }
-        
+
+        public void ToRight()
+        {
+            rigid.AddForce(new Vector2(500, 0));
+        }
+
+        public void ToLeft()
+        {
+            rigid.AddForce(new Vector2(-500, 0));
+        }
+
+        public void ToUp()
+        {
+            rigid.AddForce(new Vector2(0,500));
+        }
+
+        public void ToDown()
+        {
+            rigid.AddForce(new Vector2(0,-500));
+        }
+
 
     }
-
-    public void ToRight()
-    {
-        rigid.AddForce(new Vector2(500, 0));
-    }
-
-    public void ToLeft()
-    {
-        rigid.AddForce(new Vector2(-500, 0));
-    }
-
-    public void ToUp()
-    {
-        rigid.AddForce(new Vector2(0,500));
-    }
-
-    public void ToDown()
-    {
-        rigid.AddForce(new Vector2(0,-500));
-    }
-
-
-}
-</code>
-</pre>
+</details>
 
 일정 시간마다 다른 방향으로 힘을 받게 만들었다. 저 상태에서 주기를 조정하고 화면 밖으로 나가려 하면 무조건 화면 안쪽으로 순간이동 or 화면 안쪽으로의 방향으로 힘을 받게 만들면 좋을 것 같다.
 
 #### 4-2. 4-1방법의 코드 보완 ( 화면 범위 안에 존재하게 하기 + 최대 속도 설정 및 제한(최대 속도를 통해 난이도 조절) )
 
-- 코드
-<pre>
-<code>
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System;
+<details>
+    <summary>TargetMove.cs 코드 보완</summary>
+    
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using System;
 
-public class TargetMove : MonoBehaviour
-{
-    Rigidbody2D rigid;
-    float changeTime = 0f;
-    int RandomMove;
-    float TargetA_MaxVel = 10f;
-
-    // Start is called before the first frame update
-    void Start()
+    public class TargetMove : MonoBehaviour
     {
-        rigid = GetComponent<Rigidbody2D>();        
-    }
+        Rigidbody2D rigid;
+        float changeTime = 0f;
+        int RandomMove;
+        float TargetA_MaxVel = 10f;
 
-    // Update is called once per frame
-    void Update()
-    {
-        UnityEngine.Random.InitState(DateTime.Now.Millisecond);
-        changeTime += Time.deltaTime;
-
-        if (transform.position.x < -8.3f)
+        // Start is called before the first frame update
+        void Start()
         {
-            ToRight();
-
+            rigid = GetComponent<Rigidbody2D>();        
         }
 
-        if (transform.position.x > 8.3f)
+        // Update is called once per frame
+        void Update()
         {
-            ToLeft();
+            UnityEngine.Random.InitState(DateTime.Now.Millisecond);
+            changeTime += Time.deltaTime;
 
-        }
-
-        if (transform.position.y > 4.4f)
-        {
-            ToDown();
-
-        }
-
-        if (transform.position.y < -4.4f)
-        {
-            ToUp();
-        }
-
-
-
-        if (changeTime > 2.0f)
-        {
-            Debug.Log(rigid.velocity);
-            RandomMove = UnityEngine.Random.Range(0, 3);
-
-            switch (RandomMove)
+            if (transform.position.x < -8.3f)
             {
-                case 0:
-                    ToRight();
-                    changeTime = 0f;
-                    break;
-                case 1:
-                    ToLeft();
-                    changeTime = 0f;
-                    break;
-                case 2:
-                    ToDown();
-                    changeTime = 0f;
-                    break;
-                case 3:
-                    ToUp();
-                    changeTime = 0f;
-                    break;
+                ToRight();
+
+            }
+
+            if (transform.position.x > 8.3f)
+            {
+                ToLeft();
+
+            }
+
+            if (transform.position.y > 4.4f)
+            {
+                ToDown();
+
+            }
+
+            if (transform.position.y < -4.4f)
+            {
+                ToUp();
+            }
+
+
+
+            if (changeTime > 2.0f)
+            {
+                Debug.Log(rigid.velocity);
+                RandomMove = UnityEngine.Random.Range(0, 3);
+
+                switch (RandomMove)
+                {
+                    case 0:
+                        ToRight();
+                        changeTime = 0f;
+                        break;
+                    case 1:
+                        ToLeft();
+                        changeTime = 0f;
+                        break;
+                    case 2:
+                        ToDown();
+                        changeTime = 0f;
+                        break;
+                    case 3:
+                        ToUp();
+                        changeTime = 0f;
+                        break;
+                }
+
             }
 
         }
-        
+
+        public void ToRight()
+        {
+
+            if(rigid.velocity.x < TargetA_MaxVel) // 오른쪽 방향(+ x 방향)으로 최대 속도 미만일 경우, 
+            {
+                rigid.AddForce(new Vector2(50, 0));
+            }
+            else
+            {
+                rigid.velocity = new Vector2(TargetA_MaxVel, rigid.velocity.y);
+            }
+
+
+        }
+
+        public void ToLeft()
+        {
+            if (rigid.velocity.x > TargetA_MaxVel*(-1))
+            {
+                rigid.AddForce(new Vector2(-50, 0));
+            }
+            else
+            {
+                rigid.velocity = new Vector2(TargetA_MaxVel*(-1), rigid.velocity.y);
+            }
+        }
+
+        public void ToUp()
+        {
+            if(rigid.velocity.y < TargetA_MaxVel)
+            {
+                rigid.AddForce(new Vector2(0, 100));
+            }
+            else
+            {
+                rigid.velocity = new Vector2(rigid.velocity.x, TargetA_MaxVel);
+            }
+
+        }
+
+        public void ToDown()
+        {
+            if (rigid.velocity.y > TargetA_MaxVel*(-1))
+            {
+                rigid.AddForce(new Vector2(0, -100));
+            }
+            else
+            {
+                rigid.velocity = new Vector2(rigid.velocity.x, TargetA_MaxVel*(-1));
+            }
+        }
 
     }
-
-    public void ToRight()
-    {
-        
-        if(rigid.velocity.x < TargetA_MaxVel) // 오른쪽 방향(+ x 방향)으로 최대 속도 미만일 경우, 
-        {
-            rigid.AddForce(new Vector2(50, 0));
-        }
-        else
-        {
-            rigid.velocity = new Vector2(TargetA_MaxVel, rigid.velocity.y);
-        }
-        
-
-    }
-
-    public void ToLeft()
-    {
-        if (rigid.velocity.x > TargetA_MaxVel*(-1))
-        {
-            rigid.AddForce(new Vector2(-50, 0));
-        }
-        else
-        {
-            rigid.velocity = new Vector2(TargetA_MaxVel*(-1), rigid.velocity.y);
-        }
-    }
-
-    public void ToUp()
-    {
-        if(rigid.velocity.y < TargetA_MaxVel)
-        {
-            rigid.AddForce(new Vector2(0, 100));
-        }
-        else
-        {
-            rigid.velocity = new Vector2(rigid.velocity.x, TargetA_MaxVel);
-        }
-        
-    }
-
-    public void ToDown()
-    {
-        if (rigid.velocity.y > TargetA_MaxVel*(-1))
-        {
-            rigid.AddForce(new Vector2(0, -100));
-        }
-        else
-        {
-            rigid.velocity = new Vector2(rigid.velocity.x, TargetA_MaxVel*(-1));
-        }
-    }
-
-}
-</code>
-</pre>
+</details>
 
 최대 속도를 설정한 뒤, 최대 속도 미만이면 AddForce를 통하여 해당 방향으로 힘을 주는 함수 4개를 제작하였다.
 
@@ -791,121 +789,123 @@ Unity에 넣어 주어 앞서 애니메이션을 적용한 것과 같이 Multipl
 
 <hr>
 
-+ 사운드 적용
+#### + 사운드 적용
 
 사운드는 Unity Asset Store에서 적절한 것들을 가져 와 사용하였다.
 
 Manager에 SoundManager.cs를 하나 더 만들어 효과음을 내는 것으로 사용하였다.
 
-<pre>
-<code>
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+<details>
+    <summary>SoundManage.cs (펼치기)</summary>
+    
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
 
-public class SoundManager : MonoBehaviour
-{
-    AudioSource audio;
-
-    public AudioClip Score1;
-    public AudioClip Score2;
-    public AudioClip Score3;
-    public AudioClip Minus1;
-    public AudioClip Minus2;
-
-    // Start is called before the first frame update
-    void Start()
+    public class SoundManager : MonoBehaviour
     {
-        audio = GetComponent<AudioSource>();
-    }
+        AudioSource audio;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+        public AudioClip Score1;
+        public AudioClip Score2;
+        public AudioClip Score3;
+        public AudioClip Minus1;
+        public AudioClip Minus2;
 
-    public void PlayScore1()
-    {
-        audio.clip = Score1;
-        audio.Play();
-    }
+        // Start is called before the first frame update
+        void Start()
+        {
+            audio = GetComponent<AudioSource>();
+        }
 
-    public void PlayScore2()
-    {
-        audio.clip = Score2;
-        audio.Play();
-    }
+        // Update is called once per frame
+        void Update()
+        {
 
-    public void PlayScore3()
-    {
-        audio.clip = Score3;
-        audio.Play();
-    }
+        }
 
-    public void PlayMinus1()
-    {
-        audio.clip = Minus1;
-        audio.Play();
-    }
+        public void PlayScore1()
+        {
+            audio.clip = Score1;
+            audio.Play();
+        }
 
-    public void PlayMinus2()
-    {
-        audio.clip = Minus2;
-        audio.Play();
-    }
+        public void PlayScore2()
+        {
+            audio.clip = Score2;
+            audio.Play();
+        }
 
-}
-</code>
-</pre>
+        public void PlayScore3()
+        {
+            audio.clip = Score3;
+            audio.Play();
+        }
+
+        public void PlayMinus1()
+        {
+            audio.clip = Minus1;
+            audio.Play();
+        }
+
+        public void PlayMinus2()
+        {
+            audio.clip = Minus2;
+            audio.Play();
+        }
+
+    }
+</details>
 
 Target.cs 에서 SoundManager와 연결시켜 준다.
 
-<pre>
-<code>
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
-public class Target : MonoBehaviour
-{
-    bool hit = false; // 맞았는지 여부를 나타냄
-    GameObject Manager;
+<details>
+    <summary>Target.cs 와 SoundManager.cs 연결(펼치기)</summary>
+    
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
 
-    // Start is called before the first frame update
-    void Start()
+    public class Target : MonoBehaviour
     {
-        Manager = GameObject.Find("Manager");
-    }
+        bool hit = false; // 맞았는지 여부를 나타냄
+        GameObject Manager;
 
-    // Update is called once per frame
-    void Update()
-    {
-        if(hit == true)
+        // Start is called before the first frame update
+        void Start()
         {
-            if(this.tag == "Score1") // Tag Check
-            {
-                Manager.GetComponent<SoundManager>().PlayScore1();
-                Manager.GetComponent<ScoreManager>().SetOne();
-            }
-            else if(this.tag == "Minus1")
-            {
-                Manager.GetComponent<SoundManager>().PlayMinus1();
-                Manager.GetComponent<ScoreManager>().MinusOne();
-            }
-
-            Destroy(gameObject); // 터치시 삭제
+            Manager = GameObject.Find("Manager");
         }
-    }
 
-    public void beHit()
-    {
-        hit = true;
-    }
+        // Update is called once per frame
+        void Update()
+        {
+            if(hit == true)
+            {
+                if(this.tag == "Score1") // Tag Check
+                {
+                    Manager.GetComponent<SoundManager>().PlayScore1();
+                    Manager.GetComponent<ScoreManager>().SetOne();
+                }
+                else if(this.tag == "Minus1")
+                {
+                    Manager.GetComponent<SoundManager>().PlayMinus1();
+                    Manager.GetComponent<ScoreManager>().MinusOne();
+                }
 
-}
-</code>
-</pre>
+                Destroy(gameObject); // 터치시 삭제
+            }
+        }
+
+        public void beHit()
+        {
+            hit = true;
+        }
+
+    }
+</details>
+
 
 BGM은 MainCamera에 Audio Source를 추가하여 넣어 준다. BGM과 효과음이 추가되었음을 볼 수 있다.
 
