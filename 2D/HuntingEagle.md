@@ -1,4 +1,4 @@
-# 목적 : 메이플스토리 내 독수리 사냥 구현<완>
+# 목적 : 메이플스토리 내 독수리 사냥 구현 <완>
 
 ## 원본 게임 사진 (출처 - [맑음](https://www.youtube.com/watch?v=mnXyQrDXhvc)님 동영상)
 ![image](https://user-images.githubusercontent.com/66288087/182817316-1c2abc11-fbfa-487a-a51f-175f35a3fc25.png)
