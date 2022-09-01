@@ -103,7 +103,170 @@ Asset에서 마우스 오른쪽 버튼을 누른 뒤 아래 사진과 같은 것
 위 움짤을 보면 얼음처럼 미끄러지지 않음을 볼 수 있다. (초반 세팅은 너무 미끄러웠다..)
 
 
+<hr>
+
+**Camera**
+
+이제 카메라 세팅을 해 보도록 하자. 움짤에서는 이미 공의 뒤를 졸졸 따라다니는 것을 볼 수 있을 것이다.
+
+코드에서는 플레이어와, 플레이어-카메라 간의 거리를 저장할 offSet Vector3변수를 만들어 놓은 다음, Player Position에서 offSet만큼 떨어진 곳에 위치시켜 주면 된다.
+
+그런데 카메라,UI 등은 LateUpdate를 이용 해 주어야 한다.
+
+CameraMove.cs 코드이다.
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CameraMove : MonoBehaviour
+{
+    Vector3 offSet;
+    GameObject player;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+        offSet = transform.position - player.transform.position;
+    }
+
+    // Update is called once per frame
+    void LateUpdate()
+    {
+        transform.position = player.transform.position + offSet; // 플레이어의 위치에서 offSet을 적용한 것이다!
+        // 헷갈리지 말 것!
+    }
+
+}
+</code>
+</pre>
+
+여기서 player의 position 말고 camera의 position + offSet을 적는 경우가 있는데, 그럴 때는 플레이어와 무한정 멀어지게 되니 주의해야 한다.
 
 
+<hr>
+
+**Stage Setting**
+
+스테이지 발판을 세팅하기 전에 우선 아래에 떨어지지 않고 목적지에 도달하는 것이 목표이다.
+
+따라서 맨 아래로 떨어지게 되면 시작 지점 or 세이브 포인트로 돌아가게 해 주어야 한다.
+
+그런데 여기서 플레이어를 이동시킬 때, UI를 통해서 이동한다고 말을 해 주는 것이 좋을 것이다. 따라서 Prefab으로 만들어야 하는 Player에서 UI를 관리하는 것 보다는 Manager가 관리를 하는 것이 더 좋을 것이다.
+
+즉, 플레이어가 아래로 떨어지게 되면 (under tag에 닿게 되면) Manager의 이동 함수를 호출하는 것이다.
+
+그렇다면 그에 맞게 Player.cs 코드를 수정 할 필요가 있다.
+
+수정된 Player.cs 코드
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Player : MonoBehaviour
+{
+    GameObject manager;
+    Managing managing;
+    Rigidbody rigid;
+
+    bool isJumpState = false;
+    bool SavePointOneEnabled = false;
+
+    Vector3 ReturnPos = new Vector3(1,1,-18); // 세이브 포인트를 먹지 않았을 때 돌아 갈 지점
+    float jumpForce = 60.0f;
+    
+    // Start is called before the first frame update
+    void Start()
+    {
+        rigid = GetComponent<Rigidbody>();
+
+        manager = GameObject.FindGameObjectWithTag("Manager");
+        managing = manager.GetComponent<Managing>();
+
+    }
+
+    private void Update()
+    {
+        if (Input.GetButtonDown("Jump") && !isJumpState)
+        {
+            isJumpState = true;
+            rigid.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+
+    }
+
+
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
+
+        rigid.AddForce(new Vector3(h, 0, v), ForceMode.Impulse);
+
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.tag == "base")
+        {
+            isJumpState = false;
+        }
+        else if(collision.gameObject.tag == "under")
+        {
+            if (!SavePointOneEnabled)
+            {
+                rigid.velocity = Vector3.zero;
+                managing.MoveToTarget(ReturnPos);
+            }
+
+        }
+    }
+
+}
+</code>
+</pre>
+
+세이브 포인트를 먹은 여부를 bool 변수로 나타내어 주고, 그 조건에 따라서 특정 지점으로 이동시켜 주는 함수를 호출한다.
+
+Managing.cs 코드
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Managing : MonoBehaviour
+{
+
+    GameObject player;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void MoveToTarget(Vector3 target)
+    {
+        // 플레이어를 타겟으로 이동시키는 함수
+        player.transform.position = target;
+    }
+
+}
+</code>
+</pre>
+
+Managing 코드는 일단 이동 함수밖에 없지만 점수 갱신 등의 여러 기능들을 추가 할 예정이다.
 
 
