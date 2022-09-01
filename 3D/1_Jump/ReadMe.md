@@ -79,42 +79,40 @@
             }
         }
 
-          // Update is called once per frame
-          void FixedUpdate()
-          {
+        // Update is called once per frame
+        void FixedUpdate()
+        {
 
-              float h = Input.GetAxisRaw("Horizontal"); // Raw 는 0,-1,1로 떨어진다.
-              float v = Input.GetAxisRaw("Vertical");
+            float h = Input.GetAxisRaw("Horizontal"); // Raw 는 0,-1,1로 떨어진다.
+            float v = Input.GetAxisRaw("Vertical");
 
-              rigid.AddForce(new Vector3(h, 0, v),ForceMode.Impulse); // 3D에서 좌,우는 x축, 앞,뒤는 z축이다.
-
-
-
-          }
-
-          private void OnCollisionEnter(Collision collision)
-          {
-              // 바닥에 부딪혔을 때 점프 여부를 초기화 한다!
-
-              if(collision.gameObject.tag == "base")
-              {
-                  isJump = false;
-              }
-          }
-
-          private void OnTriggerEnter(Collider other)
-          {
-
-              if (other.tag == "item1")
-              {
-                  item1.Play();
-              }
-
-          }
+            rigid.AddForce(new Vector3(h, 0, v),ForceMode.Impulse); // 3D에서 좌,우는 x축, 앞,뒤는 z축이다.
 
 
 
-      }
+        }
+
+        private void OnCollisionEnter(Collision collision)
+        {
+            // 바닥에 부딪혔을 때 점프 여부를 초기화 한다!
+
+            if(collision.gameObject.tag == "base")
+            {
+                isJump = false;
+            }
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+
+            if (other.tag == "item1")
+            {
+                item1.Play();
+            }
+
+        }
+
+    }
 
 </details>
 
@@ -248,23 +246,7 @@ Rotate함수는 6개의 오버로딩 된 함수들이 존재한다.
 코드에서는 전역 좌표계를 사용하였다.
 
 
-**맵 구성**
-
-이제 맵 구성을 해 보도록 하겠다.
-
-![image](https://user-images.githubusercontent.com/66288087/187630501-a3336ef0-859c-49ad-bbb1-d4f6ab89d30d.png)
-
-일차적으로 듀토리얼의 역할도 하는 첫 번째 스테이지를 구성 해 보았다.
-
-Physic material에서 Bounce를 할 수 있게 만든 발판도 하나 만들어 주었다.
-
-![image](https://user-images.githubusercontent.com/66288087/187630831-29b54dd3-402b-4a31-9484-3ff435ad0406.png)
-
-또한, 주황색 바닥에 떨어지게 되면 다시 원 위치로 돌아오게 하는 부분도 추가 해 주었다.
-
-그리고 세이브 포인트도 제작하여 세이브 포인트의 위치로 돌아가게끔 하는 기능도 구현할 것이다.
-
-
+  
 
 ### 세부 Step2. 스테이지 매니징 설정
 
