@@ -27,3 +27,14 @@ Asset에서 마우스 오른쪽 버튼을 누른 뒤 아래 사진과 같은 것
 
 ![image](https://user-images.githubusercontent.com/66288087/187887386-e0aac573-111b-4dba-9cbc-e8ab405ce795.png)
 
+
+
+![image](https://user-images.githubusercontent.com/66288087/187887707-0cb3eb85-1fb8-4796-a58e-e28fd48b6437.png)
+
+이 곳에서는 동적, 정적 마찰력, 탄성력 등을 설정할 수 있는데 위 사진과 같이 통 크게(?) 해 주어야 미끄러지지 않게 된다.
+
+
+
+
+
+
