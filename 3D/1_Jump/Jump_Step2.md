@@ -469,17 +469,11 @@ public class Managing : MonoBehaviour
 
 switch 함수를 통하여 panel를 Active로 해 주고, text를 변경하여 UI를 출력 해 준다.
 
+UI는 3초동안 출력되며, 만약 사라지기 전에 다른 알림 Trigger를 발동시키면 지속시간이 다시 0초부터 시작한다.
+
 <hr>
 
 ![image](https://user-images.githubusercontent.com/66288087/188153612-27ef64ab-9f9e-4f9b-81a3-6567dbe05e76.png)
 
 이렇게 UI가 출력되게 된다.
-
-
-
-
-
-
-
-
 
