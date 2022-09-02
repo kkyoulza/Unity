@@ -478,4 +478,4 @@ UI는 3초동안 출력되며, 만약 사라지기 전에 다른 알림 Trigger�
 이렇게 UI가 출력되게 된다.
 
 
-(블로그)[https://mini-noriter.tistory.com/49]에 들어가면 더 자세한 설명을 볼 수 있다.
+[블로그](https://mini-noriter.tistory.com/49)에 들어가면 더 자세한 설명을 볼 수 있다.
