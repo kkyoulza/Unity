@@ -9,7 +9,11 @@ public class Managing : MonoBehaviour
     Vector3 startPos;
 
     public Text noticeText;
+    public Text scoreText;
     public GameObject panel; // 판넬
+
+    int score;
+
     float onTime = 0f;
     float delTime = 3.0f;
     bool isOn;
@@ -43,6 +47,24 @@ public class Managing : MonoBehaviour
         player.transform.position = target;
     }
 
+    public void addScore(int num)
+    {
+        switch (num)
+        {
+            case 0: // silver
+                score = int.Parse(scoreText.text);
+                score++;
+                scoreText.text = score.ToString();
+                break;
+            case 1: // gold
+                score = int.Parse(scoreText.text);
+                score += 10;
+                scoreText.text = score.ToString();
+                break;
+        }
+    }
+
+
     public void ShowNotices(int num)
     {
         switch (num)
@@ -69,7 +91,7 @@ public class Managing : MonoBehaviour
                 {
                     onTime = 0f;
                 }
-                noticeText.text = "바닥에 떨어지면 처음 위치로 돌아갑니다!";
+                noticeText.text = "동전을 먹으면 점수가 올라갑니다!\n 동전을 최대한 많이 먹으면서 골인 지점까지 가면 돼요!";
                 break;
             case 3:
                 panel.SetActive(true);
@@ -81,7 +103,7 @@ public class Managing : MonoBehaviour
                 {
                     onTime = 0f;
                 }
-                noticeText.text = "방금 먹은 노란색 꼬깔은 세이브 포인트에요!\n 바닥에 떨어지면 세이브 포인트로 복귀한답니다!";
+                noticeText.text = "바닥에 떨어지면 처음 위치로 돌아가요!\n 떨어지지 않게 조심해요!";
                 break;
             case 4:
                 panel.SetActive(true);
@@ -93,7 +115,7 @@ public class Managing : MonoBehaviour
                 {
                     onTime = 0f;
                 }
-                noticeText.text = "전방에 움직이는 파란 색 발판이 보이나요?\n 튕겨 나가지 않게 조심하세요!";
+                noticeText.text = "방금 먹은 노란색 꼬깔은 세이브 포인트에요!\n 바닥에 떨어지면 세이브 포인트로 복귀한답니다!";
                 break;
             case 5:
                 panel.SetActive(true);
@@ -105,9 +127,21 @@ public class Managing : MonoBehaviour
                 {
                     onTime = 0f;
                 }
-                noticeText.text = "전방에 보라색 발판이 보이나요?\n 통! 통! 튀기면서 저 멀리 하늘 위로 올라가 봐요!";
+                noticeText.text = "전방에 움직이는 파란 색 발판이 보이나요?\n 튕겨 나가지 않게 조심하세요!";
                 break;
             case 6:
+                panel.SetActive(true);
+                if (!isOn) // UI가 사라진 상태에서 UI 생성 시
+                {
+                    isOn = true;
+                }
+                else
+                {
+                    onTime = 0f;
+                }
+                noticeText.text = "전방에 보라색 발판이 보이나요?\n 통! 통! 튀기면서 저 멀리 하늘 위로 올라가 봐요!";
+                break;
+            case 7:
                 panel.SetActive(true);
                 if (!isOn) // UI가 사라진 상태에서 UI 생성 시
                 {

@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
     bool isJumpState = false;
     // bool SavePointOneEnabled = false;
 
-    Vector3 ReturnPos = new Vector3(1,1,-18); // 세이브 포인트를 먹지 않았을 때
+    Vector3 ReturnPos = new Vector3(1,1,-19); // 세이브 포인트를 먹지 않았을 때
     float jumpForce = 60.0f;
 
     int showNotice = 0;
@@ -70,7 +70,19 @@ public class Player : MonoBehaviour
             other.gameObject.SetActive(false); // 세이브 포인트를 먹었으니 비활성화
         }
 
-        if(other.gameObject.tag == "Notice")
+        if(other.gameObject.tag == "gold")
+        {
+            managing.addScore(1);
+            other.gameObject.SetActive(false);
+        }
+
+        if (other.gameObject.tag == "silver")
+        {
+            managing.addScore(0);
+            other.gameObject.SetActive(false);
+        }
+
+        if (other.gameObject.tag == "Notice")
         {
             if(other.gameObject.name == "1" && showNotice < 1)
             {
@@ -102,12 +114,14 @@ public class Player : MonoBehaviour
                 managing.ShowNotices(6);
                 showNotice++;
             }
+            else if (other.gameObject.name == "7" && showNotice < 7)
+            {
+                managing.ShowNotices(7);
+                showNotice++;
+            }
 
         }
 
     }
-
-
-
 
 }

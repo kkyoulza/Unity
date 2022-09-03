@@ -9,6 +9,8 @@ TagManager:
   - Manager
   - SavePoint
   - Notice
+  - gold
+  - silver
   layers:
   - Default
   - TransparentFX

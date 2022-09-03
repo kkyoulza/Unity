@@ -53,11 +53,11 @@
     <UnityVersion>2020.3.27f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\JumpMap\Rotation.cs" />
     <Compile Include="Assets\Scripts\JumpMap\CameraMove.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Player.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Managing.cs" />
-    <Compile Include="Assets\Scripts\JumpMap\Rotation.cs" />
-    <Compile Include="Assets\Scripts\JumpMap\changeBase.cs" />
+    <Compile Include="Assets\Scripts\JumpMap\StartNotice.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
