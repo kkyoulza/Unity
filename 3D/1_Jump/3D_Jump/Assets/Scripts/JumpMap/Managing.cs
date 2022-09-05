@@ -10,13 +10,18 @@ public class Managing : MonoBehaviour
 
     public Text noticeText;
     public Text scoreText;
+    public GameObject fallPanel; // 떨어졌을 때 나오는 판넬
     public GameObject panel; // 판넬
 
     int score;
 
     float onTime = 0f;
     float delTime = 3.0f;
-    bool isOn;
+    float onTime2 = 0f; // 떨어졌을 때의 알림 시간
+    float delTime2 = 2.0f; // 떨어졌을 때의 알림 최대 지속
+
+    bool isOn = false;
+    bool fallNoticeOn = false; // 떨어졌을 때의 알림이 떠 있는 상태?
 
     // Start is called before the first frame update
     void Start()
@@ -38,6 +43,17 @@ public class Managing : MonoBehaviour
                 onTime = 0f;
             }
 
+        }
+
+        if (fallNoticeOn)
+        {
+            onTime2 += Time.deltaTime;
+            if (onTime2 > delTime2)
+            {
+                fallPanel.SetActive(false);
+                fallNoticeOn = false;
+                onTime2 = 0f;
+            }
         }
     }
 
@@ -103,7 +119,7 @@ public class Managing : MonoBehaviour
                 {
                     onTime = 0f;
                 }
-                noticeText.text = "바닥에 떨어지면 처음 위치로 돌아가요!\n 떨어지지 않게 조심해요!";
+                noticeText.text = "안 보이는 곳에도 동전이 있을 수 있어요!\n 만점을 받기 위해서는 눈썰미가 좋아야겠죠?";
                 break;
             case 4:
                 panel.SetActive(true);
@@ -139,7 +155,7 @@ public class Managing : MonoBehaviour
                 {
                     onTime = 0f;
                 }
-                noticeText.text = "전방에 보라색 발판이 보이나요?\n 통! 통! 튀기면서 저 멀리 하늘 위로 올라가 봐요!";
+                noticeText.text = "앞에 보라색 발판이 보이나요?\n 통! 통! 튀기면서 저 멀리 하늘 위로 올라가 봐요!";
                 break;
             case 7:
                 panel.SetActive(true);
@@ -151,9 +167,22 @@ public class Managing : MonoBehaviour
                 {
                     onTime = 0f;
                 }
-                noticeText.text = "앞에 노란색 발판은 크기가 줄었다가 늘었다가 하네요!\n 세이브 포인트도 먹었겠다 한번 도전 해 볼래요?\n 싫으면 오른쪽으로 돌아서 가면 돼요!";
+                noticeText.text = "앞에 노란색 발판은 크기가 줄었다가 늘었다가 하네요!\n 크기가 커지기를 기다렸다가 가는 것을 추천해요!";
                 break;
 
+        }
+    }
+
+    public void ShowFallNotice()
+    {
+        fallPanel.SetActive(true);
+        if (!fallNoticeOn) // UI가 사라진 상태에서 UI 생성 시
+        {
+            fallNoticeOn = true;
+        }
+        else
+        {
+            onTime2 = 0f;
         }
     }
 

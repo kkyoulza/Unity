@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class StartNotice : MonoBehaviour
 {
     public Text seconds;
-    int remainedTime = 3;
+    int remainedTime = 6;
     float delta = 0f;
 
     public GameObject startWalls;
@@ -23,10 +23,16 @@ public class StartNotice : MonoBehaviour
     void Update()
     {
         delta += Time.deltaTime;
-        remainedTime = 3 - (int)delta;
+        remainedTime = 5 - (int)delta;
         seconds.text = remainedTime.ToString();
 
-        if (delta >= 3f)
+        if(delta >= 3f)
+        {
+            startPanel.SetActive(true);
+        }
+
+
+        if (delta >= 6f)
         {
             startWalls.SetActive(false);
             startPanel.SetActive(false);

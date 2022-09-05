@@ -55,6 +55,7 @@ public class Player : MonoBehaviour
         }
         else if(collision.gameObject.tag == "under")
         {
+            managing.ShowFallNotice();
             rigid.velocity = Vector3.zero;
             managing.MoveToTarget(ReturnPos);
 
