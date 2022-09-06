@@ -91,6 +91,34 @@ private void OnTriggerEnter(Collider other)
 SavePoint를 먹었을 때 실행되는 코드에 아이템도 추가 해 주면 된다.
 
 
+Managing.cs 코드에 아래 함수를 추가 해 준다.
+<pre>
+<code>
+ public void addScore(int num)
+    {
+        switch (num)
+        {
+            case 0: // silver
+                score = int.Parse(scoreText.text);
+                score++;
+                scoreText.text = score.ToString();
+                break;
+            case 1: // gold
+                score = int.Parse(scoreText.text);
+                score += 10;
+                scoreText.text = score.ToString();
+                break;
+        }
+    }
+</code>
+</pre>
+
+
+<hr>
+
+**UI 안내문 수정**
+
+
 
 
 
