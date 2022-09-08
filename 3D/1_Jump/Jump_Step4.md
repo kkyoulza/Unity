@@ -36,6 +36,99 @@
 
 투명 발판 위치를 나타내었으며, 발판의 위치를 수정한 사진이다.
 
+<hr>
+
+![image](https://user-images.githubusercontent.com/66288087/189127817-45d34d7d-b272-454a-b5c2-52d49272ef0a.png)
+
+2 스테이지의 전체 모습을 찍어 보았다.
+
+앞서 설명하였듯이, 왼쪽/오른쪽 스테이지를 처음에 선택할 수 있게 하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/189130052-f3607f8e-d526-4f1a-ba79-7b507a2708b2.png)
+
+그림과 같이 좌, 우에 있는 선택 세이브 포인트를 먹게 되면 앞으로 갈 수 있는 발판이 생겨남과 동시에, 돌아갈 수 있는 문이 막히게 된다.
+
+이렇게 스테이지 구분을 해 놓은 이유는 좌, 우에서 얻을 수 있는 최대 점수를 같게 설계하였기 때문이다.
+
+Player.cs 에서 세이브 포인트 등에 닿았을 때 OnTriggerEnter 이벤트 트리거를 사용하였다.
+
+이번에도 마찬가지이다.
+
+<pre>
+<code>
+private void OnTriggerEnter(Collider other)
+    {
+
+        if(other.gameObject.tag == "chooseRoute")
+        {
+            ReturnPos = other.gameObject.transform.position;
+            choose = other.gameObject.GetComponent<ChooseRoute>();
+            choose.onWall();
+            other.gameObject.SetActive(false); // 세이브 포인트를 먹었으니 비활성화
+        }
+
+
+    }
+
+
+</code>
+</pre>
+
+코드의 일부이다. 여기서는 선택 세이브 포인트에서도 코드를 하나 넣어 주어야 한다. 왜냐하면 왼쪽 것을 먹었느냐, 오른쪽 것을 먹었느냐에 따라서 활성화 해야 하는 벽이 다르기 때문이다. (둘 다 활성화 시키면 되긴 하겠구나... 이 것을 적으면서 깨달았다...)
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ChooseRoute : MonoBehaviour
+{
+    public GameObject Wall;
+    public GameObject ActiveBase;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void onWall()
+    {
+        ActiveBase.SetActive(true);
+        Wall.SetActive(true);
+    }
+
+}
+</code>
+</pre>
+
+ActiveBase는 앞으로 나아갈 수 있는 발판이고, Wall은 뒤로 가는 길을 막을 벽이다.
+
+여기서 적은 onWall()을 세이브 포인트 비활성화 전에 써 주어야 한다. (당연한 것이지만 한 번 실수한 적이 있다... ㅠ) 
+
+<hr>
+
+**왼쪽 길 구성**
+
+왼쪽 길은 컨트롤 요소적인 것에 치중할 수 있게 기믹 발판은 바운스 발판으로 최소화 하였다.
+
+
+<hr>
+
+**오른쪽 길 구성**
+
+오른쪽 길은 다양한 기믹 발판들을 만들어 두어, 방해 공작을 뚫고 골인 지점으로 나아가는 것이 목표이다.
+
+따라서 천천히 멈추고 기믹 패턴을 파악하는 것이 중요하다.
+
+새로 만든 기믹 패턴들을 소개하겠다.
 
 
 
