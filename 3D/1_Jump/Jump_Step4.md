@@ -130,6 +130,41 @@ ActiveBase는 앞으로 나아갈 수 있는 발판이고, Wall은 뒤로 가는
 
 새로 만든 기믹 패턴들을 소개하겠다.
 
+1. 미는 장애물
+
+![jump_2_push](https://user-images.githubusercontent.com/66288087/189132237-70ab108f-0025-4b5b-9083-69e04d9f71e8.gif)
+
+말 그대로 미는 장애물이다.
+
+플레이어가 지나갈 때 발판 밖으로 밀어 떨어트리는 역할을 한다.
+
+
+2. 돌림 장애물
+
+![jump_2_rotate](https://user-images.githubusercontent.com/66288087/189133123-cf77e69d-6b17-4f7d-8315-24a7c69c1f11.gif)
+
+회전문같이 뱅글뱅글 도는 장애물이다.
+
+원래 도는 막대의 높이를 좀 더 높이려 하였지만 난이도가 너무 높아지고, 골드도 배치할 것이기에 롤백하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/189133940-1b66766f-367a-4dde-afa2-b7fe4d1ecbae.png)
+
+이러한.. 배치도 있기 때문이다.
+
+물론, 오른쪽 길에는 초행길에 자주 떨어질 수 있기 때문에 세이브 포인트 배치 빈도를 높였다.
+
+
+3. 커졌다 작아졌다 ver1,2
+
+![jump_3_resize](https://user-images.githubusercontent.com/66288087/189134825-2933d80a-604a-4262-8b47-9afe9a4f35b2.gif)
+
+커졌다 작아졌다를 반복하며, 발판 위를 점거하는 장애물이다.
+
+타이밍이 다른 두 가지 버전이 있다.
+
+스테이지 3에서도 쏠쏠하게 사용 할 예정이다.
+
+
 
 
 
