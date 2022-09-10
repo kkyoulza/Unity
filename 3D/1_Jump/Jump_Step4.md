@@ -176,6 +176,150 @@ ActiveBase는 앞으로 나아갈 수 있는 발판이고, Wall은 뒤로 가는
 
 **스테이지 1 -> 2 이동 시 점수 등의 정보 저장**
 
+이제 스테이지를 변경할 때도 누적으로 점수가 저장 되어야 한다.
+
+아까 **DontDestroyOnLoad(gameObject);** 를 이용한다고 했었다.
+
+이 곳에 오브젝트를 넣고 누적 점수를 저장하는 SaveInformation.cs 코드를 작성 해 보도록 하자.
 
 
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
+public class SaveInformation : MonoBehaviour
+{
+
+    int currentStage = 1; // 현재 스테이지를 나타낸다.
+
+    int firstScore, secondScore, thirdScore; // 스테이지 1,2,3 스코어
+    int totalScore; // 전 스테이지 통합 스코어
+
+    int cntScore;
+
+    int fallCountone, fallCounttwo, fallCountthree; // 스테이지 1,2,3에서 떨어진 횟수
+    int totalFallCount; // 전 스테이지 통합 떨어진 횟수
+
+    // Start is called before the first frame update
+
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject); // 씬이 바뀌어도 사라지지 않게한다.
+        Debug.Log("SaveBase");
+    }
+
+    void Start()
+    {
+        cntScore = 0;
+        totalScore = 0; // 맨 처음에 0으로 시작
+        Debug.Log("New Stage");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void SumScore()
+    {
+        // 누적 점수에 현재 스테이지 점수를 더한다.
+        totalScore += cntScore;
+        Debug.Log("점수 합산 완료, 총 점수 : " + totalScore);
+
+    }
+
+    public void addCntScore(int add)
+    {
+        cntScore += add;
+
+        switch (currentStage)
+        {
+            case 1:
+                firstScore += add;
+                break;
+            case 2:
+                secondScore += add;
+                break;
+            case 3:
+                thirdScore += add;
+                break;
+
+        }
+    }
+
+    public int GetStage()
+    {
+        return currentStage;
+    }
+
+    public void clearCntScore()
+    {
+        // 새 스테이지로 이동했을 때, 현재 점수를 초기화 한다.
+        cntScore = 0;
+    }
+    
+    public void stageUp()
+    {
+        if (currentStage == 3) // 3스테이지를 클리어하면
+            currentStage = 0; // 0으로 초기화 하고
+        else // 그렇지 않으면
+            currentStage++; // 스테이지를 더한다.
+    }
+
+}
+</code>
+</pre>
+
+현재가 몇 스테이지인지 나타내어 주는 currentStage가 있고, 그것을 통하여 각 스테이지별 점수를 저장 해 준다.
+
+그리고 스테이지를 넘어갈 때, 이번 스테이지에서 얻은 점수를 더해 주는 SumScore()함수도 하나 만들어 두었다.
+
+그리고 점수를 더해 준 다음, 현재 스코어를 초기화 해 주는 clearCntScore()도 하나 만들어 주었다.
+
+<details>
+<summary>SumScore() 마지막 부분에 현재 점수 초기화 부분을 왜 추가하지 않았는가?</summary>
+
+<br>
+그런데, SumScore() 마지막 부분에 clearCntScore()의 내용을 넣어 주면 안되냐는 말도 있을 것이다.
+
+그렇지만 점수를 더하고 초기화 하는 것을 한 곳에 묶어 놓으면 스테이지를 넘어 갈 때만 쓰이게 된다.
+
+스테이지를 넘어가지 않더라도 중간 점수를 더해 주는 것이 필요한 경우가 생기면 쓸 수도 있다.
+
+</details>
+
+이렇게 만들어 주고, Player에서 goal tag에 닿는 부분을 수정 해 준다.
+
+<pre>
+<code>
+if(other.gameObject.tag == "goal")
+{
+    switch (saveInfo.GetStage())
+    {
+        case 1:
+            saveInfo.SumScore(); // 현재 스테이지 점수를 합산
+            saveInfo.stageUp();
+            saveInfo.clearCntScore(); // 현재 스테이지 점수 초기화!(새 스테이지로 가기 때문)
+            SceneManager.LoadScene("Jump_2");
+            break;
+        case 2:
+            saveInfo.SumScore(); // 현재 스테이지 점수를 합산
+            saveInfo.stageUp();
+            saveInfo.clearCntScore(); // 현재 스테이지 점수 초기화!(새 스테이지로 가기 때문)
+            // SceneManager.LoadScene("Jump_3"); // 이건 아직 없지만.. 추가 해 준다.
+            break;
+    }
+
+
+}
+</code>
+</pre>
+
+이렇게 해 주고, 1스테이지~2스테이지를 클리어 해 보자
+
+![image](https://user-images.githubusercontent.com/66288087/189487097-2044c61c-c707-4a3f-a831-3ae9e421ed49.png)
+
+위 사진과 같이 나오게 될 것이다.
