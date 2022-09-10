@@ -4,14 +4,13 @@ using UnityEngine;
 
 public class CameraMove : MonoBehaviour
 {
-    Vector3 offSet;
+    Vector3 offSet = new Vector3(0,1.4f,-3.5f);
     GameObject player;
 
     // Start is called before the first frame update
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
-        offSet = transform.position - player.transform.position;
     }
 
     // Update is called once per frame

@@ -54,11 +54,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\JumpMap\Rotation.cs" />
+    <Compile Include="Assets\Scripts\JumpMap\PlayerSFX.cs" />
+    <Compile Include="Assets\Scripts\JumpMap\Managing2.cs" />
+    <Compile Include="Assets\Scripts\JumpMap\ChooseRoute.cs" />
     <Compile Include="Assets\Scripts\JumpMap\StartNotice.cs" />
     <Compile Include="Assets\Scripts\JumpMap\CameraMove.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Player.cs" />
+    <Compile Include="Assets\Scripts\JumpMap\StageMove.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Managing.cs" />
-    <Compile Include="Assets\Scripts\JumpMap\PlayerSFX.cs" />
+    <Compile Include="Assets\Scripts\JumpMap\SaveInformation.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

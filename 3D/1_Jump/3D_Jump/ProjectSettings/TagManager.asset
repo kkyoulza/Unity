@@ -11,6 +11,10 @@ TagManager:
   - Notice
   - gold
   - silver
+  - goal
+  - chooseRoute
+  - divideWall
+  - information
   layers:
   - Default
   - TransparentFX

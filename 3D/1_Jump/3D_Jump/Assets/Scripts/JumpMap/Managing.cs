@@ -6,6 +6,9 @@ using UnityEngine.UI;
 public class Managing : MonoBehaviour
 {
     GameObject player;
+    GameObject saveObject;
+
+    SaveInformation saveInfo;
     Vector3 startPos;
 
     public Text noticeText;
@@ -27,6 +30,9 @@ public class Managing : MonoBehaviour
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
+        saveObject = GameObject.FindGameObjectWithTag("information");
+
+        saveInfo = saveObject.GetComponent<SaveInformation>();
         startPos = player.transform.position;
     }
 
@@ -70,11 +76,13 @@ public class Managing : MonoBehaviour
             case 0: // silver
                 score = int.Parse(scoreText.text);
                 score++;
+                saveInfo.addCntScore(1); // 점수 관리 오브젝트에 1점 추가
                 scoreText.text = score.ToString();
                 break;
             case 1: // gold
                 score = int.Parse(scoreText.text);
                 score += 10;
+                saveInfo.addCntScore(10); // 점수 관리 오브젝트 갱신
                 scoreText.text = score.ToString();
                 break;
         }
