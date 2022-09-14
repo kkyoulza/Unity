@@ -68,6 +68,16 @@ public class SaveInformation : MonoBehaviour
         return currentStage;
     }
 
+    public int GetCntScore()
+    {
+        return cntScore;
+    }
+
+    public int GetTotalScore()
+    {
+        return totalScore;
+    }
+
     public void clearCntScore()
     {
         // 새 스테이지로 이동했을 때, 현재 점수를 초기화 한다.
@@ -77,7 +87,7 @@ public class SaveInformation : MonoBehaviour
     public void stageUp()
     {
         if (currentStage == 3) // 3스테이지를 클리어하면
-            currentStage = 0; // 0으로 초기화 하고
+            currentStage = 1; // 1로 초기화 하고
         else // 그렇지 않으면
             currentStage++; // 스테이지를 더한다.
     }

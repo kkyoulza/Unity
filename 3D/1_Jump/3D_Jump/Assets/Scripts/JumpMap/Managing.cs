@@ -5,18 +5,18 @@ using UnityEngine.UI;
 
 public class Managing : MonoBehaviour
 {
-    GameObject player;
-    GameObject saveObject;
+    GameObject player; // 플레이어 오브젝트
+    GameObject saveObject; // 정보 저장 오브젝트
 
-    SaveInformation saveInfo;
-    Vector3 startPos;
+    SaveInformation saveInfo; // 정보 저장 코드
+    Vector3 startPos; // 시작 포지션(세이브 포인트를 먹기 전 리스폰 위치)
 
     public Text noticeText;
     public Text scoreText;
     public GameObject fallPanel; // 떨어졌을 때 나오는 판넬
     public GameObject panel; // 판넬
 
-    int score;
+    int score; // UI 점수를 갱신할 때, 잠시 현재 점수를 불러와 저장하는 변수
 
     float onTime = 0f;
     float delTime = 3.0f;
@@ -34,6 +34,17 @@ public class Managing : MonoBehaviour
 
         saveInfo = saveObject.GetComponent<SaveInformation>();
         startPos = player.transform.position;
+
+        if(saveInfo.GetStage() == 1)
+        {
+            delTime = 3.0f;
+        }
+        else if(saveInfo.GetStage() == 2)
+        {
+            delTime = 5.0f;
+            ShowInfoStage2();
+        }
+
     }
 
     // Update is called once per frame
@@ -192,6 +203,33 @@ public class Managing : MonoBehaviour
         {
             onTime2 = 0f;
         }
+    }
+
+    public void ShowInfoStage2()
+    {
+        isOn = true;
+        panel.SetActive(true);
+        noticeText.text = "오른쪽, 왼쪽 길 중에 한 곳을 선택하세요!\n 맵에 대한 자세한 설명을 보시려면 물음표에 가까이 가주세요!";
+    }
+    public void ShowInfoStage2Plus()
+    {
+        panel.SetActive(true);
+        if (!isOn) // UI가 사라진 상태에서 UI 생성 시
+        {
+            isOn = true;
+        }
+        else
+        {
+            onTime = 0f;
+        }
+        noticeText.text = "오른쪽 길 : 여러 가지 장애물들을 뚫고 가는 코스\n 왼쪽 길 : 세심한 컨트롤이 요구되는 코스\n 한 번 선택하면 바꾸지 못하니 주의!";
+    }
+
+    public void StageClearUI()
+    {
+        panel.SetActive(true);
+        noticeText.text = "스테이지 클리어!\n 점수 : " + saveInfo.GetCntScore()+"\n 누적 점수 : "+saveInfo.GetTotalScore();
+
     }
 
 

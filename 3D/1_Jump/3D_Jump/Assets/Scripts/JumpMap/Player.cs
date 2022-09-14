@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
     Rigidbody rigid;
 
     bool isJumpState = false;
-    // bool SavePointOneEnabled = false;
+    bool dontMove = false;
     
     Vector3 ReturnPos; // 세이브 포인트를 먹지 않았을 때
     float jumpForce = 60.0f;
@@ -50,8 +50,8 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
+        float h = dontMove ? 0f : Input.GetAxisRaw("Horizontal");
+        float v = dontMove ? 0f : Input.GetAxisRaw("Vertical");
 
         rigid.AddForce(new Vector3(h, 0, v), ForceMode.Impulse);
 
@@ -71,6 +71,28 @@ public class Player : MonoBehaviour
 
         }
 
+    }
+
+    void gotoNextMap()
+    {
+        saveInfo.clearCntScore(); // 현재 스테이지 점수 초기화!(새 스테이지로 가기 때문) - 점수를 내보낸 이후로 초기화를 시켜 주어야 한다.
+        dontMove = false;
+
+        switch (saveInfo.GetStage())
+        {
+            case 1:
+                saveInfo.stageUp(); // 이곳으로 옮겨 주어야 한 번에 두 스테이지를 건너 뛰는 것을 방지할 수 있음
+                SceneManager.LoadScene("Jump_2");
+                break;
+            case 2:
+                saveInfo.stageUp();
+                SceneManager.LoadScene("Jump_3");
+                break;
+            case 3:
+                saveInfo.stageUp();
+                SceneManager.LoadScene("Lobby");
+                break;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -104,22 +126,25 @@ public class Player : MonoBehaviour
 
         if (other.gameObject.tag == "goal")
         {
+            rigid.velocity = Vector3.zero;
+            dontMove = true;
+            saveInfo.SumScore(); // 현재 스테이지 점수를 합산
+
+            managing.StageClearUI();
+
+            Invoke("gotoNextMap",2.0f);
+
+        }
+
+        if(other.gameObject.tag == "question")
+        {
             switch (saveInfo.GetStage())
             {
-                case 1:
-                    saveInfo.SumScore(); // 현재 스테이지 점수를 합산
-                    saveInfo.stageUp();
-                    saveInfo.clearCntScore(); // 현재 스테이지 점수 초기화!(새 스테이지로 가기 때문)
-                    SceneManager.LoadScene("Jump_2");
-                    break;
                 case 2:
-                    saveInfo.SumScore(); // 현재 스테이지 점수를 합산
-                    saveInfo.stageUp();
-                    saveInfo.clearCntScore(); // 현재 스테이지 점수 초기화!(새 스테이지로 가기 때문)
-                    // SceneManager.LoadScene("Jump_3"); // 이건 아직 없지만.. 추가 해 준다.
+                    managing.ShowInfoStage2Plus();                
                     break;
-            }
 
+            }
 
         }
 

@@ -11,4 +11,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Jump_2.unity
     guid: 8b3b24eee1cd896498eb020d5f7bfb6c
+  - enabled: 1
+    path: Assets/Scenes/Jump_3.unity
+    guid: 8864705b1827f9941855faf845d5f511
+  - enabled: 1
+    path: Assets/Scenes/Lobby.unity
+    guid: 29752e7e84b7d314ebb4299873899733
   m_configObjects: {}

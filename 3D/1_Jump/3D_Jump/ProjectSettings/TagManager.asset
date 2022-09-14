@@ -15,6 +15,7 @@ TagManager:
   - chooseRoute
   - divideWall
   - information
+  - question
   layers:
   - Default
   - TransparentFX
