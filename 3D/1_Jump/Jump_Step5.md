@@ -48,5 +48,224 @@
 옆으로 뛰는 것이 난이도가 있기에, 뛰기 전 발판에 벽을 설치해 둘 예정이다.
 
 
+<hr>
 
 
+**파일로 점수 저장**
+
+점수를 바이너리 파일의 형태로 저장 할 예정이다.
+
+쓰임새는 개인 최고 점수를 볼 수 있는 게시판 등을 제작 할 때 사용할 예정이다.
+
+이에 SaveInformation.cs의 코드에도 변화를 주었다.
+
+<pre>
+<code>
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary; // BinaryFormatter 클래스 사용을 위해 네임스페이스 추가
+
+[System.Serializable]
+public class Info{
+
+    public int firstScore, secondScore, thirdScore;
+    public int totalScore;
+
+    public int cntScore;
+
+    public int fallCountone, fallCounttwo, fallCountthree; // 스테이지 1,2,3에서 떨어진 횟수
+    public int totalFallCount; // 전 스테이지 통합 떨어진 횟수
+
+
+    public Info(int cnt, int total)
+    {
+        this.cntScore = cnt;
+        this.totalFallCount = total;
+    }
+
+}
+</code>
+</pre>
+
+우선 정보를 저장하는 변수들을 따로 클래스를 만들어 넣어 주었다.
+
+그리고 바이너리 파일로 저장할 수 있게 System.IO와 System.Runtime.Serialization.Formatters.Binary를 사용하였다.
+
+또한, 클래스에 [Serializable] 어트리뷰트를 지정한다.
+
+<pre>
+<code>
+public class SaveInformation : MonoBehaviour
+{
+    Info info = new Info(0, 0); // 맨 처음에 0으로 시작
+
+    int currentStage = 1; // 현재 스테이지를 나타낸다.
+
+    // Start is called before the first frame update
+
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject); // 씬이 바뀌어도 사라지지 않게한다.
+        Debug.Log("SaveBase");
+    }
+
+    void Start()
+    {
+        Debug.Log("New Stage");
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void SumScore()
+    {
+        // 누적 점수에 현재 스테이지 점수를 더한다.
+        info.totalScore += info.cntScore;
+        Debug.Log("점수 합산 완료, 총 점수 : " + info.totalScore);
+
+    }
+
+    public void addCntScore(int add)
+    {
+        info.cntScore += add;
+
+        switch (currentStage)
+        {
+            case 1:
+                info.firstScore += add;
+                break;
+            case 2:
+                info.secondScore += add;
+                break;
+            case 3:
+                info.thirdScore += add;
+                break;
+
+        }
+    }
+
+    public int GetStage()
+    {
+        return currentStage;
+    }
+
+    public int GetCntScore()
+    {
+        return info.cntScore;
+    }
+
+    public int GetTotalScore()
+    {
+        return info.totalScore;
+    }
+
+    public void clearCntScore()
+    {
+        // 새 스테이지로 이동했을 때, 현재 점수를 초기화 한다.
+        info.cntScore = 0;
+    }
+
+    public void stageUp()
+    {
+        if (currentStage == 3) // 3스테이지를 클리어하면
+            currentStage = 1; // 1로 초기화 하고
+        else // 그렇지 않으면
+            currentStage++; // 스테이지를 더한다.
+    }
+
+    public void SaveInfoToFile()
+    {
+
+        string fileName = "jumpScoreInfo";
+        string path = Application.dataPath + "/" + fileName + ".dat";
+
+        FileStream fs = new FileStream(path, FileMode.Create); // 파일 통로 생성
+        BinaryFormatter formatter = new BinaryFormatter();
+        formatter.Serialize(fs, info); // 직렬화 하여 저장
+
+        Debug.Log("파일 저장 완료");
+
+        fs.Close();
+
+
+    }
+
+    public void LoadInfoFile()
+    {
+        string fileName = "jumpScoreInfo";
+        string path = Application.dataPath + "/" + fileName + ".dat";
+
+        if (File.Exists(path))
+        {
+            // 만약 파일이 존재하면
+
+            FileStream fs = new FileStream(path, FileMode.Open);
+            BinaryFormatter formatter = new BinaryFormatter();
+            Info info = formatter.Deserialize(fs) as Info; // 역 직렬화 후, 클래스 형태에 맞는 객체에 다시 저장
+
+            Debug.Log("저장 된 현재 점수 : " + info.cntScore);
+            Debug.Log("저장 된 누적 점수 : " + info.totalScore);
+
+            fs.Close();
+        }
+        else
+        {
+            // 파일이 존재하지 않으면
+            Debug.Log("파일이 존재하지 않음");
+        }
+    }
+
+}
+</code>
+</pre>
+
+파일로 저장하는 함수와, 파일에서 내용을 불러오는 함수를 추가해 주었으며, Info 객체를 만들어서 그 안에 값을 저장 해 주는 과정으로 바꾸어 주었다.
+
+그리고 player.cs 코드 중 일부를 바꾸어 준다.
+
+<pre>
+<code>
+void gotoNextMap()
+    {
+        saveInfo.clearCntScore(); // 현재 스테이지 점수 초기화!(새 스테이지로 가기 때문) - 점수를 내보낸 이후로 초기화를 시켜 주어야 한다.
+        dontMove = false;
+
+        switch (saveInfo.GetStage())
+        {
+            case 1:
+                saveInfo.stageUp(); // 이곳으로 옮겨 주어야 한 번에 두 스테이지를 건너 뛰는 것을 방지할 수 있음
+                SceneManager.LoadScene("Jump_2");
+                break;
+            case 2:
+                saveInfo.stageUp();
+                SceneManager.LoadScene("Jump_3");
+                break;
+            case 3:
+                saveInfo.stageUp();
+                saveInfo.SaveInfoToFile();
+                SceneManager.LoadScene("Lobby");
+                break;
+        }
+    }
+</code>
+</pre>
+
+스테이지 3에서 골인지점에 도달했을 때, 파일을 저장한 다음 로비로 넘어가게 만들어 주었다.
+
+![image](https://user-images.githubusercontent.com/66288087/190379726-86a078fd-4250-4bab-a1a3-24ac1846d88a.png)
+
+파일이 저장된 모습이다.
+
+<hr>
+
+**로비**
+
+![image](https://user-images.githubusercontent.com/66288087/190380872-b83f17b6-ba95-4c36-8a0a-219c70dab4a0.png)
+
+로비의 초기 모습이다.
+
+앞으로 개발 할 보스 전투에서도 사용할 새로운 플레이어도 같이 배치 하였다.
+
+일단 1단계 개발 부분은 여기까지이다.
