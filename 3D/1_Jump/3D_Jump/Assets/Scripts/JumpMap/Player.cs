@@ -90,6 +90,7 @@ public class Player : MonoBehaviour
                 break;
             case 3:
                 saveInfo.stageUp();
+                saveInfo.SaveInfoToFile();
                 SceneManager.LoadScene("Lobby");
                 break;
         }

@@ -63,6 +63,9 @@
     <Compile Include="Assets\Scripts\JumpMap\StageMove.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Managing.cs" />
     <Compile Include="Assets\Scripts\JumpMap\SaveInformation.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\PlayerCode.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\QuarterCamera.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\PlayerStats.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
