@@ -365,17 +365,10 @@ public class PlayerCode : MonoBehaviour
 
 Dodge가 딜레이에 비해 애니메이션 속도가 느리다면 Animator에서 speed를 높게 설정 해 주면 된다.
 
+그리고 TurnChar() 이 부분에서 LookAt 함수를 사용하여 캐릭터가 바라보는 방향으로 오브젝트도 회전이 되게할 수 있다. (매우 편하다.)
+
+![boss_1_1](https://user-images.githubusercontent.com/66288087/190615887-14519abd-bf81-4866-9df0-3bef38320e51.gif)
+
 이제 이렇게 해 주면 캐릭터의 이동은 얼추 완성이다.
 
-
-
-
-
-
-
-
-
-
-
-
-
+다음으로는 아이템에 대한 구현이다.
