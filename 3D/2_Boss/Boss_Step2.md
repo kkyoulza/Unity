@@ -8,5 +8,13 @@
 
 그리고 있어 보이게 아래 사진과 같이 아이템 오브젝트의 각도를 Z축으로 기울여 준다.
 
+![image](https://user-images.githubusercontent.com/66288087/191007657-551a3064-8544-41c4-8c70-39c475e2e124.png)
 
+이렇게 기울여 준 다음, 프리팹 자식에 빈 오브젝트를 하나 생성 해 준다.
+
+그 다음 Light 컴포넌트를 추가 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/191007767-d9a4fc61-b5b8-416f-a53c-f6e3d9cece6f.png)
+
+위와 같이 범위를 조금 줄여주고, 밝기를 좀 높여주었으며, 아이템 색깔에 맞게 빛 색도 바꾸어 주었다.
 
