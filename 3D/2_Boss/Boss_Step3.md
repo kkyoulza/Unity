@@ -378,15 +378,135 @@ caseRigid.AddTorque(Vector3.up * 10, ForceMode.Impulse); // 회전하는 힘을 
 
 탄피는 비슷하지만 AddForce를 해 준다. 그리고 방향 벡터를 랜덤으로 설정 해 두어 탄피가 튀는 맛이 있게 하였다.
 
+<pre>
+<code>
+public void Use()
+{
+    if (type == AtkType.Melee)
+    {
+        StopCoroutine("Swing"); // 동작하고 있는 중에도 다 정지시킬 수 있음
+        StartCoroutine("Swing");
+    }
+    else if(type == AtkType.Range && cntCount > 0)
+    {
+        cntCount--;
+        StopCoroutine("Shot"); // 동작하고 있는 중에도 다 정지시킬 수 있음
+        StartCoroutine("Shot");
+    }
+}
+</code>
+</pre>
 
+그리고 위 코드에서 보면 현재 총알 개수가 1개 이상이어야 Shot()이 발동되게 하였다.
 
+![image](https://user-images.githubusercontent.com/66288087/192079114-4145e560-faf4-4e29-95ad-081914dbfc06.png)
 
+그리고 애니메이션도 설정 해 두고, DoShot 트리거를 통하여 발동되게 하였다.
 
+그런데 PlayerCode.cs에서 Attack() 함수는 애니메이션 트리거가 DoSwing만 있었다. 여기서 착용한 무기에 따라서 애니메이션이 바뀌어야 하는데 if문 대신 삼항 연산자를 활용할 수있다.
 
+<pre>
+<code>
+void Attack()
+{
+    if (cntEquipWeapon == null)
+        return;
 
+    AtkDelay += Time.deltaTime;
+    isAtkReady = cntEquipWeapon.AtkDelay < AtkDelay; // 공격 속도(무기 딜레이)보다 현재 딜레이 값이 클때만!
 
+    if(AtkDown && isAtkReady && !isDodge && !isSwap)
+    {
+        cntEquipWeapon.Use(); // 공격할 준비가 되었으니 전달하고 나머지는 위임!
+        anim.SetTrigger(cntEquipWeapon.type == Weapon.AtkType.Melee ? "DoSwing" : "DoShot"); // 3항 연산자를 이용하여 한 줄로 두 가지 종류의 애니메이션을 실행한다.
+        // 3항 연산자의 사용은 유연하게 가능하다는 것을 명심!
+        AtkDelay = 0f;
+    }
 
+}
+</code>
+</pre>
 
+이렇듯 삼항 연산자는 유연하게 활용할 수 있는 여지가 많으니 활용 해 주어야 한다.
 
+![boss_3_2](https://user-images.githubusercontent.com/66288087/192079221-a3f38025-12e6-48a5-b38f-12c37c82df2b.gif)
+
+이제 총을 먹고 공격을 해 보면 위와 같이 총알을 쏘게 됨을 볼 수 있다.
+
+<hr>
+
+**총알 재장전**
+
+총에는 최대 총알 개수가 있고, 이것을 재 장전을 통해서 채워 주어야 한다.
+
+재장전 기능을 만들어 보았다.
+
+<pre>
+<code>
+void ReLoad()
+{
+    if (cntEquipWeapon == null)
+        return;
+
+    if (cntEquipWeapon.type == Weapon.AtkType.Melee)
+        return;
+
+    if (bullet == 0) // 남은 총알이 0개이면 안된다.
+        return;
+
+    if(rDown && !isJump && !isDodge && !isSwap && isAtkReady && !isReloading)
+    {
+        // 재장전 키가 눌리고, 점프중,회피중,무기교체중이 아닐때이면서 공격 준비가 되었을 때 실행되게 한다.
+        isReloading = true;
+        anim.SetTrigger("DoReload");
+
+        Invoke("ReLoadOut", 0.7f);
+
+    }
+
+}
+
+ void ReLoadOut()
+{
+    int reCount = bullet < cntEquipWeapon.maxCount ? bullet : cntEquipWeapon.maxCount - cntEquipWeapon.cntCount;
+    cntEquipWeapon.cntCount += reCount;
+
+    if (cntEquipWeapon.cntCount > cntEquipWeapon.maxCount)
+    {
+        reCount = bullet - (cntEquipWeapon.cntCount - cntEquipWeapon.maxCount); // 남은 총알 개수에서 넘치는 부분을 뺀 만큼을 충전해야 한다.
+        cntEquipWeapon.cntCount = cntEquipWeapon.maxCount;
+    }
+
+    bullet -= reCount; // 플레이어의 총알 개수 갱신
+
+    isReloading = false;
+}
+
+</code>
+</pre>
+
+r 버튼을 누르면 재장전 함수가 실행되게 하였으며, 애니메이션이 발동 된 다음(0.7초 딜레이 이후) ReLoadOut() 함수에서 실제로 총알이 리필되게 하였다.
+
+여기서 플레이어가 가진 총알의 개수와, 몇 개의 총알을 더 채워야 하는지 등을 고려하여 총알을 채워 주어야 한다.
+
+우선 reCount는 채울 총알의 개수이다. 
+
+여기서 삼항 연산자를 이용하여 플레이어의 남은 총알 개수가 탄창 용량보다 작으면(탄창에 다 못들어갈 때) 남은 총알을 다 때려 넣고, 탄창 용량보다 많으면 최대치와 현재 가진 총알 개수의 차이만큼 넣어주는 것으로 설정하였다.
+
+그런데, 애매한 순간이 있다.
+
+예를 들어 탄창 용량이 10개이고 남은 총알이 6개인데, 탄창에 8발을 남긴 상태로 재장전을 하면, 분명히 남은 총알 개수가 탄창 용량보다는 작기 때문에 6발을 다 때려 넣게 되면 14발이 되어 탄창 용량을 초과하게 된다.
+
+따라서 초과를 하게 되면, 남은 총알에서 초과 한 부분을 빼 준 값을 reCount에 다시 넣어주게 된다.
+
+ex - 6(남은 총알 개수) - (14(남은것을 다 넣었을 때 총알 개수) - 10(탄창 용량))(초과분) = 2 (남은 총알에서 채울 수 있는 개수)
+
+그리고 현재 총알 개수를 탄창 용량으로 맞추고 reCount에 다시 넣어 준 채울 수 있는 개수를 남은 총알 개수에서 빼 주면 된다.
+
+이렇게 해 주면 아래 영상과 같이 장전이 되게 된다.
+
+https://user-images.githubusercontent.com/66288087/192079751-d89d0494-88a6-4cac-9684-f88053adda38.mp4
+
+이제 다음으로는 강화 시스템을 만들어 보도록 하겠다.
 
 
