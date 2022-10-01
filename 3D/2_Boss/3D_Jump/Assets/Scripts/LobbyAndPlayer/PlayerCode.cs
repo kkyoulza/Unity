@@ -5,10 +5,17 @@ using UnityEngine;
 
 public class PlayerCode : MonoBehaviour
 {
+    // 플레이어 정보
+    public int playerHealth; // 플레이어 체력
+    public int playerStrength; // 플레이어 힘
+    public int playerAccuracy; // 플레이어 명중률
+
+    // 조작 관련
     float horAxis; // 가로 방향키 입력 시 값을 받을 변수
     float verAxis; // 세로 방향
 
     float AtkDelay; // 공격 딜레이
+    float dodgeCoolTime = 3.0f; // 회피 쿨타임
 
     // 키 입력 변수(bool)
     bool runDown; // 대쉬 버튼이 눌렸는가?
@@ -20,6 +27,7 @@ public class PlayerCode : MonoBehaviour
     bool sDown3; // 3
     bool AtkDown; // 공격 키
     bool rDown; // 재장전 키
+    bool itemDown; // 아이템 창 키 
 
 
     // 상태 변수(bool)
@@ -30,6 +38,7 @@ public class PlayerCode : MonoBehaviour
     bool isAtkReady; // 공격 준비가 되었는가?
     bool isBorder; // 경계선에 닿았나?
     bool isReloading; // 재장전중인가?
+    bool isDamage; // 피격 당하고 있는 중인가?
 
 
     Vector3 moveVec;
@@ -42,10 +51,12 @@ public class PlayerCode : MonoBehaviour
     public GameObject[] WeaponList; // 활성화 할 무기 리스트
     public bool[] hasWeapons; // 어떤 무기를 가지고 있는가?
 
-    GameObject nearObject; // 근처에 떨어져 있는 아이템 오브젝트
+    public GameObject nearObject; // 근처에 떨어져 있는 아이템 오브젝트
     Weapon cntEquipWeapon; // 현재 장착하고 있는 무기
 
     int cntindexWeapon = -1; // 현재 끼고 있는 무기 index, 초기 값은 -1로 해 준다.
+
+    PlayerItem playerItem; // 플레이어가 가지고 있는 아이템 정보들이 담겨있음
 
     //쿨타임 관련
     public GameObject manager;
@@ -54,17 +65,28 @@ public class PlayerCode : MonoBehaviour
     // 애니메이션, 물리 관련
     Animator anim;
     Rigidbody rigid;
+    MeshRenderer[] meshs; // 플레이어의 모든 매쉬들(몸, 머리, 팔 등)을 가져오기 위해 배열로 생성하였음
+
+    // UI 관련
+    public GameObject UIManager;
+    UIManager ui;
 
     private void Awake()
     {
+        isDamage = false;
+
+        ui = UIManager.GetComponent<UIManager>(); // ui 매니저 컴포넌트
+        anim = GetComponentInChildren<Animator>(); // 자식 오브젝트에 있는 컴포넌트를 가져온다.
+        coolManager = manager.GetComponent<CoolTimeManager>(); // 쿨타임 매니저를 불러온다.
+        playerItem = GetComponent<PlayerItem>(); // 아이템 컴포넌트
         rigid = GetComponent<Rigidbody>();
+        meshs = GetComponentsInChildren<MeshRenderer>(); // 여러 개를 가져오는 것이니 Components s 꼭 붙이기!
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        anim = GetComponentInChildren<Animator>(); // 자식 오브젝트에 있는 컴포넌트를 가져온다.
-        coolManager = manager.GetComponent<CoolTimeManager>(); // 쿨타임 매니저를 불러온다.
+        
     }
 
     // Update is called once per frame
@@ -78,6 +100,7 @@ public class PlayerCode : MonoBehaviour
         TrunChar();
         Dodge();
         Swap();
+        onUI();
         InterAction();
     }
 
@@ -143,15 +166,29 @@ public class PlayerCode : MonoBehaviour
         verAxis = Input.GetAxisRaw("Vertical");
         runDown = Input.GetButton("Run");
         jumpDown = Input.GetButtonDown("Jump");
-        dodgeDown = Input.GetKey(KeyCode.Z);
+        dodgeDown = Input.GetKeyDown(KeyCode.Z);
 
-        AtkDown = Input.GetKey(KeyCode.X);
+        AtkDown = Input.GetKeyDown(KeyCode.X);
         rDown = Input.GetButtonDown("ReLoad");
 
         iDown = Input.GetButtonDown("InterAction");
         sDown1 = Input.GetButtonDown("Swap1");
         sDown2 = Input.GetButtonDown("Swap2");
         sDown3 = Input.GetButtonDown("Swap3");
+
+        itemDown = Input.GetKeyDown(KeyCode.I);
+
+    }
+
+    void onUI()
+    {
+        if (itemDown)
+        {
+            if (!ui.ItemUI.activeSelf)
+                ui.OnItemUI();
+            else
+                ui.OffItemUI();
+        }
 
     }
 
@@ -163,7 +200,7 @@ public class PlayerCode : MonoBehaviour
             moveVec = Vector3.zero;
 
         if(!isBorder || isReloading) // 벽에 가까이 있을 때는 움직이지 못하게! (회전은 됨)
-            transform.position += moveVec * playerSpeed * (runDown ? 1.3f : 1.0f) * Time.deltaTime; // deltaTime은 컴퓨터 환경에 이동 거리가 영향을 받지 않게 하기 위함!
+            transform.position += moveVec * playerSpeed * (runDown ? 1.7f : 1.0f) * Time.deltaTime; // deltaTime은 컴퓨터 환경에 이동 거리가 영향을 받지 않게 하기 위함!
             // 달릴 때는 더 빠르게! - 삼항 연산자를 이용하였음!
 
         anim.SetBool("IsWalk", moveVec != Vector3.zero); // 입력이 있을 때 움직여야 하니 조건문을 넣었다.
@@ -232,6 +269,11 @@ public class PlayerCode : MonoBehaviour
         }
     }
 
+    void SwapOut() // 스왑 딜레이 설정!
+    {
+        isSwap = false;
+    }
+
     void InterAction()
     {
         if(iDown && nearObject != null && !isJump && !isSwap)
@@ -244,8 +286,18 @@ public class PlayerCode : MonoBehaviour
                 Item item = nearObject.GetComponent<Item>();
                 int weaponIndex = item.value; // value를 index로 설정 할 것!
 
+                ui.PopUI.SetActive(false);
+                ui.isNoticeOn = false; // 무기를 먹었을 때 비활성화!
                 hasWeapons[weaponIndex] = true;
+
+                playerItem.GetInfo(nearObject);
+
                 Destroy(nearObject);
+            }
+            else if (nearObject.tag == "Smith")
+            {
+                ui.PopUI.SetActive(false);
+                ui.EnchantWeaponUI();
             }
 
         }
@@ -254,15 +306,10 @@ public class PlayerCode : MonoBehaviour
     void DoDodge()
     {
         playerSpeed *= 0.5f;
-        coolManager.SetCoolTime(5.0f);
+        coolManager.SetCoolTime(dodgeCoolTime);
         coolManager.coolOn = false;
         isDodge = false;
-        Invoke("DodgeCoolDown", 5.0f); // 쿨타임은 5초!
-    }
-
-    void SwapOut() // 스왑 딜레이 설정!
-    {
-        isSwap = false;
+        Invoke("DodgeCoolDown", dodgeCoolTime); // 쿨타임은 3초!
     }
 
     void DodgeCoolDown()
@@ -273,6 +320,8 @@ public class PlayerCode : MonoBehaviour
         DodgeCool = false;
     }
 
+
+    // 물리 문제 해결
     void FreezeRotation()
     {
         rigid.angularVelocity = Vector3.zero; // 회전속도를 0으로 만들어 준다.
@@ -301,9 +350,17 @@ public class PlayerCode : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if(other.gameObject.tag == "weapon")
+        if (other.gameObject.tag == "weapon" && !ui.isNoticeOn)
         {
             nearObject = other.gameObject;
+            ui.NoticeOn();
+            ui.isNoticeOn = true;
+        }
+        else if(other.gameObject.tag == "Smith" && !ui.isNoticeOn)
+        {
+            nearObject = other.gameObject;
+            ui.NoticeOn();
+            ui.isNoticeOn = true;
         }
     }
 
@@ -312,8 +369,54 @@ public class PlayerCode : MonoBehaviour
         if(other.gameObject.tag == "weapon")
         {
             nearObject = null;
+            ui.NoticeOff();
+            ui.isNoticeOn = false;
+        }
+        else if (other.gameObject.tag == "Smith")
+        {
+            nearObject = null;
+            ui.NoticeOff();
+            ui.isNoticeOn = false;
         }
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "EnemyBullet")
+        {
+            if (!isDamage)
+            {
+                Bullet enemyBullet = other.GetComponent<Bullet>();
+                playerHealth -= enemyBullet.damage;
+
+                if (other.GetComponent<Rigidbody>() != null) // 적의 공격 중에 RigidBody가 있는 것이 원거리 공격밖에 없기 때문에 원거리 공격을 맞으면 사라지게끔 해 주게 할 수 있음
+                    Destroy(other.gameObject);
+
+                StartCoroutine("OnDamage");
+            }
+        }
+    }
+
+    IEnumerator OnDamage()
+    {
+        isDamage = true;
+        foreach(MeshRenderer mesh in meshs)
+        {
+            mesh.material.color = Color.red;
+        }
+
+        yield return new WaitForSeconds(1.0f);
+
+        isDamage = false;
+        foreach (MeshRenderer mesh in meshs)
+        {
+            mesh.material.color = Color.white;
+        }
+
+    }
+
+
+
 
 }
 

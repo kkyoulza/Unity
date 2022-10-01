@@ -4,10 +4,17 @@ using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
+
+    // 공통
+    public int itemCode; // 아이템 종류 코드
     public enum AtkType { Melee, Range }; // Melee - 근접 공격, Range - 원거리 공격
     public AtkType type; // 생성을 해 주어야 한다.
     public int Damage;
     public float AtkDelay;
+    public float criticalPercent; // 크리티컬 확률
+    public int maxEnchant; // 풀강화 수치
+
+    //근접 전용
     public BoxCollider meleeArea; // 근접 공격 범위
     public TrailRenderer trailEffect; // 효과?
 
@@ -19,6 +26,8 @@ public class Weapon : MonoBehaviour
     public int maxCount; // 최대 총알 개수
     public int cntCount; // 현재 총알 개수
 
+    // 강화 정보 적용 관련
+    Bullet bulletInfo;
 
     public void Use()
     {
@@ -37,7 +46,7 @@ public class Weapon : MonoBehaviour
 
     IEnumerator Swing()
     {
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.2f);
 
         meleeArea.enabled = true; // box Collider 활성화
         trailEffect.enabled = true; // effect 활성화

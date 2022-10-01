@@ -53,26 +53,33 @@
     <UnityVersion>2020.3.27f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\LobbyAndPlayer\Enemy.cs" />
+    <Compile Include="Assets\Scripts\Boss\Enemy.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Weapon.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\QuarterCamera.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\Bullet.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\PlayerCode.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\Damage.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Rotation.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\PlayerItem.cs" />
     <Compile Include="Assets\Scripts\JumpMap\PlayerSFX.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Managing2.cs" />
     <Compile Include="Assets\Scripts\JumpMap\ChooseRoute.cs" />
+    <Compile Include="Assets\Scripts\Boss\BossMissile.cs" />
     <Compile Include="Assets\Scripts\JumpMap\StartNotice.cs" />
+    <Compile Include="Assets\Scripts\Boss\BossRock.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\Enchanting.cs" />
     <Compile Include="Assets\QuarterView 3D Action BE5\ReadMe\Scripts\ReadmeBE5.cs" />
     <Compile Include="Assets\Scripts\JumpMap\CameraMove.cs" />
+    <Compile Include="Assets\Scripts\Boss\Missile.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\PlayerStats.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Player.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Item.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\UIManager.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\CoolTimeManager.cs" />
     <Compile Include="Assets\Scripts\JumpMap\StageMove.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Managing.cs" />
     <Compile Include="Assets\Scripts\JumpMap\SaveInformation.cs" />
-    <Compile Include="Assets\Scripts\LobbyAndPlayer\Damage.cs" />
-    <Compile Include="Assets\Scripts\LobbyAndPlayer\Bullet.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\ChooseBtnE.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
