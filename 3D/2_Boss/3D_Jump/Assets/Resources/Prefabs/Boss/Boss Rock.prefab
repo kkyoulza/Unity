@@ -89,8 +89,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1557bc9599bd1344a84e66600532015d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 0
+  damage: 15
   isRock: 1
+  isMelee: 0
 --- !u!1 &7514835416047150130
 GameObject:
   m_ObjectHideFlags: 0

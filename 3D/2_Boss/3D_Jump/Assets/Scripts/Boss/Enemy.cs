@@ -5,6 +5,10 @@ using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
+    // 몬스터 타입 설정
+    public enum Type { A,B,C,Boss }; // 변수의 종류를 만든다.
+    public Type enemyType; // 적의 타입을 넣을 변수
+
     // 체력 정보
     public int maxHealth;
     public int cntHealth;
@@ -17,22 +21,27 @@ public class Enemy : MonoBehaviour
     Vector3 dmgPos; // 데미지 위치
 
     // 물리 관련
-    Rigidbody rigid;
+    protected Rigidbody rigid;
     public BoxCollider meleeArea; // 공격 범위를 담을 변수
+    public BoxCollider boxCollider; // 겉면 collider?
+
+    // 원거리 몬스터 전용
+    public GameObject monsterMissile; // 몬스터 미사일 프리팹을 담을 변수
 
     // 상태 관련
     public bool isAttack; // 공격을 하고 있는가?
+    public bool isDead; // 죽은 상태인가?
 
     // 겉보기
-    Material mat;
+    protected Material mat;
 
     // 추적 관련
     public bool isChase; // 추적이 가능한 상황!
     public Transform target; // 추적 대상
-    NavMeshAgent navi; // UnityEngine.AI를 필수로 쓸 것
+    protected NavMeshAgent navi; // UnityEngine.AI를 필수로 쓸 것
 
     //애니메이션
-    Animator anim;
+    protected Animator anim;
 
     // Start is called before the first frame update
     void Awake()
@@ -69,8 +78,28 @@ public class Enemy : MonoBehaviour
     void Targeting()
     {
         // 공격을 하기 위한 타겟 설정
-        float targetRadius = 1.5f;
-        float targetRange = 3.0f;
+        float targetRadius = 0f;
+        float targetRange = 0f;
+
+        if (!isDead && enemyType != Type.Boss) // 죽은 상태가 아니고, 보스가 아닐 때만 타겟팅을 실행
+        {
+            switch (enemyType)
+            {
+                case Type.A:
+                    targetRadius = 1.5f;
+                    targetRange = 3.0f;
+                    break;
+                case Type.B:
+                    targetRadius = 1f; // 타겟을 찾을 두께 (티스토리 참고)
+                    targetRange = 12.0f; // 플레이어 타겟팅 범위
+                    break;
+                case Type.C: // 원거리는 타겟팅이 넓고 정확해야 한다.
+                    targetRadius = 0.5f;
+                    targetRange = 25.0f; // 플레이어 타겟팅 범위
+                    break;
+            }
+        }
+        
 
         RaycastHit[] rayHits = Physics.SphereCastAll(transform.position, targetRadius, transform.forward, targetRange, LayerMask.GetMask("Player"));
         // 자신의 위치, 구체 반지름, 나아가는 방향(어느 방향으로 쏠 것인가?), 거리, 대상 레이어
@@ -93,13 +122,42 @@ public class Enemy : MonoBehaviour
         isAttack = true;
         anim.SetBool("isAttack", true);
 
-        yield return new WaitForSeconds(0.5f); // 애니메이션 동작동안 딜레이!
+        switch (enemyType)
+        {
+            case Type.A:
+                yield return new WaitForSeconds(0.5f); // 애니메이션 동작동안 딜레이!
 
-        meleeArea.enabled = true; // 그 뒤에 박스 활성화를 하여 공격!
+                meleeArea.enabled = true; // 그 뒤에 박스 활성화를 하여 공격!
 
-        yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(0.3f); // 공격 박스가 활성화 된 시간
 
-        meleeArea.enabled = false;
+                meleeArea.enabled = false;
+
+                yield return new WaitForSeconds(0.8f);
+                break;
+            case Type.B:
+                yield return new WaitForSeconds(0.1f); // 선 딜레이
+                rigid.AddForce(transform.forward * 20, ForceMode.Impulse); // 즉각적인 힘으로 돌격!
+                meleeArea.enabled = true; // 돌격하는 동안 박스를 활성화!
+
+                yield return new WaitForSeconds(0.5f); // 공격 박스가 활성화 된 시간
+                rigid.velocity = Vector3.zero; // 일정 시간 돌격 후 멈춤!
+                meleeArea.enabled = false;
+
+                yield return new WaitForSeconds(2.0f); // 후 딜레이
+                break;
+            case Type.C: // 미사일을 만들어야 한다.
+                yield return new WaitForSeconds(0.4f); // 선 딜레이
+
+                GameObject instantBullet = Instantiate(monsterMissile, transform.position,transform.rotation); // 몬스터와 같은 위치에 미사일 생성
+                Rigidbody rigidBullet = instantBullet.GetComponent<Rigidbody>();
+                rigidBullet.velocity = transform.forward * 20; // 총알에 속도를 부여
+
+                yield return new WaitForSeconds(2.0f); // 후 딜레이
+                break;
+        }
+
+
         isChase = true;
         isAttack = false;
         anim.SetBool("isAttack", false);
@@ -176,12 +234,14 @@ public class Enemy : MonoBehaviour
             mat.color = Color.gray;
 
             gameObject.layer = 7; // rayCast에서와 달리 숫자로 그냥 적는다.
+            isDead = true;
             isChase = false;
-            meleeArea.enabled = false;
+            if(enemyType == Type.A || enemyType == Type.B)
+                meleeArea.enabled = false;
             navi.enabled = false;
             anim.SetTrigger("DoDie");
 
-            reactVec = reactVec.normalized;
+            reactVec = reactVec.normalized; // 몬스터가 죽을 때 팔짝 뛴 다음에 죽는 모습을 연출하기 위함
             reactVec += Vector3.up;
 
             rigid.AddForce(reactVec * 10, ForceMode.Impulse);

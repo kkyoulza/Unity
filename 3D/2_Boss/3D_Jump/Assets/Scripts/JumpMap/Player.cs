@@ -91,7 +91,7 @@ public class Player : MonoBehaviour
             case 3:
                 saveInfo.stageUp();
                 saveInfo.SaveInfoToFile();
-                SceneManager.LoadScene("Lobby");
+                SceneManager.LoadScene("Boss1");
                 break;
         }
     }

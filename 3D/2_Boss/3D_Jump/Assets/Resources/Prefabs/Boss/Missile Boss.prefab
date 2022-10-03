@@ -27,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1494888622287597698}
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0, y: 4, z: 0}
+  m_LocalPosition: {x: -0, y: 6, z: 0}
   m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_Children: []
   m_Father: {fileID: 8966873410372780393}
@@ -120,7 +120,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5058583420564435800}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 4, z: -1.58}
+  m_LocalPosition: {x: 0, y: 6, z: -1.58}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 8966873410372780393}
@@ -4961,8 +4961,8 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 2, y: 2, z: 3}
-  m_Center: {x: 0, y: 4, z: 0}
+  m_Size: {x: 5, y: 5, z: 4}
+  m_Center: {x: 0, y: 6, z: 0}
 --- !u!195 &5058583420621822807
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -4999,4 +4999,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 12
   isRock: 0
+  isMelee: 0
   target: {fileID: 0}

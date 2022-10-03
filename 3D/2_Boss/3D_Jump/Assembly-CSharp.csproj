@@ -80,6 +80,8 @@
     <Compile Include="Assets\Scripts\JumpMap\Managing.cs" />
     <Compile Include="Assets\Scripts\JumpMap\SaveInformation.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\ChooseBtnE.cs" />
+    <Compile Include="Assets\Scripts\Boss\Boss.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\ShowItemState.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

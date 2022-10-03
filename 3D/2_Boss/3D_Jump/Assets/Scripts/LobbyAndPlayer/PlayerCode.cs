@@ -384,20 +384,26 @@ public class PlayerCode : MonoBehaviour
     {
         if(other.tag == "EnemyBullet")
         {
+            if (other.GetComponent<Rigidbody>() != null) // 무적 시간 중에도 추가적으로 투사체를 맞게 되면 사라지게끔!
+                Destroy(other.gameObject);
+
+            bool isNoDmgJumpAtk = other.name == "JumpAtkArea"; 
+            if(isNoDmgJumpAtk && isDamage) // 무적시간 중에 점프 공격에 맞았을 때!
+                StartCoroutine(noDamageNuckBack());
+
             if (!isDamage)
             {
                 Bullet enemyBullet = other.GetComponent<Bullet>();
                 playerHealth -= enemyBullet.damage;
 
-                if (other.GetComponent<Rigidbody>() != null) // 적의 공격 중에 RigidBody가 있는 것이 원거리 공격밖에 없기 때문에 원거리 공격을 맞으면 사라지게끔 해 주게 할 수 있음
-                    Destroy(other.gameObject);
+                bool isBossAttack = other.name == "JumpAtkArea"; // 점프 공격에 맞았을 때!
 
-                StartCoroutine("OnDamage");
+                StartCoroutine(OnDamage(isBossAttack));
             }
         }
     }
 
-    IEnumerator OnDamage()
+    IEnumerator OnDamage(bool isBossAttack)
     {
         isDamage = true;
         foreach(MeshRenderer mesh in meshs)
@@ -405,7 +411,10 @@ public class PlayerCode : MonoBehaviour
             mesh.material.color = Color.red;
         }
 
-        yield return new WaitForSeconds(1.0f);
+        if (isBossAttack) // 찍기 공격을 맞았을 때!
+            rigid.AddForce(transform.forward * -40, ForceMode.Impulse); // 넉백!
+
+        yield return new WaitForSeconds(1.0f); // 무적 딜레이 1초!
 
         isDamage = false;
         foreach (MeshRenderer mesh in meshs)
@@ -413,8 +422,20 @@ public class PlayerCode : MonoBehaviour
             mesh.material.color = Color.white;
         }
 
+        if (isBossAttack) // 넉백 후
+            rigid.velocity = Vector3.zero; // 속도 원위치
+
     }
 
+    IEnumerator noDamageNuckBack()
+    {
+        rigid.AddForce(transform.forward * -40, ForceMode.Impulse); // 넉백!
+
+        yield return new WaitForSeconds(0.5f); // 넉백 딜레이 0.5초
+
+        rigid.velocity = Vector3.zero; // 속도 원위치
+
+    }
 
 
 

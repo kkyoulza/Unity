@@ -37,6 +37,10 @@ public class UIManager : MonoBehaviour
     public Sprite img2;
     public Sprite img3;
 
+    public Image hpBar;
+    public Text healthText; // HP 텍스트
+
+
     // 상태 정보
     public bool isNoticeOn; // e를 누르라는 안내문이 나와 있는가?
 
