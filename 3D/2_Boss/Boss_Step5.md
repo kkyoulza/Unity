@@ -1,4 +1,4 @@
-# Step 5. 몬스터 및 보스 패턴 구현
+# Step 5. 몬스터 
 
 ### 몬스터 제작
 
@@ -577,14 +577,83 @@ case Type.B:
 
 돌격 하는 동안에 공격 범위를 활성화 하고, 일정시간 돌격 후, 속도를 0으로 만들어 돌격을 멈추게 하였다.
 
+![boss_5_2](https://user-images.githubusercontent.com/66288087/193979396-4224f79b-c49b-4153-b0cd-d61a924a9d5a.gif)
 
+위 움짤처럼 돌격을 하게 되는 모습을 볼 수 있다.
 
+### 원거리 몬스터
 
+원거리 몬스터를 구현 해 보자
 
+골드메탈님 에셋에서 미사일을 가져 와 준다.
 
+![image](https://user-images.githubusercontent.com/66288087/193979770-030e492f-3b2c-4d34-825b-914d247b34ba.png)
 
+여기서 미사일 자체의 y축을 높이는 것이 아닌, 자식 MeshObject의 y축을 올려 준다.
 
+그렇게 되면 겉에 있는 오브젝트 자체는 땅에 닿아 있는데 미사일은 떠 있는 효과를 줄 수 있다.
 
+![image](https://user-images.githubusercontent.com/66288087/193980750-3ee80b22-bda6-428c-af3c-d345f240db3c.png)
 
+이제, 미사일에 RigidBody, BoxCollider(Trigger 체크)를 넣어 주고, Bullet.cs를 넣어 주어 데미지 설정도 해 준다.
 
+![image](https://user-images.githubusercontent.com/66288087/193981020-6abb48f8-7f1b-4537-b7cf-eabb6ec86166.png)
+
+그리고 Particle도 적당히 설정 해 준 다음, 뱅글 뱅글 도는 효과를 위하여 간단한 코드를 작성 해 넣어 준다.
+
+Missile.cs
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Missile : MonoBehaviour
+{
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        transform.Rotate(Vector3.right * 3);
+    }
+}
+</code>
+</pre>
+
+그 다음, 미사일을 Prefab으로 저장 해 준다.
+
+이제, 몬스터 C 타입에 대한 코드를 작성 해 준다.
+
+<pre>
+<code>
+case Type.C: // 미사일을 만들어야 한다.
+    yield return new WaitForSeconds(0.4f); // 선 딜레이
+
+    GameObject instantBullet = Instantiate(monsterMissile, transform.position,transform.rotation); // 몬스터와 같은 위치에 미사일 생성
+    Rigidbody rigidBullet = instantBullet.GetComponent<Rigidbody>();
+    rigidBullet.velocity = transform.forward * 20; // 총알에 속도를 부여
+
+    yield return new WaitForSeconds(2.0f); // 후 딜레이
+    break;
+</code>
+</pre>
+
+선 딜레이를 주고, 몬스터 위치에 아까 만든 미사일 Prefab을 생성 해 준다.
+
+그리고, 총알에 속도를 부여하듯이, 미사일 객체에 속도를 부여해, 타겟을 향해 나아가도록 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/193981271-343443aa-56db-458f-b1ed-d983436d3c2f.png)
+
+위 사진과 같이 미사일이 날아가게 됨을 볼 수 있다.
+
+<hr>
+
+![boss_5_3](https://user-images.githubusercontent.com/66288087/193982005-6b3b0460-03fa-45d9-853b-bbe30dda7096.gif)
+
+몬스터를 잡는 움짤이다.
 
