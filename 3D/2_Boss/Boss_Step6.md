@@ -375,7 +375,154 @@ public class Boss : Enemy // Enemy 상속
 
 Think() 를 통하여 패턴을 결정하고, 패턴 역시 코루틴으로 만들어 준다.
 
+<pre>
+<code>
+IEnumerator MissileShot()
+{
+    anim.SetTrigger("DoShot");
 
+    yield return new WaitForSeconds(0.2f);
+
+    GameObject instantMissileA = Instantiate(missile, missilePortA.position, missilePortA.rotation);
+
+    BossMissile bossMissileA = instantMissileA.GetComponent<BossMissile>();
+    bossMissileA.target = target;
+
+    yield return new WaitForSeconds(0.3f);
+
+    GameObject instantMissileB = Instantiate(missile, missilePortB.position, missilePortB.rotation);
+
+    BossMissile bossMissileB = instantMissileB.GetComponent<BossMissile>();
+    bossMissileB.target = target;
+
+    yield return new WaitForSeconds(2.0f);
+    StartCoroutine(Think()); // 애니메이션 발동이 끝난 뒤, 다시 생각을 해야 한다!
+}
+
+IEnumerator RockShot()
+{
+    isLook = false; // 회전을 하지 않고 잠시 기를 모은다.
+    anim.SetTrigger("DoBigShot"); // 애니메이션 재생
+    Instantiate(monsterMissile, transform.position, transform.rotation);
+    yield return new WaitForSeconds(3.0f);
+    isLook = true;
+    StartCoroutine(Think());
+}
+
+IEnumerator Taunt()
+{
+    tauntVector = target.position + lookVector; // 내려찍을 위치 = 타겟 위치 + 바라보는 위치 더한 부분
+
+    isLook = false; // 내려찍는 방향으로 각도 고정!
+    navi.isStopped = false;
+    boxCollider.enabled = false; // 점프 도중에 플레이어를 밀지 않게 하기 위해 boxCollider를 비활성화 한다.
+    anim.SetTrigger("DoTaunt"); // 애니메이션 재생!
+
+    yield return new WaitForSeconds(1.5f); 
+    meleeArea.enabled = true; // 내려찍을 때!
+
+    yield return new WaitForSeconds(0.5f);
+    meleeArea.enabled = false;
+
+    yield return new WaitForSeconds(1.0f);
+    isLook = true;
+    navi.isStopped = true;
+    boxCollider.enabled = true; // 다시 박스 활성화
+
+    StartCoroutine(Think());
+}
+</code>
+</pre>
+
+세 가지 패턴들에 대한 함수이다. 코루틴을 통하여 만들어 주었다.
+
+각 패턴들에 따라서 애니메이션을 실행시킨 다음, 딜레이를 주면서 미사일, 돌, 내려찍기 등을 수행한다.
+
+그 중에서 내려찍기(Taunt())는 추적(nav mesh)을 진행 해 주어야 한다.
+
+추적 할 대상의 위치(target.position)에서 보스가 바라보는 만큼의 Vector를 더해 준 부분으로 내려찍기를 진행하게 될 것이다. (플레이어의 이동방향보다 살짝 앞)
+
+각도를 대상으로 고정하고, nav mesh에서 멈추게 하는 상태변수를 false로 만들어 준다.(움직이게끔!)
+
+그리고 내려찍기 애니메이션을 실행 한 뒤, 애니메이션에서 내려 찍는 행동을 할 때 즈음 내려찍기 범위로 설정했던 Collider를 활성화 해 준다.
+
+내려찍기가 일어난 다음, 내려찍기 범위를 비활성화 해 주고, Boss 자체의 Collider를 활성화 해 준다.
+
+
+<hr>
+
+그런데 여기서, 보스 찍기 공격을 당하고 난 뒤, 플레이어가 보스의 위치랑 겹치게 되었을 때, Boss의 Collider가 활성화 된다면 낑기게 되어 플레이어가 튕겨 나가는 현상이 발생하게 된다.
+
+따라서 넉백을 맞게 되면 뒤로 넉백이 되어 겹치지 않게 만들어 주어야 한다.
+
+<pre>
+<code>
+private void OnTriggerEnter(Collider other)
+{
+    if(other.tag == "EnemyBullet")
+    {
+        if (other.GetComponent<Rigidbody>() != null) // 무적 시간 중에도 추가적으로 투사체를 맞게 되면 사라지게끔!
+            Destroy(other.gameObject);
+
+        bool isNoDmgJumpAtk = other.name == "JumpAtkArea"; 
+        if(isNoDmgJumpAtk && isDamage) // 무적시간 중에 점프 공격에 맞았을 때!
+            StartCoroutine(noDamageNuckBack());
+
+        if (!isDamage)
+        {
+            Bullet enemyBullet = other.GetComponent<Bullet>();
+            playerHealth -= enemyBullet.damage;
+
+            bool isBossAttack = other.name == "JumpAtkArea"; // 점프 공격에 맞았을 때!
+
+            StartCoroutine(OnDamage(isBossAttack));
+        }
+    }
+}
+
+IEnumerator OnDamage(bool isBossAttack)
+{
+    isDamage = true;
+    foreach(MeshRenderer mesh in meshs)
+    {
+        mesh.material.color = Color.red;
+    }
+
+    if (isBossAttack) // 찍기 공격을 맞았을 때!
+        rigid.AddForce(transform.forward * -40, ForceMode.Impulse); // 넉백!
+
+    yield return new WaitForSeconds(1.0f); // 무적 딜레이 1초!
+
+    isDamage = false;
+    foreach (MeshRenderer mesh in meshs)
+    {
+        mesh.material.color = Color.white;
+    }
+
+    if (isBossAttack) // 넉백 후
+        rigid.velocity = Vector3.zero; // 속도 원위치
+
+}
+
+IEnumerator noDamageNuckBack()
+{
+    rigid.AddForce(transform.forward * -40, ForceMode.Impulse); // 넉백!
+
+    yield return new WaitForSeconds(0.5f); // 넉백 딜레이 0.5초
+
+    rigid.velocity = Vector3.zero; // 속도 원위치
+
+}
+</code>
+</pre>
+
+onTriggerEnter에서 EnemyBullet 이라는 이름의 tag를 가지고 있는 Collider랑 닿았을 때 공격 판정이 나게 했다.
+
+여기서 보스의 찍기 패턴일 때는(찍는 범위의 Object 이름으로 구분) 새롭게 OnDamage에 넉백 현상을 추가하였다.
+
+그런데, 처음에 몬스터 공격에 맞을 때, 플레이어에게 1초 무적 시간을 주기로 하였는데 이 상태에서 넉백을 맞게 되면 의도와는 다르게 밀려나지 않게 된다.
+
+따라서 무적시간에는 데미지는 받지 않고, 밀려나기만 하게 해 주었다. (noDamageNuckBack())
 
 
 
