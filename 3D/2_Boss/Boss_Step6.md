@@ -530,4 +530,17 @@ onTriggerEnter에서 EnemyBullet 이라는 이름의 tag를 가지고 있는 Col
 
 패턴들은 아래 움짤들처럼 수행되게 된다.
 
+**돌 굴리기 패턴**
 
+![boss_6_1](https://user-images.githubusercontent.com/66288087/194793895-9cad3322-af65-4f05-8d49-201c8f39e55b.gif)
+
+**유도 미사일 패턴**
+
+![boss_6_2](https://user-images.githubusercontent.com/66288087/194793908-b268cc2c-2167-4648-8ed1-9a85f00f7803.gif)
+
+**내려찍기 패턴**
+
+![boss_6_3](https://user-images.githubusercontent.com/66288087/194793940-bfdba06f-8ce8-44c2-8c69-c2229f7f3e2e.gif)
+
+
+이제 다음에는 점프 게임 개인 순위표, 점프게임과 재화 연결, 강화에서 재화 및 기원 조각 등을 구현 해 보도록 하겠다.
