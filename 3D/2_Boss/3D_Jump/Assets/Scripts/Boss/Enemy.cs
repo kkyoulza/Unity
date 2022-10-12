@@ -6,7 +6,7 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
     // 몬스터 타입 설정
-    public enum Type { A,B,C,Boss }; // 변수의 종류를 만든다.
+    public enum Type { A,B,C,Boss,RockA,RockB }; // 변수의 종류를 만든다.
     public Type enemyType; // 적의 타입을 넣을 변수
 
     // 체력 정보
@@ -33,7 +33,7 @@ public class Enemy : MonoBehaviour
     public bool isDead; // 죽은 상태인가?
 
     // 겉보기
-    protected Material mat;
+    protected MeshRenderer[] mat;
 
     // 추적 관련
     public bool isChase; // 추적이 가능한 상황!
@@ -47,10 +47,11 @@ public class Enemy : MonoBehaviour
     void Awake()
     {
         rigid = GetComponent<Rigidbody>();
-        mat = GetComponentInChildren<MeshRenderer>().material; // material을 가져오는 방법!!
+        mat = GetComponentsInChildren<MeshRenderer>(); // material을 가져오는 방법!!
         navi = GetComponent<NavMeshAgent>();
         anim = GetComponentInChildren<Animator>();
         Invoke("ChaseStart", 2.0f);
+        target = GameObject.FindGameObjectWithTag("Player").transform; // 플레이어를 추적하는 것이 default값
 
     }
     private void Start()
@@ -81,7 +82,7 @@ public class Enemy : MonoBehaviour
         float targetRadius = 0f;
         float targetRange = 0f;
 
-        if (!isDead && enemyType != Type.Boss) // 죽은 상태가 아니고, 보스가 아닐 때만 타겟팅을 실행
+        if (!isDead && enemyType != Type.Boss && enemyType != Type.RockA && enemyType != Type.RockB) // 죽은 상태가 아니고, 돌,보스가 아닐 때만 타겟팅을 실행
         {
             switch (enemyType)
             {
@@ -167,8 +168,11 @@ public class Enemy : MonoBehaviour
 
     void ChaseStart()
     {
-        isChase = true; // 추적을 가능하게 하고
-        anim.SetBool("isWalk", true); // 애니메이션 상태를 변경!
+        if(enemyType != Type.RockA && enemyType != Type.RockB)
+        {
+            isChase = true; // 추적을 가능하게 하고
+            anim.SetBool("isWalk", true); // 애니메이션 상태를 변경!
+        }
     }
 
     void FreezeVelocity() // 플레이어와 충돌 시 날라가서 추적을 하지 못하는 상황 방지
@@ -222,31 +226,44 @@ public class Enemy : MonoBehaviour
 
     IEnumerator OnDamage(Vector3 reactVec) // 피격시 반응 설정
     {
-        mat.color = Color.red;
+        foreach (MeshRenderer mesh in mat)
+        {
+            if(enemyType != Type.RockA && enemyType != Type.RockB)
+                mesh.material.color = Color.red;
+        }
         yield return new WaitForSeconds(0.1f);
 
         if(cntHealth > 0)
         {
-            mat.color = Color.white;
+            foreach (MeshRenderer mesh in mat)
+            {
+                if (enemyType != Type.RockA && enemyType != Type.RockB)
+                    mesh.material.color = Color.white;
+            }
         }
         else
-        {        
-            mat.color = Color.gray;
+        {
+            foreach (MeshRenderer mesh in mat)
+            {
+                mesh.material.color = Color.gray;
+            }
 
             gameObject.layer = 7; // rayCast에서와 달리 숫자로 그냥 적는다.
             isDead = true;
             isChase = false;
             if(enemyType == Type.A || enemyType == Type.B)
                 meleeArea.enabled = false;
-            navi.enabled = false;
-            anim.SetTrigger("DoDie");
+            if(navi != null)
+                navi.enabled = false;
+            if(anim != null)
+                anim.SetTrigger("DoDie");
 
-            reactVec = reactVec.normalized; // 몬스터가 죽을 때 팔짝 뛴 다음에 죽는 모습을 연출하기 위함
-            reactVec += Vector3.up;
-
-            rigid.AddForce(reactVec * 10, ForceMode.Impulse);
-
-            
+            if(enemyType != Type.RockA && enemyType != Type.RockB) // 돌이 아닐 때
+            {
+                reactVec = reactVec.normalized; // 몬스터가 죽을 때 팔짝 뛴 다음에 죽는 모습을 연출하기 위함
+                reactVec += Vector3.up;
+                rigid.AddForce(reactVec * 10, ForceMode.Impulse);
+            }
 
             Destroy(gameObject,2); // 2초 뒤에 Destroy!
         }

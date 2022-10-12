@@ -21,7 +21,7 @@ public class Boss : Enemy // Enemy 상속
         // 해결법은 부모 코드에 있는 Awake를 Start로 바꾸어 주거나 부모 Awake에 있는 내용들을 자식에 복사하는 방법이 있다.
         // 부모를 함부로 바꾸면 부모를 사용하는 객체들도 영향을 받기에 자식으로 복사하였다.
         rigid = GetComponent<Rigidbody>();
-        mat = GetComponentInChildren<MeshRenderer>().material; // material을 가져오는 방법!!
+        mat = GetComponentsInChildren<MeshRenderer>(); // material을 가져오는 방법!!
         navi = GetComponent<NavMeshAgent>();
         anim = GetComponentInChildren<Animator>();
         boxCollider = GetComponent<BoxCollider>();

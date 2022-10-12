@@ -35,7 +35,8 @@ public class Item : MonoBehaviour
         if(collision.gameObject.tag == "base")
         {
             rigid.isKinematic = true;
-            sphereCollider.enabled = false;
+            if(sphereCollider != null)
+                sphereCollider.enabled = false;
         }
     }
 

@@ -32,11 +32,17 @@ public class Enchanting : MonoBehaviour
 
     public int[] needGold = new int[] { 1000, 1100, 1200, 1300, 1400, 2000, 2400, 2800, 3200, 4500 }; // 필요 골드
 
+
+    //정보 세이브
+    SaveInfos saveInfo;
+
+
     private void Awake()
     {
         EnchantTarget = null;
         isWeaponOn = false;
         playerItem = player.GetComponent<PlayerItem>();
+        saveInfo = GameObject.FindGameObjectWithTag("saveInfo").GetComponent<SaveInfos>();
     }
 
     // Start is called before the first frame update
@@ -53,7 +59,7 @@ public class Enchanting : MonoBehaviour
 
     public void SetTarget(WeaponItemInfo weaponInfo)
     {
-        EnchantTarget = weaponInfo;
+        EnchantTarget = weaponInfo; // 여기서는 단순 값 복사가 아니라 그 자체를 가져오는 것이다.
     }
 
     public void ResetTarget()
@@ -77,20 +83,29 @@ public class Enchanting : MonoBehaviour
 
         sumGold += needGold[EnchantTarget.enchantCount];
 
-        Debug.Log(randomNum + ", 누적 사용 골드 : " + sumGold);
-
-        if (randomNum <= (int)(percentage[EnchantTarget.enchantCount] * 1000))
+        if(playerItem.playerCntGold >= needGold[EnchantTarget.enchantCount])
         {
-            Debug.Log(EnchantTarget.enchantCount + "강 강화 성공!");
+            playerItem.playerCntGold -= needGold[EnchantTarget.enchantCount];
+            // saveInfo.info.playerCntGold -= needGold[EnchantTarget.enchantCount];
 
-            EnchantSuccess();
+            Debug.Log(randomNum + ", 누적 사용 골드 : " + sumGold);
 
+            if (randomNum <= (int)(percentage[EnchantTarget.enchantCount] * 1000))
+            {
+                Debug.Log(EnchantTarget.enchantCount + "강 강화 성공!");
+
+                EnchantSuccess();
+
+            }
+            else
+            {
+                Debug.Log("강화 실패..");
+            }
         }
         else
         {
-            Debug.Log("강화 실패..");
+            Debug.Log("강화 비용 부족!");
         }
-
 
     }
 
@@ -130,8 +145,8 @@ public class Enchanting : MonoBehaviour
         //playerItem.weapons[returnIndex].criticalPercent = EnchantTarget.criticalPercent;
         //playerItem.weapons[returnIndex].enchantCount++;
 
-        playerItem.SetEnchantInfo(returnIndex);
-
+        playerItem.SetEnchantInfo(returnIndex); // Weapon에 정보 갱신
+        // saveInfo.SaveItemInfo(playerItem.weapons[playerItem.returnIndex(EnchantTarget.weaponCode)]); // 아이템 정보 세이브
     }
 
 

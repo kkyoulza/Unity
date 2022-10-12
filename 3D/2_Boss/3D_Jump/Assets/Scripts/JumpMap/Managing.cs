@@ -229,7 +229,12 @@ public class Managing : MonoBehaviour
     {
         panel.SetActive(true);
         noticeText.text = "스테이지 클리어!\n 점수 : " + saveInfo.GetCntScore()+"\n 누적 점수 : "+saveInfo.GetTotalScore();
+    }
 
+    public void StageClearGainGoldUI()
+    {
+        panel.SetActive(true);
+        noticeText.text = "전 스테이지 클리어 완료!\n 획득 골드의 10배 만큼 골드를 획득합니다!\n 획득 골드 : "+saveInfo.info.totalScore * 10+"G";
     }
 
 

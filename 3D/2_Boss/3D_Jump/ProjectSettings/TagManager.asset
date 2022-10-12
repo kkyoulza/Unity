@@ -24,6 +24,15 @@ TagManager:
   - Smith
   - Enemy
   - EnemyBullet
+  - GoStage1
+  - GoStage2
+  - GoLobby
+  - saveInfo
+  - GoJump
+  - uimanager
+  - Rock
+  - emerald
+  - ruby
   layers:
   - Default
   - TransparentFX
@@ -41,8 +50,8 @@ TagManager:
   - NPC
   - Item
   - EnemyBullet
-  - 
-  - 
+  - Portal
+  - Rock
   - 
   - 
   - 

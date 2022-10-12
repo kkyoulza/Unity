@@ -26,7 +26,7 @@ public class Info{
 
 public class SaveInformation : MonoBehaviour
 {
-    Info info = new Info(0, 0); // 맨 처음에 0으로 시작
+    public Info info = new Info(0, 0); // 맨 처음에 0으로 시작
 
     int currentStage = 1; // 현재 스테이지를 나타낸다.
 
@@ -34,6 +34,9 @@ public class SaveInformation : MonoBehaviour
 
     private void Awake()
     {
+        GameObject[] objs = GameObject.FindGameObjectsWithTag("information"); // information Tag를 가진 놈들을 배열에 불러오고
+        if (objs.Length > 1) // 만약 이미 전에 생성된 Obj가 있다면 배열의 길이는 2가 될 것이다.
+            Destroy(gameObject); // DontDestroy로 지정된 것은 Awake가 다시 실행되지 않으므로 새로 생성되는 것만 삭제한다.
         DontDestroyOnLoad(gameObject); // 씬이 바뀌어도 사라지지 않게한다.
         Debug.Log("SaveBase");
     }

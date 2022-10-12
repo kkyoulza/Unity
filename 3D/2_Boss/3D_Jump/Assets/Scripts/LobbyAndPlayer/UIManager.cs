@@ -31,6 +31,7 @@ public class UIManager : MonoBehaviour
     public Text addCritical; // 강화 크리티컬 확률
     public Text successPercent; // 성공 확률
     public Text enchantMoney; // 강화 비용
+    public Text goldTxt; // 골드 텍스트
 
     public Image WeaponImg; // 무기 이미지
     public Sprite img1;
@@ -40,7 +41,6 @@ public class UIManager : MonoBehaviour
     public Image hpBar;
     public Text healthText; // HP 텍스트
 
-
     // 상태 정보
     public bool isNoticeOn; // e를 누르라는 안내문이 나와 있는가?
 
@@ -48,23 +48,26 @@ public class UIManager : MonoBehaviour
     public GameObject Smith; // 대장장이
     Animator animSmith; // 대장장이 애니메이션
 
+
+
     // Start is called before the first frame update
     void Start()
     {
-        animSmith = Smith.GetComponentInChildren<Animator>();
         playerItem = player.GetComponent<PlayerItem>();
-        enchant = enchantManager.GetComponent<Enchanting>();
+        if(enchantManager != null)
+            enchant = enchantManager.GetComponent<Enchanting>();
         isNoticeOn = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        goldTxt.text = playerItem.playerCntGold.ToString();
     }
 
     public void EnchantWeaponUI()
     {
+        animSmith = Smith.GetComponentInChildren<Animator>();
         DialogPanel.SetActive(true);
         animSmith.SetTrigger("DoTalk");
     }
@@ -249,6 +252,7 @@ public class UIManager : MonoBehaviour
     public void doEnchant()
     {
         enchant.doEnchant();
+        goldTxt.text = playerItem.playerCntGold.ToString();
         if (enchant.isWeaponOn && enchant.EnchantTarget.enchantCount == playerItem.weapons[weaponIndex].maxEnchant)
         {
             fullEnchantNotice(playerItem.weapons[weaponIndex]);

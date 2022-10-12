@@ -2,10 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerCode : MonoBehaviour
 {
     // 플레이어 정보
+    public int playerMaxHealth; // 플레이어 최대 체력
     public int playerHealth; // 플레이어 체력
     public int playerStrength; // 플레이어 힘
     public int playerAccuracy; // 플레이어 명중률
@@ -71,16 +73,19 @@ public class PlayerCode : MonoBehaviour
     public GameObject UIManager;
     UIManager ui;
 
+    // 정보 저장 코드
+    SaveInfos saveinfo;
+
     private void Awake()
     {
         isDamage = false;
-
         ui = UIManager.GetComponent<UIManager>(); // ui 매니저 컴포넌트
         anim = GetComponentInChildren<Animator>(); // 자식 오브젝트에 있는 컴포넌트를 가져온다.
         coolManager = manager.GetComponent<CoolTimeManager>(); // 쿨타임 매니저를 불러온다.
         playerItem = GetComponent<PlayerItem>(); // 아이템 컴포넌트
         rigid = GetComponent<Rigidbody>();
         meshs = GetComponentsInChildren<MeshRenderer>(); // 여러 개를 가져오는 것이니 Components s 꼭 붙이기!
+        saveinfo = GameObject.FindGameObjectWithTag("saveInfo").GetComponent<SaveInfos>();
     }
 
     // Start is called before the first frame update
@@ -102,6 +107,8 @@ public class PlayerCode : MonoBehaviour
         Swap();
         onUI();
         InterAction();
+        saveinfo.savePlayerStats(playerMaxHealth, playerHealth, playerStrength, playerAccuracy, playerItem.playerCntGold);
+        // 플레이어 자체 스탯, 골드 양 저장
     }
 
     void Attack()
@@ -281,23 +288,62 @@ public class PlayerCode : MonoBehaviour
             // 무기에 닿고 있고(근처 오브젝트가 null이 아님), 점프 상태가 아닐 때, 상호작용 버튼을 누르게 되면 아이템을 습득하게 된다.
             // 이것을 응용하여 NPC와도 대화를 하게끔?
 
-            if(nearObject.tag == "weapon")
+            if(nearObject.layer == 14)
             {
-                Item item = nearObject.GetComponent<Item>();
-                int weaponIndex = item.value; // value를 index로 설정 할 것!
+                Item nearObjItem = nearObject.GetComponent<Item>();
+                switch (nearObjItem.type)
+                {
+                    case Item.Type.Weapon:
+                        int weaponIndex = nearObjItem.value; // value를 index로 설정 할 것!
 
-                ui.PopUI.SetActive(false);
-                ui.isNoticeOn = false; // 무기를 먹었을 때 비활성화!
-                hasWeapons[weaponIndex] = true;
+                        ui.PopUI.SetActive(false);
+                        ui.isNoticeOn = false; // 무기를 먹었을 때 비활성화!
+                        hasWeapons[weaponIndex] = true;
 
-                playerItem.GetInfo(nearObject);
+                        playerItem.GetInfo(nearObject);
 
-                Destroy(nearObject);
+                        saveinfo.SaveItemInfo(playerItem.weapons[playerItem.returnIndex(weaponIndex)]);
+                        // 아이템 정보 세이브, 이 자체가 포인터에 의한 참조?가 되어서 강화를 할 때, 강화 창에서만 갱신을 해도 세이브 자료에서도 반영이 되게 된다. 
+
+                        Destroy(nearObject);
+                        break;
+                    case Item.Type.Coin:
+                        Coin nearCoin = nearObject.GetComponent<Coin>();
+                        ui.PopUI.SetActive(false);
+                        ui.isNoticeOn = false; // 무기를 먹었을 때 비활성화!
+                        playerItem.playerCntGold += nearCoin.addGold; // 오르는 값 만큼 더한다.
+                        Destroy(nearObject);
+                        break;
+
+                }
+                
             }
-            else if (nearObject.tag == "Smith")
+            else if (nearObject.layer == 13) // NPC layer
             {
-                ui.PopUI.SetActive(false);
-                ui.EnchantWeaponUI();
+                switch (nearObject.tag)
+                {
+                    case "Smith":
+                        ui.PopUI.SetActive(false);
+                        ui.EnchantWeaponUI();
+                        break;
+                }
+                
+            }
+            else if(nearObject.layer == 16) // Portal layer
+            {
+
+                switch (nearObject.tag)
+                {
+                    case "GoStage1":
+                        SceneManager.LoadScene("Lobby");
+                        break;
+                    case "GoLobby":
+                        SceneManager.LoadScene("Boss1");
+                        break;
+                    case "GoJump":
+                        SceneManager.LoadScene("Jump_1");
+                        break;
+                }
             }
 
         }
@@ -350,13 +396,13 @@ public class PlayerCode : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.tag == "weapon" && !ui.isNoticeOn)
+        if (other.gameObject.layer == 14 && !ui.isNoticeOn)
         {
             nearObject = other.gameObject;
             ui.NoticeOn();
             ui.isNoticeOn = true;
         }
-        else if(other.gameObject.tag == "Smith" && !ui.isNoticeOn)
+        else if((other.gameObject.layer == 13 || other.gameObject.layer == 16) && !ui.isNoticeOn)
         {
             nearObject = other.gameObject;
             ui.NoticeOn();
@@ -366,13 +412,13 @@ public class PlayerCode : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if(other.gameObject.tag == "weapon")
+        if(other.gameObject.layer == 14)
         {
             nearObject = null;
             ui.NoticeOff();
             ui.isNoticeOn = false;
         }
-        else if (other.gameObject.tag == "Smith")
+        else if (other.gameObject.layer == 13 || other.gameObject.layer == 16)
         {
             nearObject = null;
             ui.NoticeOff();
@@ -401,6 +447,7 @@ public class PlayerCode : MonoBehaviour
                 StartCoroutine(OnDamage(isBossAttack));
             }
         }
+
     }
 
     IEnumerator OnDamage(bool isBossAttack)

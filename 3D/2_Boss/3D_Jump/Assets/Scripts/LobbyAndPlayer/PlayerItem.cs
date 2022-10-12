@@ -37,6 +37,7 @@ public class PlayerItem : MonoBehaviour
 {
     // 아이템 정보
     public WeaponItemInfo[] weapons; // 아이템 정보들이 들어 가 있는 배열을 만든다.
+    public long playerCntGold; // 플레이어가 현재 가진 골드.
     int weaponIndex;
     int maxIndex = 10;
 
@@ -49,7 +50,7 @@ public class PlayerItem : MonoBehaviour
     {
         weaponIndex = 0;
         weapons = new WeaponItemInfo[maxIndex];
-        playerInfo = GetComponent<PlayerCode>();
+        playerInfo = GetComponent<PlayerCode>(); 
     }
 
     // Start is called before the first frame update
@@ -104,6 +105,24 @@ public class PlayerItem : MonoBehaviour
             bullet.SetDamage(weapon.Damage);
         }
 
+    }
+
+    public int returnIndex(int itemCode)
+    {
+        int index = 0;
+
+        for(int i = 0; i < weapons.Length; i++)
+        {
+            if(weapons[i].weaponCode == itemCode)
+            {
+                index = i;
+                return index;
+            }
+        }
+
+        index = -1; // 아직 안먹었을 때
+
+        return index;
     }
 
 }

@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
     Managing managing;
     Rigidbody rigid;
 
+    SaveInfos saveStats;
+
     bool isJumpState = false;
     bool dontMove = false;
     
@@ -29,10 +31,12 @@ public class Player : MonoBehaviour
 
         manager = GameObject.FindGameObjectWithTag("Manager");
         saveObject = GameObject.FindGameObjectWithTag("information");
+        
 
         ReturnPos = startPos.transform.position;
         managing = manager.GetComponent<Managing>();
         saveInfo = saveObject.GetComponent<SaveInformation>();
+        saveStats = GameObject.FindGameObjectWithTag("saveInfo").GetComponent<SaveInfos>();
 
     }
 
@@ -91,6 +95,7 @@ public class Player : MonoBehaviour
             case 3:
                 saveInfo.stageUp();
                 saveInfo.SaveInfoToFile();
+                saveStats.info.playerCntGold += saveInfo.info.totalScore * 10;
                 SceneManager.LoadScene("Boss1");
                 break;
         }
@@ -130,8 +135,14 @@ public class Player : MonoBehaviour
             rigid.velocity = Vector3.zero;
             dontMove = true;
             saveInfo.SumScore(); // 현재 스테이지 점수를 합산
-
-            managing.StageClearUI();
+            if(saveInfo.GetStage() == 3)
+            {
+                managing.StageClearGainGoldUI();
+            }
+            else
+            {
+                managing.StageClearUI();
+            }
 
             Invoke("gotoNextMap",2.0f);
 
