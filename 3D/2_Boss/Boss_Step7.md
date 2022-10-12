@@ -215,6 +215,20 @@ public class DataSet : MonoBehaviour
 
 따라서 DataSet.cs 코드의 Awake() 부분을 Start()로 바꾸어 주었더니 오류가 생기지 않고 실행됨을 볼 수 있었다.
 
+![boss_7_1](https://user-images.githubusercontent.com/66288087/195355758-90831b18-054e-4ad8-a950-e8bf90c4733b.gif)
+
+맵을 이동해도 저장 되는 모습
+
+### 2. 점프 맵과 골드 벌이
+
+
+
+
+
+### 3. 골드 벌이 수단 추가(광산)
+
+
+
 
 
 
