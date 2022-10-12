@@ -129,4 +129,92 @@ void Update()
 
 그런데, 이 때는 DontDestroyOnLoad()를 사용하지 않는다.
 
+왜냐하면 씬을 이동하는 순간에 오브젝트가 생기면서 Awake()가 실행될 때, 다음 씬에 있는 빈 플레이어 데이터에 저장 된 데이터를 다시 세팅 할 것이기 때문이다.
+
+따라서 새롭게 오브젝트를 만들고 DataSet.cs라고 이름지은 데이터 세팅 코드를 적고 오브젝트에 넣어 준다.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class DataSet : MonoBehaviour
+{
+    SaveInfos saveData; // 저장된 코드
+    PlayerItem playerItem; // 플레이어 아이템 코드
+    PlayerCode playerCode; // 플레이어 스탯이 저장된 코드
+    UIManager uiManager; // UI 매니저
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        saveData = GameObject.FindGameObjectWithTag("saveInfo").GetComponent<SaveInfos>();
+        playerItem = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerItem>();
+        playerCode = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCode>();
+
+        if(GameObject.FindGameObjectWithTag("uimanager") != null)
+        {
+            uiManager = GameObject.FindGameObjectWithTag("uimanager").GetComponent<UIManager>();
+        }
+
+        resetData();
+        if (uiManager != null)
+            reSetUI();
+
+    }
+
+    public void resetData()
+    {
+
+        playerCode.playerMaxHealth = saveData.info.playerMaxHealth;
+        playerCode.playerHealth = saveData.info.playerCntHealth;
+        playerCode.playerStrength = saveData.info.playerStrength;
+        playerCode.playerAccuracy = saveData.info.playerAcc;
+        playerItem.playerCntGold = saveData.info.playerCntGold;
+
+
+        for (int i = 0; i < saveData.info.weapons.Length; i++)
+        {
+            if (saveData.info.weapons[i].baseAtk == 0)
+                return;
+
+            playerItem.weapons[i] = saveData.info.weapons[i];
+            playerCode.hasWeapons[saveData.info.weapons[i].weaponCode] = true; // 무기를 얻은 여부도 반영 해 준다.
+            playerItem.SetEnchantInfo(i); // playerItem -> weapon 반영(실제 데미지가 계산되는 곳으로)
+
+        }
+        
+    }
+
+    public void reSetUI()
+    {
+        uiManager.goldTxt.text = saveData.info.playerCntGold.ToString();
+    }
+
+}
+</code>
+</pre>
+
+그런데 앞서 설명에서는 Awake()에서 다시 세팅을 해 준다고 했는데 여기서는 Start()를 사용했다.
+
+왜냐하면 아래와 같은 에러가 뜨기 때문이다.
+
+**IndexOutOfRangeException: Index was outside the bounds of the array. (wrapper stelemref) System.Object.virt_stelemref_class_small_idepth(intptr,object)**
+
+처음에 이러한 에러가 떴을 때, 범위가 넘지 않는다고 생각했었기에 당황했었다.
+
+그런데 차근 차근 디버깅을 해 보면서 오류가 생기는 지점을 탐색 해 본 결과, SaveObject가 만들어져 있는 곳에 다시 가게 될 때 생기게 됨을 알게 되었다.
+
+즉, SaveObject 의 Awake() 와 DataSet.cs의 Awake()의 순서가 꼬이면서 오류가 생긴 것으로 추정되었다.
+
+앞서 살펴 본 생명 주기에 따르면 Awake() -> Start()의 순서대로 주기가 이어진다.(사이에 있는 다른 과정들은 생략하였다.)
+
+그런데 데이터를 다시 플레이어에 세팅하는 것도 Awake()로 하게 되면 빈 SaveObject가 만들어 지고, Awake()에서 SaveObject 개수를 센 다음 겹치지 않게 삭제하는 과정이 지나기 전에 데이터를 다시 세팅하려 하게 되면 데이터가 저장 된 SaveObject가 아닌, 삭제 될 예정인 SaveObject에 접근하는 경우가 생기게 되어 범위가 넘치게 되는 현상이 일어나지 않았나 생각이 들었다.. (범위가 직접적인 원인은 아닐 지 모르지만 Awake() 과정에서 문제가 생김은 맞는 것 같다.)
+
+따라서 DataSet.cs 코드의 Awake() 부분을 Start()로 바꾸어 주었더니 오류가 생기지 않고 실행됨을 볼 수 있었다.
+
+
+
 
