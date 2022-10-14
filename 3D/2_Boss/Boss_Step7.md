@@ -474,6 +474,7 @@ public class Managing : MonoBehaviour
 </code>
 </pre>
 
+JumpMap의 Managing.cs 코드이다.
 
 
 
