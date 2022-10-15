@@ -490,10 +490,134 @@ JumpMap의 Managing.cs 코드이다.
 
 일정시간마다 나오게 하는 것이 핵심이기에 스폰을 담당하는 스포너 오브젝트를 하나 만들어 주도록 하겠다.
 
+![image](https://user-images.githubusercontent.com/66288087/195987829-eca24fe6-6d29-4369-b1fd-65be49a195cf.png)
+
+스폰 오브젝트는 위 사진처럼 가운데 Trigger Collider를 하나 두고(플레이어가 가까이 갔을 때 인식하기 위함), 자식 오브젝트로 Trail Renderer를 추가 하여 표시 할 원을 하나 더 만들어 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/195988343-98252f83-40f2-4d24-a393-dd4b26dbe7f2.png)
+
+그리고 애니메이션 효과로 뱅글뱅글 돌게 해 준다.(부모 오브젝트에!)
+
+그렇게 하면
+
+![image](https://user-images.githubusercontent.com/66288087/195988386-231ce46e-316e-42c7-a26f-7120676947ec.png)
+
+위 사진과 같이 뱅글뱅글 도는 존이 생기게 된다.
+
+처음에 설정한 Trigger Collider에 tag를 추가 해 주고, PlayerCode에 TriggerStay를 넣어주게 되면 포탈과 NPC 대화 존이 되는 것이다.
+
+이제 코드를 넣어 보자
+
+Spawn.cs
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Spawn : MonoBehaviour
+{
+    public GameObject spawnTypeA; // A타입 광물 - 은 광맥
+    public GameObject spawnTypeB; // B타입 광물 - 금 광맥
+
+    public GameObject onObject = null; // 트리거 위에 올려져 있는 오브젝트
+    public float spawnTime; // 스폰 타임
+    float deltaT; // 지나간 시간
+
+    Vector3 spawnPlace;
 
 
+    // Start is called before the first frame update
+    void Start()
+    {
 
+    }
 
+    // Update is called once per frame
+    void Update()
+    {
+
+        if (onObject == null) // 올라 가 있는 물체가 없으니 다음 광맥 스폰을 위한 카운트 다운
+        {
+            deltaT += Time.deltaTime;
+        }
+            
+
+        if(deltaT >= spawnTime)
+        {
+            Spawn_Things();
+            deltaT = 0f;
+        }
+
+        
+    }
+
+    public void Spawn_Things()
+    {
+        int ranNum = Random.Range(0, 4);
+        spawnPlace = transform.position;
+        spawnPlace.y += 3;
+        switch (ranNum)
+        {
+            case 0:
+            case 1:
+            case 2:
+                Debug.Log(ranNum);
+                Instantiate(spawnTypeA, transform.position, transform.rotation);
+                break;
+            case 3:
+                Debug.Log(ranNum);
+                Instantiate(spawnTypeB, transform.position, transform.rotation);
+                break;
+        }
+        
+
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if(other.gameObject.layer == 17)
+            onObject = other.gameObject;
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.layer == 17)
+            onObject = null;
+    }
+
+}
+</code>
+</pre>
+
+아이템 습득 때 사용했던 nearObject를 활용한 코드이다.
+
+스포너 위에 돌이 놓여져 있으면 스폰 타이머가 돌아가지 않고, 스폰타이머가 스폰 주기만큼 되었다면 확률에 의해서 두 종류의 광물 중 하나가 생성되게 하였다.
+
+생성된 모습은 아래와 같다.
+
+![image](https://user-images.githubusercontent.com/66288087/195988752-d8db04a4-eb40-48d7-becf-d876ffdfd9cf.png)
+
+**돌 설정**
+
+위 사진에서는 돌이 이미 만들어 진 모습이다..
+
+일단 만드는 과정을 보게 되면
+
+![image](https://user-images.githubusercontent.com/66288087/195988785-0134e893-9d51-4863-847e-80f9dcc05ef6.png)
+
+돌 모양의 에셋을 가져 온 다음, Mesh Collider를 가져 와 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/195988804-c3bd3795-e668-4e85-a6b0-4045ab3c1e4c.png)
+
+Mesh Collider는 Mesh 모양에 맞춰서 Collider가 생성되는 것이다.
+
+맨 위에 있는 Convex를 체크 해 주면 생기게 된다.
+
+두 개를 만들어서 하나는 Collider로 사용하고, 다른 하나는 Trigger로 체크 해 준다.(스폰 타임 체크 용)
+
+그리고 돌은 Enemy 코드를 상속받아 사용하며, Enemy를 상속받는 만큼 돌에 적용되서는 안되는 부분들을 수정 해 준다.
 
 
 
