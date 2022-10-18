@@ -769,7 +769,17 @@ public class Rock : Enemy
 </code>
 </pre>
 
+Enemy.cs를 상속받아 몬스터처럼 피격을 당하는 특성을 가지고 있다. 그리고 Enemy.cs에도 돌 타입들을 추가 해 주어 돌을 구분할 수 있게 하였다.
 
+그리고 두 종류의 돌을 만들어서 금색 돌에서는 코인이 조금 더 나오게끔 하였다.
+
+스폰 타임은 20초로 설정하였다.
+
+따로 함수를 만들어서(DropCoins) 확률과 편차를 넣어 주어 돌마다 다르게 확률을 설정하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/196464790-4afb0029-7bc7-4bbb-8cdb-a0afd6a7da8d.png)
+
+돌을 깨게 되면 위 사진과 같은 결과가 나오게 된다.
 
 
 
