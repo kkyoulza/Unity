@@ -15,16 +15,40 @@
 
 일단 상태창의 전반적인 모습은 위 사진과 같다.
 
+**체력바를 체력에 맞게 크기 설정하기**
+
+체력바의 크기는 기본적으로 최대 모습인 경우를 설정 해 둔 다음, 현재 체력/최대 체력의 비율을 곱해서 크기 설정을 해 준다.
+
+UIManager.cs에 아래 함수를 추가하여 체력/마력에 맞게 바의 길이를 조절 해 준다.
+<pre>
+<code>
+public void SetBar()
+  {
+      // 체력에 따라서 Bar의 크기를 설정하는 것이다.
+      rectHP.sizeDelta = new Vector2(194 * playerInfo.playerHealth/playerInfo.playerMaxHealth,24);
+      rectMP.sizeDelta = new Vector2(194 * playerInfo.playerMana / playerInfo.playerMaxMana, 24);
+      cntHP.text = playerInfo.playerHealth.ToString();
+      maxHP.text = playerInfo.playerMaxHealth.ToString();
+      cntMP.text = playerInfo.playerMana.ToString();
+      maxMP.text = playerInfo.playerMaxMana.ToString();
+  }
+</code>
+</pre>
+
+주의할 점은 아래 사진과 같이 좌표의 기준점을 왼쪽으로 잡아 놓아야 체력이 깎이는 것처럼 보이게 된다.
+
+![image](https://user-images.githubusercontent.com/66288087/197345905-863dfa77-7f7a-47d6-a4ee-8dadcfd367c6.png)
 
 
 
 
 
 
+#### 아이템 창, 캐릭터 스탯 창, 장비 창
 
-#### 아이템 창, 장비 창
+![image](https://user-images.githubusercontent.com/66288087/197345428-ed24d972-f022-4a8d-baba-5ccf59d08ac1.png)
 
-
+완성된 아이템 창, 스탯 창의 모습
 
 
 
