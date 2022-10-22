@@ -11,9 +11,10 @@
 
 그리고 캐릭터 초상화를 누르게 되면 캐릭터의 세부 스탯이 나오게끔 설정 할 예정이다.
 
-![image](https://user-images.githubusercontent.com/66288087/196968757-c11987c3-021e-4cba-8945-0d473c8562a3.png)
+![image](https://user-images.githubusercontent.com/66288087/197345349-165bf9d8-ff99-45bb-a4f8-e498e475b949.png)
 
 일단 상태창의 전반적인 모습은 위 사진과 같다.
+
 
 
 
