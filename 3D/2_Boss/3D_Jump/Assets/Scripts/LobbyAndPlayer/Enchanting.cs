@@ -7,13 +7,18 @@ public class Enchanting : MonoBehaviour
 {
     int sumGold; // 누적 골드
 
+    public AudioClip successSFX;
+    public AudioClip failSFX;
+    AudioSource audio;
+
     int randomNum;
     public bool isWeaponOn; // 무기가 올려져 있는 상태인가?
     public GameObject player; // 플레이어 객체
+    UIManager ui;
     
     public WeaponItemInfo EnchantTarget; // 강화 대상의 정보
     PlayerItem playerItem; // 플레이어 아이템 정보
-    public int returnIndex; // 강화 내용을 적용 할 index
+    public int returnIndex = -1; // 강화 내용을 적용 할 index
 
     // 강화 시스템 정보들
     public int[] addMeleeAtk = new int[] { 2, 2, 3, 3, 5, 6, 7, 8, 10, 30 }; // 근접 무기 공격력 상향폭
@@ -43,6 +48,8 @@ public class Enchanting : MonoBehaviour
         isWeaponOn = false;
         playerItem = player.GetComponent<PlayerItem>();
         saveInfo = GameObject.FindGameObjectWithTag("saveInfo").GetComponent<SaveInfos>();
+        ui = GameObject.FindGameObjectWithTag("uimanager").GetComponent<UIManager>();
+        audio = GetComponent<AudioSource>();
     }
 
     // Start is called before the first frame update
@@ -69,10 +76,10 @@ public class Enchanting : MonoBehaviour
 
     public void doEnchant()
     {
-        if (!isWeaponOn)
+        if (!isWeaponOn) // 무기가 올려져 있지 않을 때
             return;
 
-        if (EnchantTarget.enchantCount == EnchantTarget.maxEnchant)
+        if (EnchantTarget.enchantCount == EnchantTarget.maxEnchant) // 풀강일 때
             return;
 
         randomNum = 0;
@@ -81,17 +88,24 @@ public class Enchanting : MonoBehaviour
 
         randomNum = UnityEngine.Random.Range(1, 1001); // 1~1000 의 값을 랜덤으로 생성한다.
 
-        sumGold += needGold[EnchantTarget.enchantCount];
+        sumGold += needGold[EnchantTarget.enchantCount]; // 총합 사용 골드 가산
 
-        if(playerItem.playerCntGold >= needGold[EnchantTarget.enchantCount])
+        if(playerItem.playerCntGold >= needGold[EnchantTarget.enchantCount]) // 돈이 강화 비용보다 더 많이 있을 때
         {
-            playerItem.playerCntGold -= needGold[EnchantTarget.enchantCount];
+            playerItem.playerCntGold -= needGold[EnchantTarget.enchantCount]; // 돈 까이는 부분
             // saveInfo.info.playerCntGold -= needGold[EnchantTarget.enchantCount];
+
+            playerItem.enchantOrigin -= ui.useOrigin; // 강화 순간에 기원조각 차감
+            ui.useOrigin = 0;
 
             Debug.Log(randomNum + ", 누적 사용 골드 : " + sumGold);
 
-            if (randomNum <= (int)(percentage[EnchantTarget.enchantCount] * 1000))
+            if (randomNum - ui.useOrigin*5 <= (int)(percentage[EnchantTarget.enchantCount] * 1000))
             {
+                // 기원 조각 개수 1개당 0.5%씩 확률이 늘어나므로 조각 1개당 5를 곱해 주어야 한다.
+                StartCoroutine(ui.noticeEtc(4));
+                audio.clip = successSFX;
+                audio.Play();
                 Debug.Log(EnchantTarget.enchantCount + "강 강화 성공!");
 
                 EnchantSuccess();
@@ -99,11 +113,15 @@ public class Enchanting : MonoBehaviour
             }
             else
             {
+                StartCoroutine(ui.noticeEtc(5));
+                audio.clip = failSFX;
+                audio.Play();
                 Debug.Log("강화 실패..");
             }
         }
         else
         {
+            StartCoroutine(ui.noticeEtc(0));
             Debug.Log("강화 비용 부족!");
         }
 
@@ -114,23 +132,20 @@ public class Enchanting : MonoBehaviour
         // 임시 정보 적용
         switch (EnchantTarget.weaponCode)
         {
-            case 0:
+            case 1:
                 EnchantTarget.enchantAtk += addMeleeAtk[EnchantTarget.enchantCount];
                 EnchantTarget.enchantDelay -= minusMeleeDelay[EnchantTarget.enchantCount];
                 EnchantTarget.criticalPercent += addMeleeCritical[EnchantTarget.enchantCount];
-                // 돈 까이는거 추가할 것
                 break;
-            case 1:
+            case 2:
                 EnchantTarget.enchantAtk += addGunAtk[EnchantTarget.enchantCount];
                 EnchantTarget.enchantDelay -= minusGunDelay[EnchantTarget.enchantCount];
                 EnchantTarget.criticalPercent += addGunCritical[EnchantTarget.enchantCount];
-                // 돈 까이는거 추가할 것
                 break;
-            case 2:
+            case 3:
                 EnchantTarget.enchantAtk += addMGunAtk[EnchantTarget.enchantCount];
                 EnchantTarget.enchantDelay -= minusMGunDelay[EnchantTarget.enchantCount];
                 EnchantTarget.criticalPercent += addMGunCritical[EnchantTarget.enchantCount];
-                // 돈 까이는거 추가할 것
                 break;
         }
 
@@ -147,6 +162,9 @@ public class Enchanting : MonoBehaviour
 
         playerItem.SetEnchantInfo(returnIndex); // Weapon에 정보 갱신
         // saveInfo.SaveItemInfo(playerItem.weapons[playerItem.returnIndex(EnchantTarget.weaponCode)]); // 아이템 정보 세이브
+
+        // returnIndex = -1;
+
     }
 
 

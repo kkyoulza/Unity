@@ -81,7 +81,7 @@ MonoBehaviour:
   spawnTypeA: {fileID: 578503175231498668, guid: 6b2dd935712ff3c42a53d7181b3dbb59, type: 3}
   spawnTypeB: {fileID: 7161406593080440781, guid: ae31310ec85dabc4c88d2be923131012, type: 3}
   onObject: {fileID: 0}
-  spawnTime: 30
+  spawnTime: 10
 --- !u!1 &8383655277510634362
 GameObject:
   m_ObjectHideFlags: 0

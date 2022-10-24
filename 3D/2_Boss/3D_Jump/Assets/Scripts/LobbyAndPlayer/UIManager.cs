@@ -1,12 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class UIManager : MonoBehaviour
+public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    string[] names = new string[] { "아다만티움 해머", "총", "머신 건" };
-    
+    string[] names = new string[] { "","아다만티움 해머", "총", "머신 건" };
+
+    RectTransform rectHP;
+    RectTransform rectMP;
+
     // 외부 정보들
     public GameObject player; // player 객체
 
@@ -21,8 +25,13 @@ public class UIManager : MonoBehaviour
     public GameObject PopUI; // pop으로 나올 UI가 들어 갈 변수
     public GameObject DialogPanel; // 대화 패널
     public GameObject ItemUI; // 아이템 창 UI
+    public GameObject StatusUI; // 캐릭터 스텟 창 UI
     public GameObject EnchantPanel; // 강화 창
 
+    // UI Text
+    public Text popText; // popUI의 텍스트
+
+    // Enchant UI Text
     public Text WeaponName; // 무기 이름
     public Text DialogTxt; // 대화 텍스트
     public Text EnchantStep; // 강화 단계
@@ -31,7 +40,34 @@ public class UIManager : MonoBehaviour
     public Text addCritical; // 강화 크리티컬 확률
     public Text successPercent; // 성공 확률
     public Text enchantMoney; // 강화 비용
+    public Text originTxt; // 강화 시 사용할 기원 개수
+    public Text originAddPercent; // 기원조각을 통해 오르는 확률 표시 텍스트
+
+    // Item UI
+    public Text itemOriginTxt;
+    public Text itemHP;
+    public Text itemMP;
     public Text goldTxt; // 골드 텍스트
+
+    // Status UI
+    public Text Atk;
+    public Text Str;
+    public Text Acc;
+    public Text HPTxt;
+    public Text MPTxt;
+
+    //Bullet UI
+    public GameObject bulletUI;
+    public Text maxBullet;
+    public Text cntBullet;
+
+    // 체력, 마나 관련
+    public GameObject HP;
+    public GameObject MP;
+    public Text maxHP;
+    public Text cntHP;
+    public Text maxMP;
+    public Text cntMP;
 
     public Image WeaponImg; // 무기 이미지
     public Sprite img1;
@@ -48,21 +84,54 @@ public class UIManager : MonoBehaviour
     public GameObject Smith; // 대장장이
     Animator animSmith; // 대장장이 애니메이션
 
-
+    // 내부 임시 저장
+    public int useOrigin = 0; // 사용 대기중인 기원조각 개수
 
     // Start is called before the first frame update
     void Start()
     {
+        playerInfo = player.GetComponent<PlayerCode>();
         playerItem = player.GetComponent<PlayerItem>();
         if(enchantManager != null)
             enchant = enchantManager.GetComponent<Enchanting>();
         isNoticeOn = false;
+        rectHP = HP.GetComponent<RectTransform>();
+        rectMP = MP.GetComponent<RectTransform>();
+
     }
 
     // Update is called once per frame
     void Update()
     {
+        SetItemInfoUI();
+        setBulletUI();
+        SetBar();
+    }
+
+    public void setBulletUI()
+    {
+        maxBullet.text = playerInfo.bullet.ToString();
+        if(playerInfo.cntEquipWeapon) // 만약 무기를 얻었다면!
+            cntBullet.text = playerInfo.cntEquipWeapon.cntCount.ToString()+" ("+playerInfo.cntEquipWeapon.maxCount.ToString()+")";
+    }
+
+    public void SetItemInfoUI()
+    {
         goldTxt.text = playerItem.playerCntGold.ToString();
+        itemOriginTxt.text = playerItem.enchantOrigin.ToString() + " 개";
+        itemHP.text = playerItem.cntHPPotion.ToString() + " 개";
+        itemMP.text = playerItem.cntMPPotion.ToString() + " 개";
+    }
+
+    public void SetBar()
+    {
+        // 체력에 따라서 Bar의 크기를 설정하는 것이다.
+        rectHP.sizeDelta = new Vector2(194 * playerInfo.playerHealth/playerInfo.playerMaxHealth,24);
+        rectMP.sizeDelta = new Vector2(194 * playerInfo.playerMana / playerInfo.playerMaxMana, 24);
+        cntHP.text = playerInfo.playerHealth.ToString();
+        maxHP.text = playerInfo.playerMaxHealth.ToString();
+        cntMP.text = playerInfo.playerMana.ToString();
+        maxMP.text = playerInfo.playerMaxMana.ToString();
     }
 
     public void EnchantWeaponUI()
@@ -90,6 +159,7 @@ public class UIManager : MonoBehaviour
     {
         EnchantPanel.SetActive(false);
         enchant.isWeaponOn = false;
+        useOrigin = 0; // 기원조각 사용 예정 개수 초기화
         weaponIndex = -1; // index 초기화
         ResetEnchantUI();
     }
@@ -108,6 +178,15 @@ public class UIManager : MonoBehaviour
     public void OffItemUI()
     {
         ItemUI.SetActive(false);
+    }
+
+    public void OnStatusUI()
+    {
+        StatusUI.SetActive(true);
+    }
+    public void OffStatusUI()
+    {
+        StatusUI.SetActive(false);
     }
 
     public void NoticeOn()
@@ -131,16 +210,18 @@ public class UIManager : MonoBehaviour
         addCritical.text = (imsi.criticalPercent * 100)+" %";
         successPercent.text = "-";
         enchantMoney.text = "-";
+        originAddPercent.text = "-";
+        originTxt.text = "-";
 
         switch (imsi.weaponCode)
         {
-            case 0:
+            case 1:
                 WeaponImg.sprite = img1;
                 break;
-            case 1:
+            case 2:
                 WeaponImg.sprite = img2;
                 break;
-            case 2:
+            case 3:
                 WeaponImg.sprite = img3;
                 break;
         }
@@ -155,7 +236,7 @@ public class UIManager : MonoBehaviour
 
         switch (itemCode)
         {
-            case 0:
+            case 1:
                 if (imsi.enchantCount == imsi.maxEnchant)
                 {
                     fullEnchantNotice(imsi);
@@ -165,7 +246,7 @@ public class UIManager : MonoBehaviour
                 enchant.isWeaponOn = true;
                 WeaponImg.sprite = img1;
                 break;
-            case 1:
+            case 2:
                 if (imsi.enchantCount == imsi.maxEnchant)
                 {
                     fullEnchantNotice(imsi);
@@ -175,7 +256,7 @@ public class UIManager : MonoBehaviour
                 enchant.isWeaponOn = true;
                 WeaponImg.sprite = img2;
                 break;
-            case 2:
+            case 3:
                 if (imsi.enchantCount == imsi.maxEnchant)
                 {
                     fullEnchantNotice(imsi);
@@ -199,6 +280,8 @@ public class UIManager : MonoBehaviour
         addCritical.text = "-";
         successPercent.text = "-";
         enchantMoney.text = "-";
+        originAddPercent.text = "( + " + (0.5f * useOrigin) + " %)";
+        originTxt.text = "0";
 
         enchant.ResetTarget(); // 대상 초기화
     }
@@ -208,7 +291,7 @@ public class UIManager : MonoBehaviour
 
         for (int i = 0; i < playerItem.weapons.Length; i++)
         {
-            if (playerItem.weapons[i] == null)
+            if (playerItem.weapons[i] == null || playerItem.weapons[i].baseAtk == 0)
                 break;
             if (playerItem.weapons[i].weaponCode == itemCode)
             {
@@ -226,18 +309,18 @@ public class UIManager : MonoBehaviour
         EnchantStep.text = info.enchantCount + " → " + (info.enchantCount + 1) + " 강 강화"; // +1 부분은 괄호로 묶어 주어야 한다.
         switch (info.weaponCode) // UI 정보 세팅
         {
-            case 0:
+            case 1:
                 addAtk.text = (info.baseAtk+info.enchantAtk) + " + " + enchant.addMeleeAtk[info.enchantCount]; // 공격력 증가치 세팅
                 minusDelay.text = (info.baseDelay + info.enchantDelay).ToString("N2") + " - " + enchant.minusMeleeDelay[info.enchantCount]; 
                 // 딜레이 감소치 세팅, 딜레이는 소수점 2번째 자리까지만 표시("N2")
                 addCritical.text = (info.criticalPercent * 100) + " % + " + (enchant.addMeleeCritical[info.enchantCount] * 100) + " %";
                 break;
-            case 1:
+            case 2:
                 addAtk.text = (info.baseAtk + info.enchantAtk) + " + " + enchant.addGunAtk[info.enchantCount];
                 minusDelay.text = (info.baseDelay + info.enchantDelay).ToString("N2") + " - " + enchant.minusGunDelay[info.enchantCount];
                 addCritical.text = (info.criticalPercent * 100) + " % + " + (enchant.addGunCritical[info.enchantCount] * 100) + " %";
                 break;
-            case 2:
+            case 3:
                 addAtk.text = (info.baseAtk + info.enchantAtk) + " + " + enchant.addMGunAtk[info.enchantCount];
                 minusDelay.text = (info.baseDelay + info.enchantDelay).ToString("N2") + " - " + enchant.minusMGunDelay[info.enchantCount];
                 addCritical.text = (info.criticalPercent * 100) + " % + " + (enchant.addMGunCritical[info.enchantCount] * 100) + " %";
@@ -246,6 +329,9 @@ public class UIManager : MonoBehaviour
 
         successPercent.text = (enchant.percentage[info.enchantCount] * 100) + " %";
         enchantMoney.text = enchant.needGold[info.enchantCount] + " G";
+        useOrigin = 0;
+        originAddPercent.text = "( + " + (0.5f * useOrigin) + " %)";
+        originTxt.text = "0";
 
     }
 
@@ -263,4 +349,100 @@ public class UIManager : MonoBehaviour
             SetInfo(playerItem.weapons[weaponIndex]);
     }
 
+    public void upOrigin()
+    {
+        if (enchant.isWeaponOn && enchant.EnchantTarget.enchantCount == playerItem.weapons[weaponIndex].maxEnchant) // 풀강일 때는 사용을 못하게 해야 한다.
+        {
+            StartCoroutine(noticeEtc(1)); // 알림!
+            return;
+        }
+
+        if(enchant.percentage[enchant.EnchantTarget.enchantCount] * 1000 + useOrigin * 5 >= 1000)
+        {
+            StartCoroutine(noticeEtc(3));
+            return;
+        }
+
+        if (enchant.isWeaponOn && enchant.EnchantTarget.enchantCount < playerItem.weapons[weaponIndex].maxEnchant) // 풀강이 아니고, 무기가 올려져 있을 때
+        {
+            if((playerItem.enchantOrigin - useOrigin - 1) >= 0) // 조각이 있으면 (사용 예정인 조각을 빼고, 한개 더 사용 해도 될 만한 조각이 있으면!)
+            {
+                useOrigin++; // 사용 예정 조각을 올린다.
+                //int imsi = int.Parse(originTxt.text);
+                //imsi++;
+                originTxt.text = useOrigin.ToString();
+                originAddPercent.text = "( + " + (0.5f * useOrigin) + " %)";
+            }
+            else
+            {
+                StartCoroutine(noticeEtc(2));
+            }
+            
+        }
+
+    }
+
+    public void minusOrigin()
+    {
+        int imsi = int.Parse(originTxt.text);
+        if (imsi == 0)
+        {
+            return;
+        }
+        else if(imsi > 0)
+        {
+            imsi--;
+            useOrigin--;
+            originAddPercent.text = "( + " + (0.5f * useOrigin) + " %)";
+            originTxt.text = imsi.ToString();
+        }
+        
+    }
+
+    public IEnumerator noticeEtc(int type)
+    {
+        switch (type)
+        {
+            case 0: // 비용이 부족함을 알려줄 때
+                popText.text = "강화 비용이 부족합니다!";
+                PopUI.SetActive(true);
+                break;
+            case 1: // 기원 조각 풀일때
+                popText.text = "강화를 한계까지 하여 사용할 수 없습니다!";
+                PopUI.SetActive(true);
+                break;
+            case 2: // 기원 조각이 부족할 때
+                popText.text = "조각이 없습니다!";
+                PopUI.SetActive(true);
+                break;
+            case 3:
+                popText.text = "100%를 초과하여 올릴 수 없습니다!";
+                PopUI.SetActive(true);
+                break;
+            case 4:
+                popText.text = "강화 성공!";
+                PopUI.SetActive(true);
+                break;
+            case 5:
+                popText.text = "강화 실패...";
+                PopUI.SetActive(true);
+                break;
+        }
+
+        yield return new WaitForSeconds(0.8f);
+
+        PopUI.SetActive(false);
+        popText.text = "E 버튼을 눌러 상호작용 하세요!";
+
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        throw new System.NotImplementedException();
+    }
 }

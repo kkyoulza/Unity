@@ -9,8 +9,19 @@ public class PlayerCode : MonoBehaviour
     // 플레이어 정보
     public int playerMaxHealth; // 플레이어 최대 체력
     public int playerHealth; // 플레이어 체력
+    public int playerMana; // 플레이어 현재 마나
+    public int playerMaxMana; // 플레이어 최대 마나
     public int playerStrength; // 플레이어 힘
     public int playerAccuracy; // 플레이어 명중률
+
+    public int playerMaxAtk; // 최대 공격력
+    public int playerMinAtk; // 최소 공격력
+
+    // 명중률 계산 -> 기본 명중률 50% + 추가 명중률 에 log를 씌워서 10으로 나눈 후 더함 (기본 명중률 5, 0.5 + 0.06 = 0.56 정도에서 시작)
+    // 공격력 계산 -> 최소 공격력 : (캐릭터 힘 + 무기 공격력) * 명중률(최대 95%)
+    // 최대 공격력 : (기본 공격력 + 무기 공격력)
+    // 데미지 : 최소~최대 공격력 랜덤 생성 - 몬스터의 방어력
+    
 
     // 조작 관련
     float horAxis; // 가로 방향키 입력 시 값을 받을 변수
@@ -30,6 +41,7 @@ public class PlayerCode : MonoBehaviour
     bool AtkDown; // 공격 키
     bool rDown; // 재장전 키
     bool itemDown; // 아이템 창 키 
+    bool statusDown; // 캐릭터 스텟 창 키
 
 
     // 상태 변수(bool)
@@ -54,7 +66,7 @@ public class PlayerCode : MonoBehaviour
     public bool[] hasWeapons; // 어떤 무기를 가지고 있는가?
 
     public GameObject nearObject; // 근처에 떨어져 있는 아이템 오브젝트
-    Weapon cntEquipWeapon; // 현재 장착하고 있는 무기
+    public Weapon cntEquipWeapon; // 현재 장착하고 있는 무기
 
     int cntindexWeapon = -1; // 현재 끼고 있는 무기 index, 초기 값은 -1로 해 준다.
 
@@ -107,8 +119,27 @@ public class PlayerCode : MonoBehaviour
         Swap();
         onUI();
         InterAction();
-        saveinfo.savePlayerStats(playerMaxHealth, playerHealth, playerStrength, playerAccuracy, playerItem.playerCntGold);
+        calStatus();
+        saveinfo.savePlayerStats(playerMaxHealth, playerHealth, playerMana,playerMaxMana, playerStrength, playerAccuracy, playerItem.playerCntGold,
+            playerItem.enchantOrigin,playerItem.cntHPPotion,playerItem.cntMPPotion);
         // 플레이어 자체 스탯, 골드 양 저장
+    }
+    
+    public void calStatus()
+    {
+        // 스탯 계산
+        if (cntEquipWeapon == null)
+        {
+            playerMaxAtk = 0;
+            playerMinAtk = 0;
+        }
+        else
+        {
+            playerMaxAtk = cntEquipWeapon.Damage + playerStrength;
+            playerMinAtk = (int)((cntEquipWeapon.Damage + playerStrength) * (0.5f + 0.1f * Mathf.Log(playerAccuracy, 10)));
+        }
+        
+
     }
 
     void Attack()
@@ -184,6 +215,7 @@ public class PlayerCode : MonoBehaviour
         sDown3 = Input.GetButtonDown("Swap3");
 
         itemDown = Input.GetKeyDown(KeyCode.I);
+        statusDown = Input.GetKeyDown(KeyCode.U);
 
     }
 
@@ -195,6 +227,15 @@ public class PlayerCode : MonoBehaviour
                 ui.OnItemUI();
             else
                 ui.OffItemUI();
+        }
+
+        if (statusDown)
+        {
+            if (!ui.StatusUI.activeSelf)
+                ui.OnStatusUI();
+            else
+                ui.OffStatusUI();
+
         }
 
     }
@@ -246,17 +287,17 @@ public class PlayerCode : MonoBehaviour
 
     void Swap()
     {
-        if (sDown1 && (!hasWeapons[0] || cntindexWeapon == 0)) // 1번을 눌렀을 때, 습득을 안했거나, 이미 같은 것을 장착하고 있을 때
+        if (sDown1 && (!hasWeapons[1] || cntindexWeapon == 1)) // 1번을 눌렀을 때, 습득을 안했거나, 이미 같은 것을 장착하고 있을 때
             return; // 실행 x
-        if (sDown2 && (!hasWeapons[1] || cntindexWeapon == 1)) // 2번을 눌렀을 때, 습득을 안했거나, 이미 같은 것을 장착하고 있을 때
+        if (sDown2 && (!hasWeapons[2] || cntindexWeapon == 2)) // 2번을 눌렀을 때, 습득을 안했거나, 이미 같은 것을 장착하고 있을 때
             return; // 실행 x
-        if (sDown3 && (!hasWeapons[2] || cntindexWeapon == 2)) // 3번을 눌렀을 때, 습득을 안했거나, 이미 같은 것을 장착하고 있을 때
+        if (sDown3 && (!hasWeapons[3] || cntindexWeapon == 3)) // 3번을 눌렀을 때, 습득을 안했거나, 이미 같은 것을 장착하고 있을 때
             return; // 실행 x
 
         int weaponIndex = -1;
-        if (sDown1) weaponIndex = 0;
-        if (sDown2) weaponIndex = 1;
-        if (sDown3) weaponIndex = 2;
+        if (sDown1) weaponIndex = 1;
+        if (sDown2) weaponIndex = 2;
+        if (sDown3) weaponIndex = 3;
 
         if ((sDown1 || sDown2 || sDown3) && !isJump && !isSwap && !isDodge) // 1~3번 키가 눌리면서 점프중이 아닐 때! + 무기를 먹었을 때!
         {
@@ -267,6 +308,15 @@ public class PlayerCode : MonoBehaviour
             cntEquipWeapon = WeaponList[weaponIndex].GetComponent<Weapon>();
             cntindexWeapon = weaponIndex;
             cntEquipWeapon.gameObject.SetActive(true);
+            
+            if(cntEquipWeapon.itemCode == 2 || cntEquipWeapon.itemCode == 3)
+            {
+                ui.bulletUI.SetActive(true);
+            }
+            else
+            {
+                ui.bulletUI.SetActive(false);
+            }
 
             isSwap = true;
             anim.SetTrigger("DoSwap");
@@ -325,6 +375,9 @@ public class PlayerCode : MonoBehaviour
                     case "Smith":
                         ui.PopUI.SetActive(false);
                         ui.EnchantWeaponUI();
+                        break;
+                    case "Stat":
+                        Debug.Log("Stat 강화");
                         break;
                 }
                 

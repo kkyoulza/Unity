@@ -54,14 +54,14 @@ public class ChooseBtnE : MonoBehaviour
 
     public bool CheckWeaponExist() // 이것은 UI 매니저에 옮기고 매개변수를 만들어서 이벤트 시작을 버튼마다 다른 매개변수로 하게끔 하자.
     {
-        if(playerItem.weapons[0] == null) // 첫 번째 원소가 아무것도 없다는 것은 아무것도 안먹은 것!
+        if(playerItem.weapons[0].baseAtk == 0) // 첫 번째 원소의 공격력이 0이라는 것은 아무것도 얻지 못했다는 것
         {
             return false; // false
         }
         for (int i = 0; i < playerItem.weapons.Length; i++)
         {
             if (playerItem.weapons[i] == null)
-                break;
+                continue;
             if (playerItem.weapons[i].weaponCode == itemNum)
             {
                 return true; // 버튼에 맞는 무기를 먹었다면 true

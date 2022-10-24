@@ -38,6 +38,10 @@ public class PlayerItem : MonoBehaviour
     // 아이템 정보
     public WeaponItemInfo[] weapons; // 아이템 정보들이 들어 가 있는 배열을 만든다.
     public long playerCntGold; // 플레이어가 현재 가진 골드.
+    public int enchantOrigin; // 강화 기원조각 개수
+    public int cntHPPotion; // 현재 포션 개수
+    public int cntMPPotion; // 현재 마나포션 개수
+
     int weaponIndex;
     int maxIndex = 10;
 
@@ -76,7 +80,7 @@ public class PlayerItem : MonoBehaviour
                 PlayerCode playerCode = GetComponent<PlayerCode>();
                 Weapon weapon = playerCode.WeaponList[item.value].GetComponent<Weapon>();
 
-                WeaponItemInfo weaponinfo = new WeaponItemInfo(item.value, 0,weapon.maxEnchant, weapon.Damage, weapon.AtkDelay, weapon.type,weapon.criticalPercent);
+                WeaponItemInfo weaponinfo = new WeaponItemInfo(item.value, 0 ,weapon.maxEnchant, weapon.Damage, weapon.AtkDelay, weapon.type,weapon.criticalPercent);
                 if (weapon.bullet) // 만약 원거리라면 무기 자체에 세팅한 총알 데미지를 갱신 해 준다.
                 {
                     Bullet bullet = weapon.bullet.GetComponent<Bullet>();
@@ -93,11 +97,13 @@ public class PlayerItem : MonoBehaviour
     {
         // 강화 후 정보를 무기에 적용하는 과정
 
-        weapon = playerInfo.WeaponList[weapons[returnIndex].weaponCode].GetComponent<Weapon>();
+        int weaponCode = weapons[returnIndex].weaponCode; // 무기 고유의 코드를 받아와야 한다.
 
-        weapon.Damage = weapons[weapons[returnIndex].weaponCode].baseAtk + weapons[weapons[returnIndex].weaponCode].enchantAtk; // 강화 수치만큼 늘어나게끔!
-        weapon.AtkDelay = weapons[weapons[returnIndex].weaponCode].baseDelay + weapons[weapons[returnIndex].weaponCode].enchantDelay; // 딜레이는 강화 수치만큼 줄어들게! (이미 enchantDelay가 마이너스이기 때문에 +를 적는다.)
-        weapon.criticalPercent = weapons[weapons[returnIndex].weaponCode].criticalPercent; // 강화 수치만큼 늘어나게끔!
+        weapon = playerInfo.WeaponList[weaponCode].GetComponent<Weapon>(); // 무기 자체를 불러 온다.(WeaponList)
+
+        weapon.Damage = weapons[returnIndex].baseAtk + weapons[returnIndex].enchantAtk; // 강화 수치만큼 늘어나게끔! (weapons에서는 returnIndex를 그대로!)
+        weapon.AtkDelay = weapons[returnIndex].baseDelay + weapons[returnIndex].enchantDelay; // 딜레이는 강화 수치만큼 줄어들게! (이미 enchantDelay가 마이너스이기 때문에 +를 적는다.)
+        weapon.criticalPercent = weapons[returnIndex].criticalPercent; // 강화 수치만큼 늘어나게끔!
 
         if(weapons[returnIndex].type == Weapon.AtkType.Range)
         {

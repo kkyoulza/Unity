@@ -33,9 +33,12 @@ public class DataSet : MonoBehaviour
 
         playerCode.playerMaxHealth = saveData.info.playerMaxHealth;
         playerCode.playerHealth = saveData.info.playerCntHealth;
+        playerCode.playerMana = saveData.info.playerCntMP;
+        playerCode.playerMaxMana = saveData.info.playerMaxMP;
         playerCode.playerStrength = saveData.info.playerStrength;
         playerCode.playerAccuracy = saveData.info.playerAcc;
         playerItem.playerCntGold = saveData.info.playerCntGold;
+        playerItem.enchantOrigin = saveData.info.enchantOrigin;
 
 
         for (int i = 0; i < saveData.info.weapons.Length; i++)

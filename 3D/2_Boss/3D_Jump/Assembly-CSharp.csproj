@@ -64,10 +64,12 @@
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Damage.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Rotation.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\PlayerItem.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\ItemSlot.cs" />
     <Compile Include="Assets\Scripts\JumpMap\PlayerSFX.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Managing2.cs" />
     <Compile Include="Assets\Scripts\JumpMap\ChooseRoute.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Rock.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\Coin.cs" />
     <Compile Include="Assets\Scripts\Boss\BossMissile.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\DataSet.cs" />
     <Compile Include="Assets\Scripts\JumpMap\StartNotice.cs" />
@@ -87,7 +89,8 @@
     <Compile Include="Assets\Scripts\JumpMap\Managing.cs" />
     <Compile Include="Assets\Scripts\JumpMap\SaveInformation.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\ChooseBtnE.cs" />
-    <Compile Include="Assets\Scripts\LobbyAndPlayer\Coin.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\Drag.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\StatManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

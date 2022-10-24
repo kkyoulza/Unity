@@ -4,19 +4,23 @@ using UnityEngine;
 
 public class Weapon : MonoBehaviour
 {
+    PlayerCode playerCode;
 
     // 공통
     public int itemCode; // 아이템 종류 코드
     public enum AtkType { Melee, Range }; // Melee - 근접 공격, Range - 원거리 공격
     public AtkType type; // 생성을 해 주어야 한다.
-    public int Damage;
+    public int Damage; // 무기 공격력
     public float AtkDelay;
     public float criticalPercent; // 크리티컬 확률
     public int maxEnchant; // 풀강화 수치
 
+    public int AtkDmg; // 데미지 계산 후 들어가는 데미지 (무기 스왑때마다 갱신 [스탯 계산 -> 무기 데미지 갱신!])
+
     //근접 전용
     public BoxCollider meleeArea; // 근접 공격 범위
     public TrailRenderer trailEffect; // 효과?
+    public bool isAttacked = false; // 한 번에 한 번만 공격을 했는가?
 
     // 원거리 전용
     public Transform bulletPos; // 총알 생성 위치
@@ -29,8 +33,14 @@ public class Weapon : MonoBehaviour
     // 강화 정보 적용 관련
     Bullet bulletInfo;
 
+    private void Awake()
+    {
+        playerCode = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCode>();
+    }
+
     public void Use()
     {
+        AtkDmg = Random.Range(playerCode.playerMinAtk, playerCode.playerMaxAtk);
         if (type == AtkType.Melee)
         {
             StopCoroutine("Swing"); // 동작하고 있는 중에도 다 정지시킬 수 있음
@@ -38,6 +48,7 @@ public class Weapon : MonoBehaviour
         }
         else if(type == AtkType.Range && cntCount > 0)
         {
+            bullet.GetComponent<Bullet>().SetDamage(AtkDmg); // 데미지 설정
             cntCount--;
             StopCoroutine("Shot"); // 동작하고 있는 중에도 다 정지시킬 수 있음
             StartCoroutine("Shot");
@@ -46,18 +57,24 @@ public class Weapon : MonoBehaviour
 
     IEnumerator Swing()
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.3f);
 
         meleeArea.enabled = true; // box Collider 활성화
         trailEffect.enabled = true; // effect 활성화
 
+        if (isAttacked)
+        {
+            meleeArea.enabled = false; // box Collider 비 활성화
+        }
+
+        yield return new WaitForSeconds(0.2f);
+
+        meleeArea.enabled = false; // box Collider 비 활성화
+        isAttacked = false;
+
         yield return new WaitForSeconds(0.3f);
 
-        meleeArea.enabled = false; // box Collider 활성화
-
-        yield return new WaitForSeconds(0.3f);
-
-        trailEffect.enabled = false; // effect 활성화
+        trailEffect.enabled = false; // effect 비 활성화
 
 
     }

@@ -11,9 +11,14 @@ public class playerInfo
     public WeaponItemInfo[] weapons = new WeaponItemInfo[100]; // 먹은 무기 스탯 정보
     public int playerMaxHealth; // 최대 체력
     public int playerCntHealth; // 현재 체력
+    public int playerCntMP; // 현재 마나
+    public int playerMaxMP; // 최대 마나
     public int playerStrength; // 플레이어 힘 스탯
     public int playerAcc; // 플레이어 명중률
     public long playerCntGold; // 플레이어 현재 골드
+    public int enchantOrigin; // 강화 기원 조각 개수
+    public int HPPotion; // HP포션 개수
+    public int MPPotion; // MP포션 개수
     public bool[] isGained = new bool[3]; // 무기를 얻은 현황
 
 }
@@ -51,13 +56,18 @@ public class SaveInfos : MonoBehaviour
         }
     }
 
-    public void savePlayerStats(int maxHealth,int cntHealth,int strength,int acc,long gold)
+    public void savePlayerStats(int maxHealth, int cntHealth, int cntMP, int maxMP, int strength,int acc,long gold,int originCnt,int HPPotion,int MPPotion)
     {
         info.playerMaxHealth = maxHealth;
         info.playerCntHealth = cntHealth;
+        info.playerCntMP = cntMP;
+        info.playerMaxMP = maxMP;
         info.playerStrength = strength;
         info.playerAcc = acc;
         info.playerCntGold = gold;
+        info.enchantOrigin = originCnt;
+        info.HPPotion = HPPotion;
+        info.MPPotion = MPPotion;
     }
 
 }

@@ -9,6 +9,9 @@ public class Enemy : MonoBehaviour
     public enum Type { A,B,C,Boss,RockA,RockB }; // 변수의 종류를 만든다.
     public Type enemyType; // 적의 타입을 넣을 변수
 
+    public AudioClip hitSFX;
+    AudioSource audio;
+
     // 체력 정보
     public int maxHealth;
     public int cntHealth;
@@ -52,6 +55,7 @@ public class Enemy : MonoBehaviour
         anim = GetComponentInChildren<Animator>();
         Invoke("ChaseStart", 2.0f);
         target = GameObject.FindGameObjectWithTag("Player").transform; // 플레이어를 추적하는 것이 default값
+        audio = GetComponent<AudioSource>();
 
     }
     private void Start()
@@ -189,13 +193,15 @@ public class Enemy : MonoBehaviour
     {
         if(other.tag == "Melee")
         {
+            other.gameObject.GetComponent<Weapon>().isAttacked = true;
             Damage_Prefab = Resources.Load("Prefabs/LobbyAndRPG/Damage") as GameObject; // 데미지 프리팹을 GameObject에 가져 온다.
 
             Weapon weapon = other.gameObject.GetComponent<Weapon>();
             cntHealth -= weapon.Damage;
+            
 
             Damage = MonoBehaviour.Instantiate(Damage_Prefab);
-            Damage.GetComponent<Damage>().damage = weapon.Damage; // 오브젝트 속 데미지 컴포넌트에 있는 데미지 변수 세팅
+            Damage.GetComponent<Damage>().damage = weapon.AtkDmg; // 오브젝트 속 데미지 컴포넌트에 있는 데미지 변수 세팅
             Damage.transform.position = PosObj.transform.position;
 
             Vector3 reactVec = transform.position - other.transform.position;
@@ -226,6 +232,9 @@ public class Enemy : MonoBehaviour
 
     IEnumerator OnDamage(Vector3 reactVec) // 피격시 반응 설정
     {
+        audio.clip = hitSFX;
+        audio.Play();
+
         foreach (MeshRenderer mesh in mat)
         {
             if(enemyType != Type.RockA && enemyType != Type.RockB)

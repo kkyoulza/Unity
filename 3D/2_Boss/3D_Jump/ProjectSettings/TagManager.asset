@@ -33,6 +33,7 @@ TagManager:
   - Rock
   - emerald
   - ruby
+  - Stat
   layers:
   - Default
   - TransparentFX
