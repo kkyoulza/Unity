@@ -385,7 +385,11 @@ public class StatManager : MonoBehaviour
 
 ![image](https://user-images.githubusercontent.com/66288087/197345428-ed24d972-f022-4a8d-baba-5ccf59d08ac1.png)
 
-완성된 아이템 창, 스탯 창 UI의 모습
+완성된 아이템 창, 스탯 창 UI의 모습(위 사진에서는 스탯이 적용되지 않은 상태)
+
+![image](https://user-images.githubusercontent.com/66288087/197685378-609523e3-182d-4c46-a096-47e7b516fe55.png)
+
+스탯 적용, 무기 장착 시 스탯 창 모습
 
 
 #### 무기 교체 단축 키, 남은 총알 표시, 스킬 쿨타임 표시
