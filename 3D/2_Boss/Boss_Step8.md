@@ -40,7 +40,7 @@ public void SetBar()
 ![image](https://user-images.githubusercontent.com/66288087/197345905-863dfa77-7f7a-47d6-a4ee-8dadcfd367c6.png)
 
 
-#### 아이템 창, 캐릭터 스탯 창, 장비 창
+#### 아이템 창, 캐릭터 스탯 창
 
 RPG에서 아이템 창, 스탯 창, 장비 창 등의 아이템 창 인터페이스는 필수적이다.
 
@@ -82,15 +82,19 @@ Panel 안에는 각 아이템들의 사진, 정보, 아이템 개수를 나타�
 
 골드, 기원조각, HP포션, MP 포션의 개수를 갱신 해 준다.
 
+**아이템 설명**
+
 그리고 아이템에는 각 아이템에 대한 설명이 들어 가 주어야 한다.
 
 아이템 위에 마우스 포인터를 가져가게 되면 설명이 나오게끔 해 줄 것이다.
 
 각 아이템 패널마다 아이템 코드를 넣어 주고, 설명이 들어갈 판에 아이템 코드별로 알맞는 설명을 넣어주면 된다.
 
-마우스 포인터가 올라갔을 때는 이벤트 처리를 사용하여 구현하였다.
+마우스 포인터가 올라갔을 때는 IPointerEnterHandler, IPointerExitHandler를 사용하여 구현하였다.
 
-Item
+마우스가 해당 객체에 올라갈 때, 그리고 나갈 때 정보 UI를 on/off 해 줌으로써 아이템에 대한 정보를 알 수 있게 하였다.
+
+ItemSlot.cs 코드
 <pre>
 <code>
 using System.Collections;
@@ -156,15 +160,239 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 </code>
 </pre>
 
+![image](https://user-images.githubusercontent.com/66288087/197682296-1c17cf89-4f1a-4c6e-badd-4fa916c252e9.png)
+
+마우스 포인터는 캡쳐가 되지 않았지만 아이템 패널 위에 위에 있을 때 아이템 설명이 노출되었음을 볼 수 있다.
+
+**아이템 창 드래그**
+
+이제 아이템 창을 드래그 하는 것을 구현 해 보도록 하자
+
+아이템 창 드래그는 [이곳](https://husk321.tistory.com/m/214)에 나온 코드를 이용하였다.
+
+코드를 보게 되면
+
+아래와 같이 나온다.
+
+Drag.cs
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+public class Drag : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler
+{
+
+    RectTransform rect;
+    public GameObject obj;
+    [SerializeField] public Canvas canvas;
+    CanvasGroup canvasGroup;
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        rect = obj.GetComponent<RectTransform>();
+        canvasGroup = obj.GetComponent<CanvasGroup>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        canvasGroup.alpha = .6f;
+        canvasGroup.blocksRaycasts = false;
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        // PointerEventData 의 delta는 얼마나 이동했는지를 나타 내 주는 것이다.
+        // 따라서 해당 객체의 rectTransform을 delta만큼 이동시켜 준다.
+
+        rect.anchoredPosition += eventData.delta / canvas.scaleFactor;
+    }
+
+    public void OnDrop(PointerEventData eventData)
+    {
+
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        canvasGroup.alpha = 1f;
+        canvasGroup.blocksRaycasts = true;
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+
+    }
+
+
+}
+</code>
+</pre>
+
+Drag.cs 코드는 아이템 창 상단 라인 객체에 넣어주었다.
+
+![image](https://user-images.githubusercontent.com/66288087/197682953-973d02c0-23a3-4510-b0cd-2f8444f4a80f.png)
+
+설정한 public 변수들에는 위 사진과 같이 넣어준다.
+
+obj에는 아이템 창 전체를, Canvas에는 Canvas를 넣어 준다.
+
+캔버스 그룹은 UI 요소들을 하나로 묶어 관리하기 위해 사용한다. 
+
+즉, Item 창의 전체를 관리하기 위함이다.
+
+OnBeginDrag() 에서는 드래그를 시작할 때 일어나는 일들을 설정할 수 있다.
+
+아이템창 전체의 투명도를 좀 더 투명하게 설정 해 준다. (드래그를 하는 중이라는 것을 알려주기 위하여)
+
+OnEndDrag() 에서는 다시 원상태로 돌려 놓는다.
+
+그렇다면 드래그 중일때는?
+
+OnDrag() 함수를 이용하여 다룬다.
+
+드래그 중일때는 아이템창의 위치를 eventData를 통해 들어오는 위치 변화량만큼 이동시켜 준다.
+
+canvas.sacleFactor는 캔버스의 크기와 맞추기 위함이라 생각하면 된다.
+
+**스탯 창**
+
+스탯 창도 아이템 창과 비슷하게 해 주면 된다.
+
+단지 다른 점은 플레이어의 스탯을 계산하여 Update() 해 주는 작업이 추가 되어야 한다는 점이다.
+
+플레이어의 스탯 리스트를 나열하면 다음과 같다.
+
+- 공격력
+- 힘
+- 명중률
+- HP
+- MP
+
+그런데 여기서 명중률은 몬스터(or 돌)에게 얼마나 자신이 가진 최대의 데미지를 줄 수 있는가에 영향을 주게 설정 할 것이다.
+
+다시 말해, 자신의 공격력이 100이라고 하면 명중률에 따라서 80~100의 데미지가 나올 수도 있고, 60~100의 데미지가 나올 수도 있는 것이다.
+
+(메이플에서는 숙련도가 이러한 역할을 한다.)
+
+아무튼, 명중률에 의해서 플레이어의 최소 공격력, 최대 공격력을 산출할 수 있다.
+
+우선, 플레이어 자체의 힘과 자신이 장착하고 있는 무기의 공격력을 더한다.
+
+이 값이 최대 공격력이다.
+
+최소 공격력은 명중률에 영향을 받게 되는데, 명중률은 float가 아닌 int 값이다.
+
+기본적으로 공격은 맞거나/빗나가거나 둘 중에 하나이다. 따라서 기본적인 명중률은 50%(0.5)로 시작한다.
+
+그런데 플레이어에게 주어지는 기본 명중률 스탯은 5이기 때문에 이 것을 소수로 바꾸어 주어서 0.5에 더해주면 된다.
+
+그렇다면 단순하게 10을 나누어서 0.5를 해서 더해주면 될까?
+
+아니다.
+
+그렇게 되면 1.0이 되어 버려서 최소, 최대 공격력을 나누게 되는 의미가 없다.
+
+따라서 명중률은 그 수치를 올리게 되어도 초반에 효율이 좋고, 너무 많이 올리게 되면 비효율적이게 설계 할 것이다.
+
+따라서
+
+**최소 공격력 = (플레이어 힘 + 장착 무기 공격력) * (0.5 + 0.1 * log(플레이어 명중률));** 로 설정하였다.
+
+log(5) 가 0.698 정도가 나오게 된다. 0.5 + 0.698 > 1.0 이기 때문에 log5 값에 10을 나누어 주었다.
+
+따라서 진짜 명중률 초기 값은 0.569 = 56.9% 정도가 된다.
+
+아무튼 이렇게 스탯을 계산 한 값을 코드에도 적용시켜 준다.
+
+PlayerCode.cs 내에 있는 스탯계산 함수
+<pre>
+<code>
+public void calStatus()
+{
+    // 스탯 계산
+    if (cntEquipWeapon == null)
+    {
+        playerMaxAtk = 0;
+        playerMinAtk = 0;
+    }
+    else
+    {
+        playerMaxAtk = cntEquipWeapon.Damage + playerStrength;
+        playerMinAtk = (int)((cntEquipWeapon.Damage + playerStrength) * (0.5f + 0.1f * Mathf.Log(playerAccuracy, 10)));
+    }
+
+
+}
+</code>
+</pre>
+
+위 코드를 Update()에 넣어 두어 스탯을 계산하게끔 해 주었다.
+
+그리고 스탯은 스탯 창 자체에서 강화를 할 수 있게 할 계획이기 때문에 manager에 넣을 새로운 코드인 StatManager.cs를 하나 만들어 주었다.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class StatManager : MonoBehaviour
+{
+    GameObject uiManager;
+    PlayerCode playerCode;
+    UIManager ui;
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        uiManager = GameObject.FindGameObjectWithTag("uimanager");
+        playerCode = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCode>();
+        ui = uiManager.GetComponent<UIManager>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        SetStatusUI();
+    }
+
+    void SetStatusUI()
+    {
+        ui.Atk.text = playerCode.playerMinAtk.ToString() + " ~ " + playerCode.playerMaxAtk.ToString();
+        ui.Str.text = playerCode.playerStrength.ToString();
+        ui.Acc.text = playerCode.playerAccuracy.ToString();
+    }
+
+
+}
+</code>
+</pre>
+
+이렇게 만들어 주면 아래 사진과 같이 완성이 되게 된다.
+
+(강화 버튼은 아직 구현하지 않았다.)
 
 ![image](https://user-images.githubusercontent.com/66288087/197345428-ed24d972-f022-4a8d-baba-5ccf59d08ac1.png)
 
-완성된 아이템 창, 스탯 창의 모습
-
-
+완성된 아이템 창, 스탯 창 UI의 모습
 
 
 #### 무기 교체 단축 키, 남은 총알 표시, 스킬 쿨타임 표시
+
+이제 무기 교체 단축 키를 나타 내 주는 것과, 남은 총알, 쿨타임 표시를 해 주도록 하겠다.
+
+
 
 
 
