@@ -5,7 +5,7 @@
 
 또한, 앞서 만들어 놓은 강화 창에서 기원 조각 기능을 적용시키고, 그에 대한 디테일을 설정 해 주도록 하겠다.
 
-#### 캐릭터 상태 창
+### 캐릭터 상태 창
 
 캐릭터 상태 창은 캐릭터의 초상화, 그리고 HP, MP 바가 체력, 마나에 비례하여 변하는 기능을 추가 하도록 하겠다.
 
@@ -40,11 +40,13 @@ public void SetBar()
 ![image](https://user-images.githubusercontent.com/66288087/197345905-863dfa77-7f7a-47d6-a4ee-8dadcfd367c6.png)
 
 
-#### 아이템 창, 캐릭터 스탯 창, 장비 창
+### 아이템 창, 캐릭터 스탯 창, 장비 창
 
 RPG에서 아이템 창, 스탯 창, 장비 창 등의 아이템 창 인터페이스는 필수적이다.
 
 따라서 그에 대한 것들을 구현 해 보고자 한다.
+
+<hr>
 
 **아이템 창**
 
@@ -81,6 +83,8 @@ Panel 안에는 각 아이템들의 사진, 정보, 아이템 개수를 나타�
 </pre>
 
 골드, 기원조각, HP포션, MP 포션의 개수를 갱신 해 준다.
+
+<hr>
 
 **아이템 설명**
 
@@ -163,6 +167,8 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 ![image](https://user-images.githubusercontent.com/66288087/197682296-1c17cf89-4f1a-4c6e-badd-4fa916c252e9.png)
 
 마우스 포인터는 캡쳐가 되지 않았지만 아이템 패널 위에 위에 있을 때 아이템 설명이 노출되었음을 볼 수 있다.
+
+<hr>
 
 **아이템 창 드래그**
 
@@ -263,6 +269,8 @@ OnDrag() 함수를 이용하여 다룬다.
 드래그 중일때는 아이템창의 위치를 eventData를 통해 들어오는 위치 변화량만큼 이동시켜 준다.
 
 canvas.sacleFactor는 캔버스의 크기와 맞추기 위함이라 생각하면 된다.
+
+<hr>
 
 **스탯 창**
 
@@ -390,6 +398,8 @@ public class StatManager : MonoBehaviour
 ![image](https://user-images.githubusercontent.com/66288087/197685378-609523e3-182d-4c46-a096-47e7b516fe55.png)
 
 스탯 적용, 무기 장착 시 스탯 창 모습
+
+<hr>
 
 **장비 창**
 
@@ -565,15 +575,219 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
 아이템 창, 스탯 창, 장비 창에는 모두 드래그 효과를 적용하였다.
 
+<hr>
 
-#### 무기 교체 단축 키, 남은 총알 표시, 스킬 쿨타임 표시
+### 무기 교체 단축 키, 남은 총알 표시, 스킬 쿨타임 표시
 
 이제 무기 교체 단축 키를 나타 내 주는 것과, 남은 총알, 쿨타임 표시를 해 주도록 하겠다.
 
+**무기 교체 단축키 안내판 표시**
+
+길게 써 놓았는데, 그냥 지금 어떤 무기를 착용하고 있는지랑, 해당 무기를 장착하기 위해 어느 버튼을 눌러야 하는 지를 표시 해 주는 것이다.
+
+![image](https://user-images.githubusercontent.com/66288087/197988795-e1c475aa-72b4-4421-86cc-97e46eab627a.png)
+
+일단 완성 된 모습은 위 사진과 같다.
+
+기본적으로 장착하고 있지 않은 무기는 투명하게, 착용하고 있는 무기는 투명하지 않게 설정하였다.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class PanelActive : MonoBehaviour
+{
+    public int itemCode;
+    public Image img;
+    PlayerCode playerCode;
+    // Start is called before the first frame update
+    void Awake()
+    {
+        playerCode = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCode>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        isActive();
+    }
+
+    public void isActive()
+    {
+        if(playerCode.cntEquipWeapon == null)
+        {
+            return;
+        }
+
+        if(playerCode.cntEquipWeapon.itemCode == this.itemCode)
+        {
+            Color color = new Color(1, 1, 1, 1);
+            img.color = color;
+        }
+        else
+        {
+            Color color = new Color(1, 1, 1, 0.5f);
+            img.color = color;
+        }
+
+    }
+
+}
+</code>
+</pre>
+
+
+PanelActive.cs 라는 코드로 만들어 해당 Panel에 넣어 주었다.
+
+player의 cntEquipWeapon(현재 장착중인 무기) GameObject에 들어 있는 itemCode 정보를 가져와서 사용하였다.
+
+<hr>
+
+**남은 총알 표시 UI**
+
+남은 총알을 표시하는 UI는 총알을 사용하는 무기를 꼈을 때만 나오게 하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/197993358-e36105ee-62bd-4166-998d-daec90d71e92.png)
+
+총 무기를 꼈을 때 UI가 나온 모습
+
+UI를 on/off 하는 부분은 PlayerCode.cs에서 무기를 Swap하는 순간에 넣어 주었다.
+
+<pre>
+<code>
+void Swap()
+{
+    if (sDown1 && (!hasWeapons[1] || cntindexWeapon == 1)) // 1번을 눌렀을 때, 습득을 안했거나, 이미 같은 것을 장착하고 있을 때
+        return; // 실행 x
+    if (sDown2 && (!hasWeapons[2] || cntindexWeapon == 2)) // 2번을 눌렀을 때, 습득을 안했거나, 이미 같은 것을 장착하고 있을 때
+        return; // 실행 x
+    if (sDown3 && (!hasWeapons[3] || cntindexWeapon == 3)) // 3번을 눌렀을 때, 습득을 안했거나, 이미 같은 것을 장착하고 있을 때
+        return; // 실행 x
+
+    int weaponIndex = -1;
+    if (sDown1) weaponIndex = 1;
+    if (sDown2) weaponIndex = 2;
+    if (sDown3) weaponIndex = 3;
+
+    if ((sDown1 || sDown2 || sDown3) && !isJump && !isSwap && !isDodge) // 1~3번 키가 눌리면서 점프중이 아닐 때! + 무기를 먹었을 때!
+    {
+        if(cntEquipWeapon != null) // 이미 다른 무기를 끼고 있을 때!
+        {
+            cntEquipWeapon.gameObject.SetActive(false); // 먼저 해제!
+        }
+        cntEquipWeapon = WeaponList[weaponIndex].GetComponent<Weapon>();
+        cntindexWeapon = weaponIndex;
+        cntEquipWeapon.gameObject.SetActive(true);
+
+        if(cntEquipWeapon.itemCode == 2 || cntEquipWeapon.itemCode == 3)
+        {
+            ui.bulletUI.SetActive(true);
+        }
+        else
+        {
+            ui.bulletUI.SetActive(false);
+        }
+
+        isSwap = true;
+        anim.SetTrigger("DoSwap");
+
+        Invoke("SwapOut",0.3f);
+
+    }
+}
+</code>
+</pre>
+
+itemCode가 총 or 머신 건 일때 UIManager.cs에 저장 해 놓은 bulletUI를 활성화/비활성화 함을 볼 수 있다.
+
+UI 구성은 max는 플레이어가 가지고 있는 전체 총알 개수, 아래 있는 것은 현재 장전되어 있는 총알 개수이다. 괄호 친 부분은 탄창의 용량이다.
+
+<hr>
+
+**스킬 쿨타임 표시**
+
+아직 스킬이 추가 된 것이 거의 없어서 넣을까 고민하였지만 넣는 것이 맞는 것 같아 넣어 주었다.
+
+대쉬를 하고 나면 CoolTimeManager.cs에서 쿨타임을 계산 해 준다.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class CoolTimeManager : MonoBehaviour
+{
+    // 대쉬 스킬 관련
+    public Text CoolText;
+    public Image dashImage;
+
+    public bool coolOn;
+    float coolTime;
+    int cool;
 
 
 
+    // Start is called before the first frame update
+    void Start()
+    {
+        coolOn = true;
+        SetAble();
+    }
 
+    // Update is called once per frame
+    void Update()
+    {
+        if(coolOn == false)
+        {
+            coolUpdate();
+        }
+        
+    }
 
+    public void SetCoolTime(float coolTime)
+    {
+        Color color = new Color(1, 1, 1, 0.5f);
+        dashImage.color = color;
+        this.coolTime = coolTime;
+        CoolText.text = coolTime.ToString();
+    }
+
+    void coolUpdate()
+    {
+        this.coolTime = this.coolTime - Time.deltaTime;
+        cool = (int)coolTime;
+        CoolText.text = cool.ToString();
+
+    }
+
+    public void SetAble()
+    {
+        Color color = new Color(1, 1, 1, 1);
+        dashImage.color = color;
+        CoolText.text = "";
+    }
+
+}
+</code>
+</pre>
+
+위 코드를 통해 쿨타임을 계산하여 Text에 실시간으로 적용 해 준다.
+
+그 텍스트를 대쉬 아이콘에 넣어주면 된다.
+
+![image](https://user-images.githubusercontent.com/66288087/197995382-f41dbdb9-1b71-415d-b74e-14bb63709a8d.png)
+
+그러면 이렇게 숫자가 생기게 되면서 카운트가 된다.(캡처를 늦게 해서 0초의 순간이 찍혔다..)
+
+<hr>
+
+이제 다음으로는 몬스터를 소환하는 스테이지를 만들어 보도록 하겠다.
+
+스테이지 별로 어느 지점에서 몬스터를 스폰하고, 몬스터를 다 잡게 되면 다음으로 이동하고, 보스를 잡으면 클리어 하는 등의 기능을 넣을 예정이다.
 
 
