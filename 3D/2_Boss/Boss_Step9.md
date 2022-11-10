@@ -204,6 +204,7 @@ public class StageStart : MonoBehaviour
 </code>
 </pre>
 
+처음 스폰을 제외하고는 플레이어가 존에 입장했을 때 스폰을 하게 된다.
 
 
 
