@@ -206,6 +206,56 @@ public class StageStart : MonoBehaviour
 
 처음 스폰을 제외하고는 플레이어가 존에 입장했을 때 스폰을 하게 된다.
 
+![image](https://user-images.githubusercontent.com/66288087/201333669-a86e0d15-c5fb-4004-abd2-0a552d142b6b.png)
+
+우선 스폰 하고자 하는 위치를 지정 한 다음, 위 사진과 같이 설정을 할 수 있도록 컴포넌트 화 하였다.
+
+ZoneNum - 던전 안에서 방의 순서를 나타낸다. 사실 기능 상으로는 0번 방 or 그렇지 않음으로만 구분되지만 세부적인 정보 저장 때 활용할 계획이다.
+
+Mob Count - 소환 할 몹의 개수이다.
+
+isZoneClear - 존에 있던 몬스터를 다 퇴치하게 되면 해당 존을 클리어 한 것으로 간주한다.
+
+isStarted - 존에 입장하여 몬스터의 스폰을 시작해도 되는가를 표기해 주는 bool 변수
+
+isSpawned - 존에 몬스터가 스폰되었는가를 표기 해 주는 bool 변수(스폰이 Update문에 있기 때문에 한 번만 소환 해 주기 위함이다.)
+
+xRange - 소환 위치에서 랜덤으로 좌표 격차를 설정하기 위함 (x 좌표)
+
+zRange - 소환 위치에서 랜덤으로 좌표 격차를 설정하기 위함 (z 좌표)
+
+NextDoor - 클리어 시에 다음 존으로 향하는 문을 열기 위해 오브젝트로 설정하였음
+
+SpawnMonsters - 해당 존에 입장했을 때 소환을 시작 한다는 점에서 GameObject.FindObjectsWithTag()를 이용하여 몬스터의 정보를 저장하기 위한 GameObject 배열
+
+SpawnTypeA,B,C,Boss - 스폰을 하기 위해 생성할 Prefab
+
+<hr>
+
+![image](https://user-images.githubusercontent.com/66288087/201334605-d5e926f0-4208-4869-8c2c-ff01b80eabcb.png)
+
+입장 시에 플레이어가 위 사진과 같은 Trigger에 닿게 되면 스폰이 시작되게 된다.(isStarted)
+
+맨 처음 존(zoneNum = 0)에서는 isStarted를 하지 않아도 체크할 수 있게끔 조건에 zoneNum == 0을 넣어 두었다.
+
+(생각해 보니 UI에서 isStarted를 체크해도 될 일 같다..)
+
+아무튼 이런 식으로 몬스터를 소환하여 보스까지 퇴치하게끔 해 준다.
+
+<hr>
+
+### 보상 보물상자와 성과에 따른 차등보상 여부?
+
+
+
+
+<hr>
+
+### 캐릭터가 죽었을 때의 이벤트
+
+
+
+
 
 
 
