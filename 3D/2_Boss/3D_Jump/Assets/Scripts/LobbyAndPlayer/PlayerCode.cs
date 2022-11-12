@@ -21,7 +21,12 @@ public class PlayerCode : MonoBehaviour
     // 공격력 계산 -> 최소 공격력 : (캐릭터 힘 + 무기 공격력) * 명중률(최대 95%)
     // 최대 공격력 : (기본 공격력 + 무기 공격력)
     // 데미지 : 최소~최대 공격력 랜덤 생성 - 몬스터의 방어력
-    
+
+    // 골드 획득 관련
+    public GameObject gainPos; // 골드 획득을 나타내 주는 Text 위치
+    public GameObject gainGoldPrefab; // 골드획득 알림 텍스트 프리팹
+    public GameObject gainOriginPrefab; // 기원조각 획득 시 알림 프리팹
+    GameObject gainText;
 
     // 조작 관련
     float horAxis; // 가로 방향키 입력 시 값을 받을 변수
@@ -42,6 +47,7 @@ public class PlayerCode : MonoBehaviour
     bool rDown; // 재장전 키
     bool itemDown; // 아이템 창 키 
     bool statusDown; // 캐릭터 스텟 창 키
+    bool equipDown; // 캐릭터 장비 창 키
 
 
     // 상태 변수(bool)
@@ -53,6 +59,7 @@ public class PlayerCode : MonoBehaviour
     bool isBorder; // 경계선에 닿았나?
     bool isReloading; // 재장전중인가?
     bool isDamage; // 피격 당하고 있는 중인가?
+    public bool isTalk; // 대화 중인가? (대회중일때는 움직이지 못하게!)
 
 
     Vector3 moveVec;
@@ -110,16 +117,20 @@ public class PlayerCode : MonoBehaviour
     void Update()
     {
         InputKey();
-        Move_Ani();
-        Jump();
-        Attack();
-        ReLoad();
-        TrunChar();
-        Dodge();
-        Swap();
-        onUI();
-        InterAction();
-        calStatus();
+        if (!isTalk) // 대화중이지 않을 때만 가능하게!
+        {
+            Move_Ani(); // 캐릭터 움직임
+            Jump(); // 점프
+            Attack(); // 공격
+            ReLoad(); // 재장전
+            TrunChar(); // 캐릭터 회전
+            Dodge(); // 캐릭터 구르기
+            Swap(); // 캐릭터 무기 변경
+            InterAction(); // 상호작용
+        }
+        onUI(); // 캐릭터 UI창 열기
+        calStatus(); // 캐릭터 스탯 계산
+        checkHP(); // 남은 HP체크
         saveinfo.savePlayerStats(playerMaxHealth, playerHealth, playerMana,playerMaxMana, playerStrength, playerAccuracy, playerItem.playerCntGold,
             playerItem.enchantOrigin,playerItem.cntHPPotion,playerItem.cntMPPotion);
         // 플레이어 자체 스탯, 골드 양 저장
@@ -159,6 +170,7 @@ public class PlayerCode : MonoBehaviour
         }
 
     }
+
     void ReLoad()
     {
         if (cntEquipWeapon == null)
@@ -216,6 +228,7 @@ public class PlayerCode : MonoBehaviour
 
         itemDown = Input.GetKeyDown(KeyCode.I);
         statusDown = Input.GetKeyDown(KeyCode.U);
+        equipDown = Input.GetKeyDown(KeyCode.Y);
 
     }
 
@@ -238,6 +251,13 @@ public class PlayerCode : MonoBehaviour
 
         }
 
+        if (equipDown)
+        {
+            if (!ui.equipUI.activeSelf)
+                ui.OnEquipUI();
+            else
+                ui.OffEquipUI();
+        }
     }
 
     void Move_Ani()
@@ -331,6 +351,37 @@ public class PlayerCode : MonoBehaviour
         isSwap = false;
     }
 
+    void checkHP()
+    {
+        if(playerHealth <= 0 && !isTalk)
+        {
+            isDamage = true;
+            isTalk = true;
+            anim.SetBool("isDie", true);
+            StartCoroutine(GoLobby());
+        }
+    }
+
+    IEnumerator GoLobby()
+    {
+        StartCoroutine(ui.noticeEtc(9999));
+
+        yield return new WaitForSeconds(3.0f); // 3초 대기
+
+        isTalk = false;
+        isDamage = false;
+        anim.SetBool("isDie", false);
+        playerHealth = playerMaxHealth;
+        playerMana = playerMaxMana;
+
+        yield return null;
+
+        SceneManager.LoadScene("Boss1");
+
+        yield return null;
+
+    }
+
     void InterAction()
     {
         if(iDown && nearObject != null && !isJump && !isSwap)
@@ -359,9 +410,24 @@ public class PlayerCode : MonoBehaviour
                         break;
                     case Item.Type.Coin:
                         Coin nearCoin = nearObject.GetComponent<Coin>();
+
+                        gainText = MonoBehaviour.Instantiate(gainGoldPrefab);
+                        gainText.GetComponent<Damage>().damage = nearCoin.addGold;
+                        gainText.transform.position = gainPos.transform.position;
+
                         ui.PopUI.SetActive(false);
                         ui.isNoticeOn = false; // 무기를 먹었을 때 비활성화!
                         playerItem.playerCntGold += nearCoin.addGold; // 오르는 값 만큼 더한다.
+                        Destroy(nearObject);
+                        break;
+                    case Item.Type.Origin:
+                        
+                        gainText = MonoBehaviour.Instantiate(gainOriginPrefab);
+                        gainText.transform.position = gainPos.transform.position;
+
+                        ui.PopUI.SetActive(false);
+                        ui.isNoticeOn = false; // 무기를 먹었을 때 비활성화!
+                        playerItem.enchantOrigin += 1; // 기원조각 1개 더함!
                         Destroy(nearObject);
                         break;
 
@@ -370,6 +436,7 @@ public class PlayerCode : MonoBehaviour
             }
             else if (nearObject.layer == 13) // NPC layer
             {
+                isTalk = true;
                 switch (nearObject.tag)
                 {
                     case "Smith":
@@ -378,6 +445,7 @@ public class PlayerCode : MonoBehaviour
                         break;
                     case "Stat":
                         Debug.Log("Stat 강화");
+                        isTalk = false;
                         break;
                 }
                 
@@ -388,7 +456,7 @@ public class PlayerCode : MonoBehaviour
                 switch (nearObject.tag)
                 {
                     case "GoStage1":
-                        SceneManager.LoadScene("Lobby");
+                        SceneManager.LoadScene("Stage1");
                         break;
                     case "GoLobby":
                         SceneManager.LoadScene("Boss1");
@@ -396,6 +464,14 @@ public class PlayerCode : MonoBehaviour
                     case "GoJump":
                         SceneManager.LoadScene("Jump_1");
                         break;
+                    case "reward":
+                        DungeonUI dungeon = GameObject.FindGameObjectWithTag("dungeonUI").GetComponent<DungeonUI>();
+                        Animator aniBox = GameObject.FindGameObjectWithTag("topBox").GetComponent<Animator>();
+                        aniBox.SetTrigger("open");
+                        dungeon.setReward();
+
+                        break;
+
                 }
             }
 
@@ -499,6 +575,9 @@ public class PlayerCode : MonoBehaviour
 
                 StartCoroutine(OnDamage(isBossAttack));
             }
+        }else if(other.tag == "easter1")
+        {
+            StartCoroutine(ui.noticeEtc(999));
         }
 
     }

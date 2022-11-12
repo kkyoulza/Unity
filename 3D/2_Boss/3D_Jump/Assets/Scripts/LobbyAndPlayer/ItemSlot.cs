@@ -7,10 +7,15 @@ using UnityEngine.EventSystems;
 public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     public GameObject itemNotice; // 아이템 정보들이 적혀있는 객체
+    public PlayerItem playerItem; // 플레이어 무기 정보
+    public Text Name; // 무기 이름
+    public Text Atk; // 무기 공격력
+    public Text Delay; // 무기 딜레이
     public Text info;
     public Vector3 pos;
     public int value;
     
+    string[] names = new string[] { "", "아다만티움 해머", "총", "머신 건" };
 
     public void OnPointerEnter(PointerEventData eventData)
     {
@@ -19,6 +24,74 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         {
             case -1:
                 info.text = "골드\n\n이 세계에서 사용 되는 화폐 단위\n강화, 상점 구매 등에 이용 가능\n점프 맵, 던전 클리어, 광물 파밍을 통해 수급 가능";
+                break;
+            case 1:
+
+                for(int i = 0; i < playerItem.weapons.Length; i++)
+                {
+                    if (playerItem.weapons[i] == null || playerItem.weapons[0].baseAtk == 0)
+                    {
+                        Name.text = "미습득";
+                        Atk.text = "-";
+                        Delay.text = "-";
+                        break;
+                    }
+
+                    if (value == playerItem.weapons[i].weaponCode)
+                    {
+                        Name.text = names[value] + " ( +" + playerItem.weapons[i].enchantCount + " )";
+                        Atk.text = (playerItem.weapons[i].baseAtk + playerItem.weapons[i].enchantAtk).ToString();
+                        Delay.text = (playerItem.weapons[i].baseDelay + playerItem.weapons[i].enchantDelay).ToString();
+                        break;
+                    }
+                    
+                    
+                } 
+                break;
+            case 2:
+
+                for (int i = 0; i < playerItem.weapons.Length; i++)
+                {
+                    if (playerItem.weapons[i] == null || playerItem.weapons[0].baseAtk == 0)
+                    {
+                        Name.text = "미습득";
+                        Atk.text = "-";
+                        Delay.text = "-";
+                        break;
+                    }
+
+                    if (value == playerItem.weapons[i].weaponCode)
+                    {
+                        Name.text = names[value] + " ( +" + playerItem.weapons[i].enchantCount + " )";
+                        Atk.text = (playerItem.weapons[i].baseAtk + playerItem.weapons[i].enchantAtk).ToString();
+                        Delay.text = (playerItem.weapons[i].baseDelay + playerItem.weapons[i].enchantDelay).ToString();
+                        break;
+                    }
+
+                    
+                }
+                break;
+            case 3:
+
+                for (int i = 0; i < playerItem.weapons.Length; i++)
+                {
+                    if (playerItem.weapons[i] == null || playerItem.weapons[0].baseAtk == 0)
+                    {
+                        Name.text = "미습득";
+                        Atk.text = "-";
+                        Delay.text = "-";
+                        break;
+                    }
+
+                    if (value == playerItem.weapons[i].weaponCode)
+                    {
+                        Name.text = names[value] + " ( +" + playerItem.weapons[i].enchantCount + " )";
+                        Atk.text = (playerItem.weapons[i].baseAtk + playerItem.weapons[i].enchantAtk).ToString();
+                        Delay.text = (playerItem.weapons[i].baseDelay + playerItem.weapons[i].enchantDelay).ToString();
+                        break;
+                    }
+ 
+                }
                 break;
             case 2000:
                 info.text = "기원 조각\n\n강화 성공을 기원하며 생기게 된 돌\n1 개당 강화 확률 0.5%p 상승\n(100%까지 상승 가능)";
@@ -56,15 +129,4 @@ public class ItemSlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         Debug.Log("exitMouse");
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

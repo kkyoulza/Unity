@@ -118,8 +118,10 @@ MonoBehaviour:
   monsterMissile: {fileID: 160539572810442016, guid: 2b909a49b84893c458086ffe4d6fdc7c, type: 3}
   isAttack: 0
   isDead: 0
+  isCheck: 0
   isChase: 0
   target: {fileID: 0}
+  spawnManager: {fileID: 0}
 --- !u!195 &5905849089260566911
 NavMeshAgent:
   m_ObjectHideFlags: 0

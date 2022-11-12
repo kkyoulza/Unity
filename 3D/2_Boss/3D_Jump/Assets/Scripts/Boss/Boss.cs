@@ -25,6 +25,8 @@ public class Boss : Enemy // Enemy »ó¼Ó
         navi = GetComponent<NavMeshAgent>();
         anim = GetComponentInChildren<Animator>();
         boxCollider = GetComponent<BoxCollider>();
+        target = GameObject.FindGameObjectWithTag("Player").transform;
+        audio = GetComponent<AudioSource>();
 
         navi.isStopped = true;
         StartCoroutine("Think");

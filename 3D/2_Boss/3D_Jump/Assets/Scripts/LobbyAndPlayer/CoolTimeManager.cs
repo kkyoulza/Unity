@@ -5,10 +5,15 @@ using UnityEngine.UI;
 
 public class CoolTimeManager : MonoBehaviour
 {
+    // 대쉬 스킬 관련
     public Text CoolText;
+    public Image dashImage;
+
     public bool coolOn;
     float coolTime;
     int cool;
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -29,6 +34,8 @@ public class CoolTimeManager : MonoBehaviour
 
     public void SetCoolTime(float coolTime)
     {
+        Color color = new Color(1, 1, 1, 0.5f);
+        dashImage.color = color;
         this.coolTime = coolTime;
         CoolText.text = coolTime.ToString();
     }
@@ -43,7 +50,9 @@ public class CoolTimeManager : MonoBehaviour
 
     public void SetAble()
     {
-        CoolText.text = "사용 가능";
+        Color color = new Color(1, 1, 1, 1);
+        dashImage.color = color;
+        CoolText.text = "";
     }
 
 }

@@ -56,6 +56,7 @@
     <Compile Include="Assets\Scripts\Boss\Boss.cs" />
     <Compile Include="Assets\Scripts\Boss\Enemy.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Weapon.cs" />
+    <Compile Include="Assets\Scripts\Boss\OpenDoor.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\QuarterCamera.cs" />
     <Compile Include="Assets\Scripts\Boss\ChaseManager.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Bullet.cs" />
@@ -86,11 +87,14 @@
     <Compile Include="Assets\Scripts\LobbyAndPlayer\UIManager.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\CoolTimeManager.cs" />
     <Compile Include="Assets\Scripts\JumpMap\StageMove.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\PanelActive.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Managing.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\StatManager.cs" />
     <Compile Include="Assets\Scripts\JumpMap\SaveInformation.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\ChooseBtnE.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Drag.cs" />
-    <Compile Include="Assets\Scripts\LobbyAndPlayer\StatManager.cs" />
+    <Compile Include="Assets\Scripts\Boss\StageStart.cs" />
+    <Compile Include="Assets\Scripts\Boss\DungeonUI.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

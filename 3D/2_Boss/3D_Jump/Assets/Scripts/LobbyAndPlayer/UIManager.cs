@@ -26,6 +26,7 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public GameObject DialogPanel; // 대화 패널
     public GameObject ItemUI; // 아이템 창 UI
     public GameObject StatusUI; // 캐릭터 스텟 창 UI
+    public GameObject equipUI; // 캐릭터 장비 창 UI
     public GameObject EnchantPanel; // 강화 창
 
     // UI Text
@@ -48,6 +49,9 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public Text itemHP;
     public Text itemMP;
     public Text goldTxt; // 골드 텍스트
+
+    public Text frontHP; // 단축키에서의 HP포션 개수
+    public Text frontMP; // 단축키에서의 MP포션 개수
 
     // Status UI
     public Text Atk;
@@ -98,7 +102,8 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         rectHP = HP.GetComponent<RectTransform>();
         rectMP = MP.GetComponent<RectTransform>();
 
-    }
+
+}
 
     // Update is called once per frame
     void Update()
@@ -121,6 +126,8 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         itemOriginTxt.text = playerItem.enchantOrigin.ToString() + " 개";
         itemHP.text = playerItem.cntHPPotion.ToString() + " 개";
         itemMP.text = playerItem.cntMPPotion.ToString() + " 개";
+        frontHP.text = playerItem.cntHPPotion.ToString();
+        frontMP.text = playerItem.cntMPPotion.ToString();
     }
 
     public void SetBar()
@@ -137,6 +144,7 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public void EnchantWeaponUI()
     {
         animSmith = Smith.GetComponentInChildren<Animator>();
+        DialogTxt.text = "안녕, 무기 강화 하려고 왔어?";
         DialogPanel.SetActive(true);
         animSmith.SetTrigger("DoTalk");
     }
@@ -159,15 +167,17 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     {
         EnchantPanel.SetActive(false);
         enchant.isWeaponOn = false;
+        enchant.ResetTarget();
         useOrigin = 0; // 기원조각 사용 예정 개수 초기화
         weaponIndex = -1; // index 초기화
+        playerInfo.isTalk = false;
         ResetEnchantUI();
     }
 
     public void DisappearEnchantDialogUI()
     {
+        playerInfo.isTalk = false;
         DialogPanel.SetActive(false);
-        DialogTxt.text = "안녕, 무기 강화 하려고 왔어?";
     }
 
     public void OnItemUI()
@@ -187,6 +197,16 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public void OffStatusUI()
     {
         StatusUI.SetActive(false);
+    }
+
+    public void OnEquipUI()
+    {
+        equipUI.SetActive(true);
+    }
+
+    public void OffEquipUI()
+    {
+        equipUI.SetActive(false);
     }
 
     public void NoticeOn()
@@ -337,7 +357,7 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     public void doEnchant()
     {
-        enchant.doEnchant();
+        enchant.doEnchant(useOrigin);
         goldTxt.text = playerItem.playerCntGold.ToString();
         if (enchant.isWeaponOn && enchant.EnchantTarget.enchantCount == playerItem.weapons[weaponIndex].maxEnchant)
         {
@@ -354,6 +374,11 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         if (enchant.isWeaponOn && enchant.EnchantTarget.enchantCount == playerItem.weapons[weaponIndex].maxEnchant) // 풀강일 때는 사용을 못하게 해야 한다.
         {
             StartCoroutine(noticeEtc(1)); // 알림!
+            return;
+        }
+
+        if(enchant.EnchantTarget == null || enchant.EnchantTarget.baseAtk == 0)
+        {
             return;
         }
 
@@ -380,6 +405,23 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
             
         }
 
+    }
+
+    public void useAllOrigin()
+    {
+        // 모든 기원조각 사용 (한도 적용)
+
+        if (enchant.EnchantTarget == null || enchant.EnchantTarget.baseAtk == 0)
+        {
+            // 강화 대상에 아무것도 없을 때
+            return;
+        }
+
+        useOrigin = playerItem.enchantOrigin >= (1000 - (int)(enchant.percentage[enchant.EnchantTarget.enchantCount] * 1000)) / 5 
+            ? (1000 - (int)(enchant.percentage[enchant.EnchantTarget.enchantCount] * 1000)) / 5 
+            : playerItem.enchantOrigin ; // 100%까지 되게 하는 모든 개수 사용! (가지고 있는 개수가 모자라다면 남은 개수 모두!)
+        originTxt.text = useOrigin.ToString();
+        originAddPercent.text = "( + " + (0.5f * useOrigin) + " %)";
     }
 
     public void minusOrigin()
@@ -424,12 +466,20 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
                 PopUI.SetActive(true);
                 break;
             case 5:
-                popText.text = "강화 실패...";
+                popText.text = "강화 실패.. 기원 조각 2개 획득!";
+                PopUI.SetActive(true);
+                break;
+            case 999:
+                popText.text = "어이! 내 보물에 다가가지 마!";
+                PopUI.SetActive(true);
+                break;
+            case 9999:
+                popText.text = "사망! 3초 뒤, 로비로 이동합니다.";
                 PopUI.SetActive(true);
                 break;
         }
 
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(1.2f);
 
         PopUI.SetActive(false);
         popText.text = "E 버튼을 눌러 상호작용 하세요!";

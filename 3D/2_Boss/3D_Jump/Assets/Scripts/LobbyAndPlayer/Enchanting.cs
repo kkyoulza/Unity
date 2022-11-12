@@ -74,7 +74,7 @@ public class Enchanting : MonoBehaviour
         EnchantTarget = null;
     }
 
-    public void doEnchant()
+    public void doEnchant(int origin)
     {
         if (!isWeaponOn) // 무기가 올려져 있지 않을 때
             return;
@@ -99,14 +99,15 @@ public class Enchanting : MonoBehaviour
             ui.useOrigin = 0;
 
             Debug.Log(randomNum + ", 누적 사용 골드 : " + sumGold);
+            // Debug.Log(origin + "개의 기원조각 사용, " + origin * 0.5f + "%p의 확률 증가, 사용 후 "+ (randomNum - origin * 5).ToString());
 
-            if (randomNum - ui.useOrigin*5 <= (int)(percentage[EnchantTarget.enchantCount] * 1000))
+            if (randomNum - origin * 5 <= (int)(percentage[EnchantTarget.enchantCount] * 1000))
             {
                 // 기원 조각 개수 1개당 0.5%씩 확률이 늘어나므로 조각 1개당 5를 곱해 주어야 한다.
                 StartCoroutine(ui.noticeEtc(4));
                 audio.clip = successSFX;
                 audio.Play();
-                Debug.Log(EnchantTarget.enchantCount + "강 강화 성공!");
+                Debug.Log(EnchantTarget.enchantCount + "강 강화 성공!");   
 
                 EnchantSuccess();
 
@@ -116,6 +117,7 @@ public class Enchanting : MonoBehaviour
                 StartCoroutine(ui.noticeEtc(5));
                 audio.clip = failSFX;
                 audio.Play();
+                playerItem.enchantOrigin += 2; // 기원조각 2개 획득!
                 Debug.Log("강화 실패..");
             }
         }

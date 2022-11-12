@@ -82,6 +82,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyType: 3
+  hitSFX: {fileID: 8300000, guid: d46323e22e74e46baa241cbf48c85671, type: 3}
   maxHealth: 100
   cntHealth: 100
   PosObj: {fileID: 8101780389222668460}
@@ -90,8 +91,10 @@ MonoBehaviour:
   monsterMissile: {fileID: 6320488484602939239, guid: bf87e1bf82ee26f4a9cf34e1cd851154, type: 3}
   isAttack: 0
   isDead: 0
+  isCheck: 0
   isChase: 0
   target: {fileID: 0}
+  spawnManager: {fileID: 0}
   missile: {fileID: 8591578873682598867, guid: 53d0c04a72d09c445a33bcb7b05949b4, type: 3}
   missilePortA: {fileID: 8101780390108262646}
   missilePortB: {fileID: 8101780388325872618}

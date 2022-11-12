@@ -189,6 +189,7 @@ MonoBehaviour:
   goldC: {fileID: 6112911218380072290, guid: 7d9abe96966830442bf46ea9bb1ca92c, type: 3}
   emeraldC: {fileID: 5825540698214419285, guid: 11429b5074049cf479110cd741d0a00d, type: 3}
   rubyC: {fileID: 593367933005207119, guid: 5f7fac340303ed64e9e6400cd9da6505, type: 3}
+  origin: {fileID: 4812799579013813497, guid: f043461ecb4dddd4e88a13455670d8c6, type: 3}
 --- !u!82 &5433474736277163296
 AudioSource:
   m_ObjectHideFlags: 0

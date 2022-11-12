@@ -10,7 +10,7 @@ public class Enemy : MonoBehaviour
     public Type enemyType; // 적의 타입을 넣을 변수
 
     public AudioClip hitSFX;
-    AudioSource audio;
+    public AudioSource audio;
 
     // 체력 정보
     public int maxHealth;
@@ -34,6 +34,7 @@ public class Enemy : MonoBehaviour
     // 상태 관련
     public bool isAttack; // 공격을 하고 있는가?
     public bool isDead; // 죽은 상태인가?
+    public bool isCheck; // 몬스터 수가 적용 된 상태인가? (계수되었나?)
 
     // 겉보기
     protected MeshRenderer[] mat;
@@ -43,8 +44,11 @@ public class Enemy : MonoBehaviour
     public Transform target; // 추적 대상
     protected NavMeshAgent navi; // UnityEngine.AI를 필수로 쓸 것
 
-    //애니메이션
+    // 애니메이션
     protected Animator anim;
+
+    // 몬스터 개수 카운터 오브젝트
+    public GameObject spawnManager; // 스폰 매니저
 
     // Start is called before the first frame update
     void Awake()
@@ -66,6 +70,7 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
         if (navi.enabled)
         {// navi가 활성화 되었을 때만 목표를 추적! (기존에는 목표만 잃어버리고 움직이기는 하기 때문에 정지까지 하는 것으로 해 준다!)
             navi.SetDestination(target.position);
@@ -191,6 +196,7 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+
         if(other.tag == "Melee")
         {
             other.gameObject.GetComponent<Weapon>().isAttacked = true;
@@ -252,6 +258,8 @@ public class Enemy : MonoBehaviour
         }
         else
         {
+            // hp가 0이하가 되어 몬스터가 퇴치될 때
+
             foreach (MeshRenderer mesh in mat)
             {
                 mesh.material.color = Color.gray;
