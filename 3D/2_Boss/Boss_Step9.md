@@ -161,6 +161,10 @@ public class StageStart : MonoBehaviour
 
                     isSpawned = true;
                     break;
+                case 3:
+                    Instantiate(spawnBoss, transform.position, transform.rotation); // 보스
+                    isSpawned = true;
+                    break;
 
             }
         }
@@ -244,20 +248,274 @@ SpawnTypeA,B,C,Boss - 스폰을 하기 위해 생성할 Prefab
 
 <hr>
 
-### 보상 보물상자와 성과에 따른 차등보상 여부?
+### 보상 보물상자
 
+보상 보물상자는 아래 사진과 같이 에셋을 사용하였다.
 
+![image](https://user-images.githubusercontent.com/66288087/201475721-111ee324-2388-4397-b234-ef07448d5831.png)
 
+주변도 그럴싸하게 오브젝트들을 추가로 배치시켜 주었다.
+
+보상 상자는 NPC에게 말을 거는 것과 같이 존을 만들어 주어 상호작용을 해 주면 박스가 열리면서 보상이 랜덤으로 나오게끔 해 주었다.
+
+던전 내부의UI는 자체적으로 UI 매니저를 만들어 보상을 산정하는 코드를 넣어 두었다.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+
+public class DungeonUI : MonoBehaviour
+{
+    // 보상 UI
+    public GameObject rewardUI;
+    public Text originTxt;
+    public Text rubyTxt;
+    public Text emeraldTxt;
+    public Text goldTxt;
+    public Text silverTxt;
+    public Text sumTxt;
+
+    // 정보 임시저장 변수
+    int origin;
+    int ruby;
+    int emerald;
+    int gold;
+    int silver;
+    int addGold;
+
+    // 정보 연결 UI
+    PlayerItem playerItem;
+    PlayerCode playerCode;
+    
+    void Awake()
+    {
+        playerCode = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCode>();
+        playerItem = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerItem>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void setReward()
+    {
+        // 보상 랜덤으로 설정!
+
+        origin = Random.Range(20, 50); // 확률이 아닌 그냥 값을 대입시킨다.
+        int rubyRan = Random.Range(1, 11);
+        int emelaldRan = Random.Range(1, 11);
+        int goldRan = Random.Range(1, 11);
+        int silverRan = Random.Range(1, 11);
+
+        switch (rubyRan)
+        {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                ruby = 0;
+                break;
+            case 5:
+            case 6:
+            case 7:
+                ruby = 1;
+                break;
+            case 8:
+            case 9:
+                ruby = 2;
+                break;
+            case 10:
+                ruby = 3;
+                break;
+        }
+
+        switch (emelaldRan)
+        {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                emerald = 1;
+                break;
+            case 5:
+            case 6:
+            case 7:
+                emerald = 3;
+                break;
+            case 8:
+            case 9:
+                emerald = 5;
+                break;
+            case 10:
+                emerald = 7;
+                break;
+        }
+
+        switch (goldRan)
+        {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                gold = 5;
+                break;
+            case 5:
+            case 6:
+            case 7:
+                gold = 10;
+                break;
+            case 8:
+            case 9:
+                gold = 15;
+                break;
+            case 10:
+                gold = 30;
+                break;
+        }
+
+        switch (silverRan)
+        {
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+                silver = 20;
+                break;
+            case 5:
+            case 6:
+            case 7:
+                silver = 50;
+                break;
+            case 8:
+            case 9:
+                silver = 80;
+                break;
+            case 10:
+                silver = 200;
+                break;
+        }
+
+        playerItem.enchantOrigin += origin;
+        addGold = ruby * 10000 + emerald * 1000 + gold * 100 + silver * 10;
+        playerItem.playerCntGold += addGold;
+
+        StartCoroutine(setRewardUI());
+
+    }
+
+    IEnumerator setRewardUI()
+    {
+        originTxt.text = origin.ToString()+" 개";
+        rubyTxt.text = ruby.ToString() + " 개";
+        emeraldTxt.text = emerald.ToString() + " 개";
+        goldTxt.text = gold.ToString() + " 개";
+        silverTxt.text = silver.ToString() + " 개";
+        sumTxt.text = "합 : "+addGold.ToString() + " Gold";
+
+        rewardUI.SetActive(true);
+        playerCode.isTalk = true;
+
+        yield return new WaitForSeconds(3.0f);
+
+        rewardUI.SetActive(false);
+        playerCode.isTalk = false;
+
+        SceneManager.LoadScene("Boss1");
+
+    }
+
+}
+</code>
+</pre>
+
+기원 조각은 20개~50개 사이의 개수를 랜덤으로 주게끔 설정하였으며, 나머지는 40%, 30%, 20%, 10% 의 확률로 보상을 차등 지급하였다.
+
+광맥을 채집할 때 나오는 동전을 주는 개념으로 설정하였으며, 모두 최대 보상을 받게 되면 42,000골드와 50개의 기원조각을 챙길 수 있게 하였다.
+
+(개수에 대한 것은 나중에 밸런스를 맞춰 보도록 하겠다.)
+
+보상UI는 아래와 같다.
+
+![image](https://user-images.githubusercontent.com/66288087/201475861-f80db90f-48f9-4f70-8e42-440cd3b12fad.png)
+
+테스트용 화면의 크기에 맞춰서 그렇지, 실제 풀 화면으로 해 보면 나쁘지 않은 비율이다.
+
+아무튼, 보상을 받고 나서는 로비로 다시 이동하게끔 해 주었다.
 
 <hr>
 
 ### 캐릭터가 죽었을 때의 이벤트
 
+캐릭터는 체력이 0 이하가 되면 죽게 된다.
 
+<pre>
+<code>
+void Update()
+{
+    InputKey();
+    if (!isTalk) // 대화중이지 않을 때만 가능하게!
+    {
+        Move_Ani(); // 캐릭터 움직임
+        Jump(); // 점프
+        Attack(); // 공격
+        ReLoad(); // 재장전
+        TrunChar(); // 캐릭터 회전
+        Dodge(); // 캐릭터 구르기
+        Swap(); // 캐릭터 무기 변경
+        InterAction(); // 상호작용
+    }
+    onUI(); // 캐릭터 UI창 열기
+    calStatus(); // 캐릭터 스탯 계산
+    checkHP(); // 남은 HP체크
+    saveinfo.savePlayerStats(playerMaxHealth, playerHealth, playerMana,playerMaxMana, playerStrength, playerAccuracy, playerItem.playerCntGold,
+        playerItem.enchantOrigin,playerItem.cntHPPotion,playerItem.cntMPPotion);
+    // 플레이어 자체 스탯, 골드 양 저장
+}
 
+void checkHP()
+{
+    if(playerHealth <= 0 && !isTalk)
+    {
+        isDamage = true;
+        isTalk = true;
+        anim.SetBool("isDie", true);
+        StartCoroutine(GoLobby());
+    }
+}
 
+IEnumerator GoLobby()
+{
+    StartCoroutine(ui.noticeEtc(9999));
 
+    yield return new WaitForSeconds(3.0f); // 3초 대기
 
+    isTalk = false;
+    isDamage = false;
+    anim.SetBool("isDie", false);
+    playerHealth = playerMaxHealth;
+    playerMana = playerMaxMana;
 
+    yield return null;
 
+    SceneManager.LoadScene("Boss1");
+
+    yield return null;
+
+}
+</code>
+</pre>
+
+캐릭터가 죽었는지 판단은 PlayerCode에서 이루어 지며, HP가 0 이하가 되면 움직이지 못하는 상태가 되는 동시에(isTalk), 애니메이션 발동, 3초 후 로비로 이동하게 된다.
+
+(코루틴을 이용하였다.)
+
+던전을 도는 모습은 나중에 완성 후, 영상으로 업로드 할 예정이다.
+
+이제 다음은 잡화상점(포션, 총알 등)을 만들고, 던전 내부에서 총알 수집 등의 기능을 만들며, 던전 입장, 점프 맵 입장 시 퀘스트 형태를 추가 해 보도록 하겠다.
 
