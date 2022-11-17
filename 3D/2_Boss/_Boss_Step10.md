@@ -548,10 +548,209 @@ public class StatManager : MonoBehaviour
 
 ### 3. 포션 섭취 적용 및 UI 보강(단축키 안내, 던전 입장 전 대화 추가 등)
 
+포션 섭취는 플레이어 코드에서 키 입력을 통해 간단하게 구현할 수 있다.
 
+PlayerCode.cs 부분을 수정하였다.
 
+<pre>
+<code>
+void InputKey()
+{
+    horAxis = Input.GetAxisRaw("Horizontal");
+    verAxis = Input.GetAxisRaw("Vertical");
+    runDown = Input.GetButton("Run");
+    jumpDown = Input.GetButtonDown("Jump");
+    dodgeDown = Input.GetKeyDown(KeyCode.Z);
 
+    AtkDown = Input.GetKeyDown(KeyCode.X);
+    rDown = Input.GetButtonDown("ReLoad");
 
+    iDown = Input.GetButtonDown("InterAction");
+    sDown1 = Input.GetButtonDown("Swap1");
+    sDown2 = Input.GetButtonDown("Swap2");
+    sDown3 = Input.GetButtonDown("Swap3");
 
+    itemDown = Input.GetKeyDown(KeyCode.I);
+    statusDown = Input.GetKeyDown(KeyCode.U);
+    equipDown = Input.GetKeyDown(KeyCode.Y);
 
+    HPKey = Input.GetKeyDown(KeyCode.F);
+    MPKey = Input.GetKeyDown(KeyCode.G);
 
+}
+
+void UseItem()
+{
+    if (HPKey)
+    {
+        if(playerItem.cntHPPotion > 0)
+        {
+            playerItem.cntHPPotion--;
+            playerHealth = (playerHealth + 30 > playerMaxHealth) ? playerMaxHealth : playerHealth + 30;
+        }
+        else
+        {
+            StartCoroutine(ui.noticeEtc(7));
+        }
+    }
+
+    if (MPKey)
+    {
+        if (playerItem.cntMPPotion > 0)
+        {
+            playerItem.cntMPPotion--;
+            playerMana = (playerMana + 10 > playerMaxMana) ? playerMaxMana : playerMana + 10;
+        }
+        else
+        {
+            StartCoroutine(ui.noticeEtc(7));
+        }
+    }
+}
+</code>
+</pre>
+
+PlayerCode.cs의 일부 함수들을 가져왔다.
+
+InputKey에 포션 단축키를 넣어 주었으며, UseItem에서 각 키를 눌렀을 때, 포션을 먹게끔 하였다.
+
+포션이 있을 때 먹을 수 있으며, 최대 값을 넘지는 못하게 삼항 연산자를 이용하여 설정하였다. (재장전때랑 비슷하다)
+
+포션이 하나도 없으면 Pop안내문이 뜨게 하였다. 대신, HP/MP가 가득 찼을 때도 포션을 먹을 수 있게 하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/202399352-73fe7771-aee0-4cb3-9272-7324869a9447.png)
+
+HP가 가득 찬 상태에서 포션을 다 먹어 포션이 부족하게 되어 안내가 뜬 모습이다.
+
+<pre>
+<code>
+public IEnumerator noticeEtc(int type)
+{
+    switch (type)
+    {
+        case 0: // 비용이 부족함을 알려줄 때
+            popText.text = "비용이 부족합니다!";
+            PopUI.SetActive(true);
+            break;
+        case 1: // 기원 조각 풀일때
+            popText.text = "강화를 한계까지 하여 사용할 수 없습니다!";
+            PopUI.SetActive(true);
+            break;
+        case 2: // 기원 조각이 부족할 때
+            popText.text = "조각이 없습니다!";
+            PopUI.SetActive(true);
+            break;
+        case 3:
+            popText.text = "100%를 초과하여 올릴 수 없습니다!";
+            PopUI.SetActive(true);
+            break;
+        case 4:
+            popText.text = "강화 성공!";
+            PopUI.SetActive(true);
+            break;
+        case 5:
+            popText.text = "강화 실패.. 기원 조각 2개 획득!";
+            PopUI.SetActive(true);
+            break;
+        case 6:
+            popText.text = "구매 완료!";
+            PopUI.SetActive(true);
+            break;
+        case 7:
+            popText.text = "포션이 부족합니다!";
+            PopUI.SetActive(true);
+            break;
+        case 8:
+            popText.text = "마나가 부족합니다!";
+            PopUI.SetActive(true);
+            break;
+        case 999:
+            popText.text = "어이! 내 보물에 다가가지 마!";
+            PopUI.SetActive(true);
+            break;
+        case 9999:
+            popText.text = "사망! 3초 뒤, 로비로 이동합니다.";
+            PopUI.SetActive(true);
+            break;
+    }
+
+    yield return new WaitForSeconds(1.2f);
+
+    PopUI.SetActive(false);
+    popText.text = "E 버튼을 눌러 상호작용 하세요!";
+
+}
+</code>
+</pre>
+
+pop UI를 보여주는 코루틴 함수이다. 사망관련 안내와, 이스터에그, 마나 부족 등의 내용이 추가 되었다.
+
+<hr>
+
+**던전 입장, 점프맵 입장 전 대화 창 추가**
+
+이 부분은 새롭게 대화 창을 추가 할까 생각 하다가, 이동 버튼만 구분하여 주면 될 것 같다는 생각으로 분기를 만들어 알맞는 이동하기 버튼을 활성화 하는 것으로 하였다.
+
+<pre>
+<code>
+public void EnchantWeaponUI(int option)
+{
+    switch (option)
+    {
+        case 0: // 강화 하는 경우
+            animSmith = Smith.GetComponentInChildren<Animator>();
+            NPCName.text = "스미스";
+            DialogTxt.text = "안녕, 무기 강화 하려고 왔어?";
+            DialogPanel.SetActive(true);
+            btnDungeon.SetActive(false);
+            btnJump.SetActive(false);
+            btnEnchant.SetActive(true);
+            animSmith.SetTrigger("DoTalk");
+            break;
+        case 1:
+            NPCName.text = "루나";
+            DialogTxt.text = "안녕, 이 앞은 던전이야, 들어갈래?";
+            DialogPanel.SetActive(true);
+            btnDungeon.SetActive(true);
+            btnJump.SetActive(false);
+            btnEnchant.SetActive(false);
+            break;
+        case 2:
+            NPCName.text = "점퍼";
+            DialogTxt.text = "안녕, 몸이 근질근질하지 않아? 점프 해 보러 가지 않을래?";
+            DialogPanel.SetActive(true);
+            btnDungeon.SetActive(false);
+            btnJump.SetActive(true);
+            btnEnchant.SetActive(false);
+            break;
+    }
+
+}
+</code>
+</pre>
+
+UIManager.cs 중에서 강화 NPC와의 대화창을 키는 코드이다.
+
+switch문을 통하여 강화, 던전, 점프 맵 이동을 구분하여 버튼을 활성화 하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/202401797-c8a1637f-fd68-4633-a67a-31cb79204a20.png)
+
+던전
+
+![image](https://user-images.githubusercontent.com/66288087/202401883-b6549a65-86de-408e-820e-324ee1c02f8e.png)
+
+점프 맵
+
+이렇게 대화가 뜨고, 이동 하기를 누르게 되면 각 맵으로 이동하게 하였다.
+
+<hr>
+
+**UI 추가**
+
+각 버튼을 추가 해 주어, 아이템 창, 스탯 창, 장비 창 단축키 안내 및 버튼으로 해당 창들을 킬 수 있게 하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/202402866-90a4d393-7896-4c50-b6a0-07c6c5e89e2f.png)
+
+추가된 UI 사진
+
+그리고 버튼으로는 해당 창이 켜져 있을 때, 한번 더 누르게 되면 꺼지게 해 주었다.
