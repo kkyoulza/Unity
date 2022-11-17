@@ -33,7 +33,6 @@ TagManager:
   - Rock
   - emerald
   - ruby
-  - Stat
   - itemUI
   - origin
   - Spawn
@@ -42,6 +41,7 @@ TagManager:
   - reward
   - topBox
   - dungeonUI
+  - Shop
   layers:
   - Default
   - TransparentFX

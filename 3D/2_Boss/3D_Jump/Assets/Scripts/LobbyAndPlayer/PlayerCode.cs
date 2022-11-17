@@ -22,6 +22,11 @@ public class PlayerCode : MonoBehaviour
     // 최대 공격력 : (기본 공격력 + 무기 공격력)
     // 데미지 : 최소~최대 공격력 랜덤 생성 - 몬스터의 방어력
 
+    public int strEnchantCnt; // 힘 강화 횟수 (2의 카운트 개수 제곱만큼 기원조각 소모) 한 번 강화에 + 5
+    public int accEnchantCnt; // 명중률 강화 횟수 (3의 카운트 개수 제곱만큼 기원조각 소모) 한 번 강화에 + 10 (실제 명중률은 5%,2%,2%... 이렇게 증가) 과투자 비추천
+    public int HPEnchantCnt; // HP강화 횟수 (10 * 강화 횟수) 한 번 강화에 +10
+    public int MPEnchantCnt; // MP강화 횟수 (20 * 강화 횟수) 한 번 강화에 +5
+
     // 골드 획득 관련
     public GameObject gainPos; // 골드 획득을 나타내 주는 Text 위치
     public GameObject gainGoldPrefab; // 골드획득 알림 텍스트 프리팹
@@ -48,6 +53,8 @@ public class PlayerCode : MonoBehaviour
     bool itemDown; // 아이템 창 키 
     bool statusDown; // 캐릭터 스텟 창 키
     bool equipDown; // 캐릭터 장비 창 키
+    bool HPKey; // HP포션 키
+    bool MPKey; // MP포션 키
 
 
     // 상태 변수(bool)
@@ -60,7 +67,6 @@ public class PlayerCode : MonoBehaviour
     bool isReloading; // 재장전중인가?
     bool isDamage; // 피격 당하고 있는 중인가?
     public bool isTalk; // 대화 중인가? (대회중일때는 움직이지 못하게!)
-
 
     Vector3 moveVec;
     Vector3 dodgeVec; // 회피 방향
@@ -127,12 +133,14 @@ public class PlayerCode : MonoBehaviour
             Dodge(); // 캐릭터 구르기
             Swap(); // 캐릭터 무기 변경
             InterAction(); // 상호작용
+            UseItem(); // 소비 아이템 사용(단축키 이용)
         }
         onUI(); // 캐릭터 UI창 열기
         calStatus(); // 캐릭터 스탯 계산
         checkHP(); // 남은 HP체크
         saveinfo.savePlayerStats(playerMaxHealth, playerHealth, playerMana,playerMaxMana, playerStrength, playerAccuracy, playerItem.playerCntGold,
             playerItem.enchantOrigin,playerItem.cntHPPotion,playerItem.cntMPPotion);
+        saveinfo.saveStatCnt(strEnchantCnt, accEnchantCnt, HPEnchantCnt, MPEnchantCnt);
         // 플레이어 자체 스탯, 골드 양 저장
     }
     
@@ -230,6 +238,9 @@ public class PlayerCode : MonoBehaviour
         statusDown = Input.GetKeyDown(KeyCode.U);
         equipDown = Input.GetKeyDown(KeyCode.Y);
 
+        HPKey = Input.GetKeyDown(KeyCode.F);
+        MPKey = Input.GetKeyDown(KeyCode.G);
+
     }
 
     void onUI()
@@ -296,6 +307,12 @@ public class PlayerCode : MonoBehaviour
     {
         if (dodgeDown && moveVec != Vector3.zero && !DodgeCool && !isSwap) // Z 키가 눌리고 점프 상태가 아닐 때!
         {
+            if(playerMana < 2)
+            {
+                StartCoroutine(ui.noticeEtc(8));
+                return;
+            }
+            playerMana -= 2;
             dodgeVec = moveVec; // 구르는 시점의 이동 벡터
             playerSpeed *= 2;
             anim.SetTrigger("DoDodge");
@@ -364,7 +381,7 @@ public class PlayerCode : MonoBehaviour
 
     IEnumerator GoLobby()
     {
-        StartCoroutine(ui.noticeEtc(9999));
+        StartCoroutine(ui.noticeEtc(9999)); // 죽었을 때 PopUI 알림
 
         yield return new WaitForSeconds(3.0f); // 3초 대기
 
@@ -441,35 +458,38 @@ public class PlayerCode : MonoBehaviour
                 {
                     case "Smith":
                         ui.PopUI.SetActive(false);
-                        ui.EnchantWeaponUI();
+                        ui.EnchantWeaponUI(0);
                         break;
-                    case "Stat":
-                        Debug.Log("Stat 강화");
-                        isTalk = false;
+                    case "Shop":
+                        ui.PopUI.SetActive(false);
+                        ui.shopUIPanel.SetActive(true);
                         break;
                 }
                 
             }
             else if(nearObject.layer == 16) // Portal layer
             {
-
+                
                 switch (nearObject.tag)
                 {
                     case "GoStage1":
-                        SceneManager.LoadScene("Stage1");
+                        isTalk = true;
+                        ui.PopUI.SetActive(false);
+                        ui.EnchantWeaponUI(1);
                         break;
                     case "GoLobby":
                         SceneManager.LoadScene("Boss1");
                         break;
                     case "GoJump":
-                        SceneManager.LoadScene("Jump_1");
+                        isTalk = true;
+                        ui.PopUI.SetActive(false);
+                        ui.EnchantWeaponUI(2);
                         break;
                     case "reward":
                         DungeonUI dungeon = GameObject.FindGameObjectWithTag("dungeonUI").GetComponent<DungeonUI>();
                         Animator aniBox = GameObject.FindGameObjectWithTag("topBox").GetComponent<Animator>();
                         aniBox.SetTrigger("open");
                         dungeon.setReward();
-
                         break;
 
                 }
@@ -495,6 +515,34 @@ public class PlayerCode : MonoBehaviour
         DodgeCool = false;
     }
 
+    void UseItem()
+    {
+        if (HPKey)
+        {
+            if(playerItem.cntHPPotion > 0)
+            {
+                playerItem.cntHPPotion--;
+                playerHealth = (playerHealth + 30 > playerMaxHealth) ? playerMaxHealth : playerHealth + 30;
+            }
+            else
+            {
+                StartCoroutine(ui.noticeEtc(7));
+            }
+        }
+
+        if (MPKey)
+        {
+            if (playerItem.cntMPPotion > 0)
+            {
+                playerItem.cntMPPotion--;
+                playerMana = (playerMana + 10 > playerMaxMana) ? playerMaxMana : playerMana + 10;
+            }
+            else
+            {
+                StartCoroutine(ui.noticeEtc(7));
+            }
+        }
+    }
 
     // 물리 문제 해결
     void FreezeRotation()

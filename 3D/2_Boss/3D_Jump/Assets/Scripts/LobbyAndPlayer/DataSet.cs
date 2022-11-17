@@ -39,6 +39,12 @@ public class DataSet : MonoBehaviour
         playerCode.playerAccuracy = saveData.info.playerAcc;
         playerItem.playerCntGold = saveData.info.playerCntGold;
         playerItem.enchantOrigin = saveData.info.enchantOrigin;
+        playerItem.cntHPPotion = saveData.info.HPPotion;
+        playerItem.cntMPPotion = saveData.info.MPPotion;
+        playerCode.strEnchantCnt = saveData.info.strCnt;
+        playerCode.accEnchantCnt = saveData.info.accCnt;
+        playerCode.HPEnchantCnt = saveData.info.HPCnt;
+        playerCode.MPEnchantCnt = saveData.info.MPCnt;
 
 
         for (int i = 0; i < saveData.info.weapons.Length; i++)

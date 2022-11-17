@@ -19,6 +19,10 @@ public class playerInfo
     public int enchantOrigin; // 강화 기원 조각 개수
     public int HPPotion; // HP포션 개수
     public int MPPotion; // MP포션 개수
+    public int strCnt; // str강화 횟수
+    public int accCnt; // acc강화 횟수
+    public int HPCnt; // HP강화 횟수
+    public int MPCnt; // MP강화 횟수
     public bool[] isGained = new bool[3]; // 무기를 얻은 현황
 
 }
@@ -68,6 +72,14 @@ public class SaveInfos : MonoBehaviour
         info.enchantOrigin = originCnt;
         info.HPPotion = HPPotion;
         info.MPPotion = MPPotion;
+    }
+
+    public void saveStatCnt(int strCnt, int accCnt, int HPCnt,int MPCnt)
+    {
+        info.strCnt = strCnt;
+        info.accCnt = accCnt;
+        info.HPCnt = HPCnt;
+        info.MPCnt = MPCnt;
     }
 
 }

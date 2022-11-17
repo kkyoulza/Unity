@@ -61,6 +61,7 @@
     <Compile Include="Assets\Scripts\Boss\ChaseManager.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Bullet.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\PlayerCode.cs" />
+    <Compile Include="Assets\Scripts\Boss\DungeonUI.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\ShowItemState.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Damage.cs" />
     <Compile Include="Assets\Scripts\JumpMap\Rotation.cs" />
@@ -94,7 +95,7 @@
     <Compile Include="Assets\Scripts\LobbyAndPlayer\ChooseBtnE.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Drag.cs" />
     <Compile Include="Assets\Scripts\Boss\StageStart.cs" />
-    <Compile Include="Assets\Scripts\Boss\DungeonUI.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\Dialog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

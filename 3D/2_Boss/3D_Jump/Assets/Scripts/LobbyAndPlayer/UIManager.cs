@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -33,6 +34,7 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public Text popText; // popUI의 텍스트
 
     // Enchant UI Text
+    public Text NPCName; // NPC이름
     public Text WeaponName; // 무기 이름
     public Text DialogTxt; // 대화 텍스트
     public Text EnchantStep; // 강화 단계
@@ -43,6 +45,19 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public Text enchantMoney; // 강화 비용
     public Text originTxt; // 강화 시 사용할 기원 개수
     public Text originAddPercent; // 기원조각을 통해 오르는 확률 표시 텍스트
+
+    // Dialog Btn Option
+    public GameObject btnEnchant;
+    public GameObject btnDungeon;
+    public GameObject btnJump;
+
+    // Shop UI
+    public GameObject shopUIPanel; // 상점 기본 UI
+    public GameObject shopRemindUI; // 몇 개를 살지 확인하는 UI
+    public Text itemNameTxt; // 아이템 이름
+    public Text buyCountTxt; // 몇 개를 살 것인가? 텍스트 표기
+    public int buyCount = 0; // 몇 개를 살 것인가?
+    public int itemCode; // 어느 종류의 아이템을 살 것인가? - HP - 2001 / MP - 2002 / bullet - 2003 / origin - 2000
 
     // Item UI
     public Text itemOriginTxt;
@@ -101,9 +116,7 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         isNoticeOn = false;
         rectHP = HP.GetComponent<RectTransform>();
         rectMP = MP.GetComponent<RectTransform>();
-
-
-}
+    }
 
     // Update is called once per frame
     void Update()
@@ -141,12 +154,55 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         maxMP.text = playerInfo.playerMaxMana.ToString();
     }
 
-    public void EnchantWeaponUI()
+    public void moveMap(int code)
     {
-        animSmith = Smith.GetComponentInChildren<Animator>();
-        DialogTxt.text = "안녕, 무기 강화 하려고 왔어?";
-        DialogPanel.SetActive(true);
-        animSmith.SetTrigger("DoTalk");
+        switch (code)
+        {
+            case 1:
+                // 던전 이동
+                playerInfo.isTalk = false;
+                SceneManager.LoadScene("Stage1");
+                break;
+            case 2:
+                // 점프맵 이동
+                playerInfo.isTalk = false;
+                SceneManager.LoadScene("Jump_1");
+                break;
+        }
+    }
+
+    public void EnchantWeaponUI(int option)
+    {
+        switch (option)
+        {
+            case 0: // 강화 하는 경우
+                animSmith = Smith.GetComponentInChildren<Animator>();
+                NPCName.text = "스미스";
+                DialogTxt.text = "안녕, 무기 강화 하려고 왔어?";
+                DialogPanel.SetActive(true);
+                btnDungeon.SetActive(false);
+                btnJump.SetActive(false);
+                btnEnchant.SetActive(true);
+                animSmith.SetTrigger("DoTalk");
+                break;
+            case 1:
+                NPCName.text = "루나";
+                DialogTxt.text = "안녕, 이 앞은 던전이야, 들어갈래?";
+                DialogPanel.SetActive(true);
+                btnDungeon.SetActive(true);
+                btnJump.SetActive(false);
+                btnEnchant.SetActive(false);
+                break;
+            case 2:
+                NPCName.text = "점퍼";
+                DialogTxt.text = "안녕, 몸이 근질근질하지 않아? 점프 해 보러 가지 않을래?";
+                DialogPanel.SetActive(true);
+                btnDungeon.SetActive(false);
+                btnJump.SetActive(true);
+                btnEnchant.SetActive(false);
+                break;
+        }
+        
     }
 
     public void ShowEnchantUI() // 강화 하기를 눌렀을 때 (대화창 -> 강화창)
@@ -182,7 +238,15 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     public void OnItemUI()
     {
-        ItemUI.SetActive(true);
+        if (ItemUI.activeSelf)
+        {
+            ItemUI.SetActive(false);
+        }
+        else
+        {
+            ItemUI.SetActive(true);
+        }
+        
     }
 
     public void OffItemUI()
@@ -192,8 +256,17 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     public void OnStatusUI()
     {
-        StatusUI.SetActive(true);
+        if (StatusUI.activeSelf)
+        {
+            StatusUI.SetActive(false);
+        }
+        else
+        {
+            StatusUI.SetActive(true);
+        }
+        
     }
+
     public void OffStatusUI()
     {
         StatusUI.SetActive(false);
@@ -201,7 +274,15 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
 
     public void OnEquipUI()
     {
-        equipUI.SetActive(true);
+        if (equipUI.activeSelf)
+        {
+            equipUI.SetActive(false);
+        }
+        else
+        {
+            equipUI.SetActive(true);
+        }
+        
     }
 
     public void OffEquipUI()
@@ -441,12 +522,103 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
         
     }
 
+    public void setBuyItem(int code)
+    {
+        // 살 아이템을 정하고, 개수를 정하는 UI를 불러온다.
+        itemCode = code;
+        switch (itemCode)
+        {
+            case 2001:
+                itemNameTxt.text = "HP 포션";
+                break;
+            case 2002:
+                itemNameTxt.text = "MP 포션";
+                break;
+            case 2003:
+                itemNameTxt.text = "총알";
+                break;
+        }
+        buyCount = 0;
+        buyCountTxt.text = buyCount.ToString();
+        shopRemindUI.SetActive(true);
+    }
+
+    public void offShopUI(int status)
+    {
+        // status 0 - 전체 off / 1 - 개수 정하는 것만 off
+        if(status == 0)
+        {
+            shopUIPanel.SetActive(false);
+            playerInfo.isTalk = false;
+        }
+        shopRemindUI.SetActive(false);
+    }
+
+    public void buyItem()
+    {
+        switch (itemCode)
+        {
+            case 2001:
+                if(playerItem.playerCntGold >= buyCount * 20)
+                {
+                    playerItem.playerCntGold -= buyCount * 20;
+                    playerItem.cntHPPotion += buyCount;
+                    shopRemindUI.SetActive(false);
+                    StartCoroutine(noticeEtc(6));
+                }
+                else
+                {
+                    StartCoroutine(noticeEtc(0));
+                }
+                break;
+            case 2002:
+                if (playerItem.playerCntGold >= buyCount * 15)
+                {
+                    playerItem.playerCntGold -= buyCount * 15;
+                    playerItem.cntMPPotion += buyCount;
+                    shopRemindUI.SetActive(false);
+                    StartCoroutine(noticeEtc(6));
+                }
+                else
+                {
+                    StartCoroutine(noticeEtc(0));
+                }
+                break;
+            case 2003:
+                if (playerItem.playerCntGold >= buyCount * 5)
+                {
+                    playerItem.playerCntGold -= buyCount * 5;
+                    playerInfo.bullet += buyCount;
+                    shopRemindUI.SetActive(false);
+                    StartCoroutine(noticeEtc(6));
+                }
+                else
+                {
+                    StartCoroutine(noticeEtc(0));
+                }
+                break;
+        }
+    }
+
+    public void addBuyCount()
+    {
+        buyCount++;
+        buyCountTxt.text = buyCount.ToString();
+    }
+
+    public void minusBuyCount()
+    {
+        if(buyCount > 0)
+            buyCount--;
+        buyCountTxt.text = buyCount.ToString();
+    }
+
     public IEnumerator noticeEtc(int type)
     {
         switch (type)
         {
             case 0: // 비용이 부족함을 알려줄 때
-                popText.text = "강화 비용이 부족합니다!";
+                popText.text = "비용이 부족합니다!";
                 PopUI.SetActive(true);
                 break;
             case 1: // 기원 조각 풀일때
@@ -467,6 +639,18 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
                 break;
             case 5:
                 popText.text = "강화 실패.. 기원 조각 2개 획득!";
+                PopUI.SetActive(true);
+                break;
+            case 6:
+                popText.text = "구매 완료!";
+                PopUI.SetActive(true);
+                break;
+            case 7:
+                popText.text = "포션이 부족합니다!";
+                PopUI.SetActive(true);
+                break;
+            case 8:
+                popText.text = "마나가 부족합니다!";
                 PopUI.SetActive(true);
                 break;
             case 999:
