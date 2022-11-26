@@ -5,7 +5,7 @@
 - 점프맵 1개 (코인 리워드)
 - 광산 (코인, 기원조각 파밍용)
 
-[다운로드](https://drive.google.com/file/d/1v0qGQMRRZGKD2NX7vXdA9sqn_-0Y_Gmr/view?usp=share_link)
+## [다운로드](https://drive.google.com/file/d/1v0qGQMRRZGKD2NX7vXdA9sqn_-0Y_Gmr/view?usp=share_link)
 
 
 ### 추가 예정 사항
@@ -14,5 +14,8 @@
 - 광산 안내
 - 무기 수령 NPC 제작 (중복 수령 방지)
 - 무기를 새로 얻었을 때, 강화 정보가 초기화 되지 않게끔(n강을 했는지만 초기화가 되어 무한 강화가 되게 된다.)
+- 타이틀 씬 추가
+- 저장 기능 추가
+- esc키를 통한 저장 & 종료 메뉴
 
 <hr>
