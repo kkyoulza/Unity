@@ -520,5 +520,8 @@ Player.cs에서는 현재 점수를 실시간으로 더하기 위해 동전을 �
 
 또한 topScore는 int 배열로 만들어 주어, top3의 점수까지 저장되어 랭킹에 표시할 수 있게 만들었다.
 
+랭킹 UI를 아래와 같이 간단하게 만들어 주었다.
+
+![image](https://user-images.githubusercontent.com/66288087/205025535-11b50fba-52d5-4deb-bdbc-7d6c1da0e3a1.png)
 
 
