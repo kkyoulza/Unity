@@ -280,9 +280,14 @@ public class Managing : MonoBehaviour
     public void doExit()
     {
         saveInfo.SaveInfoToFile();
-        if (saveInfo.topScore < saveInfo.info.totalScore)
-            saveInfo.topScore = saveInfo.info.totalScore;
+        if (saveInfo.topScore[2] < saveInfo.info.totalScore) // 항상 정렬을 하니 마지막 원소와 비교 해 준다.
+        {
+            saveInfo.topScore[2] = saveInfo.info.totalScore;
+            Array.Sort(saveInfo.topScore);
+            Array.Reverse(saveInfo.topScore);
+        }
         savestats.info.playerCntGold += saveInfo.info.totalScore * 10;
+        saveInfo.info.reset();
         SceneManager.LoadScene("Boss1");
     }
 
@@ -389,9 +394,15 @@ public class Player : MonoBehaviour
             case 3:
                 saveInfo.stageUp();
                 saveInfo.SaveInfoToFile();
-                if (saveInfo.topScore < saveInfo.info.totalScore)
-                    saveInfo.topScore = saveInfo.info.totalScore;
+                if (saveInfo.topScore[2] < saveInfo.info.totalScore)
+                {
+                    saveInfo.topScore[2] = saveInfo.info.totalScore;
+                    Array.Sort(saveInfo.topScore);
+                    Array.Reverse(saveInfo.topScore);
+                }
+                
                 saveStats.info.playerCntGold += saveInfo.info.totalScore * 100;
+                saveInfo.info.reset(); // 점수 리셋
                 SceneManager.LoadScene("Boss1");
                 break;
         }
@@ -506,5 +517,8 @@ public class Player : MonoBehaviour
 Managing.cs에는 ExitUI를 on/off하는 함수와 ExitUI에서 Exit 버튼을 눌렀을 때, 점프맵 밖으로 완전히 나가게 하는 doExit()함수를 만들어 주었다.
 
 Player.cs에서는 현재 점수를 실시간으로 더하기 위해 동전을 먹을 때, saveObject에 있는 cntScore를 더해주는 부분을 추가 해 주었다.
+
+또한 topScore는 int 배열로 만들어 주어, top3의 점수까지 저장되어 랭킹에 표시할 수 있게 만들었다.
+
 
 
