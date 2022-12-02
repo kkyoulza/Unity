@@ -524,4 +524,25 @@ Player.cs에서는 현재 점수를 실시간으로 더하기 위해 동전을 �
 
 ![image](https://user-images.githubusercontent.com/66288087/205025535-11b50fba-52d5-4deb-bdbc-7d6c1da0e3a1.png)
 
+<hr>
+
+### esc키를 통해 게임 종료하기
+
+게임 종료 메뉴 UI를 아래 사진과 같이 만들어 주었다.
+
+![image](https://user-images.githubusercontent.com/66288087/205262077-8634e0e3-e266-427b-a4fa-182ece68cc3d.png)
+
+esc키를 입력 받고, esc키를 누르게 되면 위 사진과 같은 메뉴가 뜨면서 게임 내 시간이 멈추게 설정하였다.
+
+시간을 일시정지 시키는 것은 [여기](https://bluemeta.tistory.com/3)를 참고하였다. (Time.timeScale 이용)
+
+메뉴를 켤 때, Time.timeScale을 0으로 만들어 주어 시간이 멈추게 하였고, 메뉴를 끌 때는 Time.timeScale을 1.0f로 하여 다시 시간이 가게 하였다. 
+
+
+
+
+
+
+
+
 
