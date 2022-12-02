@@ -538,8 +538,9 @@ esc키를 입력 받고, esc키를 누르게 되면 위 사진과 같은 메뉴�
 
 메뉴를 켤 때, Time.timeScale을 0으로 만들어 주어 시간이 멈추게 하였고, 메뉴를 끌 때는 Time.timeScale을 1.0f로 하여 다시 시간이 가게 하였다. 
 
+![image](https://user-images.githubusercontent.com/66288087/205262613-cdb781af-b4fe-4ab8-bade-5c06b53e1ffa.png)
 
-
+어둡게 설정한 것은 Panel을 하나 더 두어 설정하였다.
 
 
 
