@@ -542,6 +542,93 @@ esc키를 입력 받고, esc키를 누르게 되면 위 사진과 같은 메뉴�
 
 어둡게 설정한 것은 Panel을 하나 더 두어 설정하였다.
 
+<hr>
+
+### 게임 내용 저장
+
+**점프 맵**
+
+점프 맵의 점수들을 저장 해 주도록 해 보자. 파일로 저장시킨 다음, 게임을 시작할 때, 파일의 내용을 Load 하는 방식을 사용한다.
+
+<pre>
+<code>
+ public void SaveInfoToFile()
+{
+
+    string fileName = "jumpScoreInfo";
+    string path = Application.dataPath + "/" + fileName + ".dat";
+
+    FileStream fs = new FileStream(path, FileMode.Create); // 파일 통로 생성
+    BinaryFormatter formatter = new BinaryFormatter();
+    formatter.Serialize(fs, info); // 직렬화 하여 저장
+
+    Debug.Log("파일 저장 완료");
+
+    fs.Close();
+
+
+}
+
+public void LoadInfoFile()
+{
+    string fileName = "jumpScoreInfo";
+    string path = Application.dataPath + "/" + fileName + ".dat";
+
+    if (File.Exists(path))
+    {
+        // 만약 파일이 존재하면
+
+        FileStream fs = new FileStream(path, FileMode.Open);
+        BinaryFormatter formatter = new BinaryFormatter();
+        Info infoImsi = formatter.Deserialize(fs) as Info; // 역 직렬화 후, 클래스 형태에 맞는 객체에 다시 저장
+
+        info = infoImsi;
+
+        Debug.Log("저장 된 현재 점수 : " + info.cntScore);
+        Debug.Log("저장 된 누적 점수 : " + info.totalScore);
+
+        fs.Close();
+    }
+    else
+    {
+        // 파일이 존재하지 않으면
+        Debug.Log("파일이 존재하지 않음");
+    }
+}
+</code>
+</pre>
+
+파일을 저장하고 불러오는 함수이다.
+
+<pre>
+<code>
+private void Awake()
+{
+    GameObject[] objs = GameObject.FindGameObjectsWithTag("information"); // information Tag를 가진 놈들을 배열에 불러오고
+    if (objs.Length > 1) // 만약 이미 전에 생성된 Obj가 있다면 배열의 길이는 2가 될 것이다.
+        Destroy(gameObject); // DontDestroy로 지정된 것은 Awake가 다시 실행되지 않으므로 새로 생성되는 것만 삭제한다.
+    DontDestroyOnLoad(gameObject); // 씬이 바뀌어도 사라지지 않게한다.
+
+    if (!isLoad)
+    {
+        LoadInfoFile();
+        isLoad = true;
+    }
+
+    Debug.Log("SaveBase");
+}
+</code>
+</pre>
+
+SaveInformation.cs에서 Awake때 파일을 불러오게끔 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/205301904-f9d2cb01-bc49-4a97-ba60-1eefd29285d7.png)
+
+그렇게 해 주면 시작하자마자 전에 했던 스코어가 바로 반영되어 있음을 볼 수 있다.
+
+
+
+
 
 
 
