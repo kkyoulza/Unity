@@ -630,11 +630,141 @@ SaveInformation.cs에서 Awake때 파일을 불러오게끔 해 준다.
 
 **Player 정보들**
 
+Player 정보들은 이미 SaveObject에 있는 클래스에서 한 번에 저장되어 있다.
+
+왜냐하면 씬을 이동할 때, 정보를 유지하기 위해 만들어 놓았기 때문이다.
+
+따라서 SaveObject에서 점프 맵 스코어를 저장하는 함수를 가져와서 파일에 저장 & 종료를 해 주는 기능을 넣고 버튼에 연결시켜 주면 된다.
+
+![image](https://user-images.githubusercontent.com/66288087/205431976-19ab2e06-e8da-45e6-81f0-425e509f8d56.png)
+
+버튼에 함수를 연결한 모습
+
+<pre>
+<code>
+public void SaveInfoToFile()
+{
+
+    string fileName = "PlayerInfo";
+    string path = Application.dataPath + "/" + fileName + ".dat";
+
+    FileStream fs = new FileStream(path, FileMode.Create); // 파일 통로 생성
+    BinaryFormatter formatter = new BinaryFormatter();
+    formatter.Serialize(fs, info); // 직렬화 하여 저장
+
+    Debug.Log("파일 저장 완료");
+
+    fs.Close();
+
+    Application.Quit();
+
+}
+
+public void LoadInfoFile()
+{
+    string fileName = "PlayerInfo";
+    string path = Application.dataPath + "/" + fileName + ".dat";
+
+    if (File.Exists(path))
+    {
+        // 만약 파일이 존재하면
+
+        FileStream fs = new FileStream(path, FileMode.Open);
+        BinaryFormatter formatter = new BinaryFormatter();
+        playerInfo infoImsi = formatter.Deserialize(fs) as playerInfo; // 역 직렬화 후, 클래스 형태에 맞는 객체에 다시 저장
+
+        info = infoImsi;
+
+        fs.Close();
+    }
+    else
+    {
+        // 파일이 존재하지 않으면
+        Debug.Log("파일이 존재하지 않음");
+    }
+}
+</code>
+</pre>
+
+저장 함수이다.
+
+파일에 데이터를 저장 한 다음, DataSet.cs 코드에서 데이터를 불러 와 다시 세팅을 해 주게 된다.(처음에는 씬 이동 시 데이터 리셋용도였지만 저장 용으로도 사용 가능!)
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class DataSet : MonoBehaviour
+{
+    SaveInfos saveData; // 저장된 코드
+    PlayerItem playerItem; // 플레이어 아이템 코드
+    PlayerCode playerCode; // 플레이어 스탯이 저장된 코드
+    UIManager uiManager; // UI 매니저
 
 
+    // Start is called before the first frame update
+    void Start()
+    {
+        saveData = GameObject.FindGameObjectWithTag("saveInfo").GetComponent<SaveInfos>();
+        playerItem = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerItem>();
+        playerCode = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCode>();
+
+        if(GameObject.FindGameObjectWithTag("uimanager") != null)
+        {
+            uiManager = GameObject.FindGameObjectWithTag("uimanager").GetComponent<UIManager>();
+        }
+
+        resetData();
+        if (uiManager != null)
+            reSetUI();
+
+    }
+
+    public void resetData()
+    {
+
+        playerCode.playerMaxHealth = saveData.info.playerMaxHealth;
+        playerCode.playerHealth = saveData.info.playerCntHealth;
+        playerCode.playerMana = saveData.info.playerCntMP;
+        playerCode.playerMaxMana = saveData.info.playerMaxMP;
+        playerCode.playerStrength = saveData.info.playerStrength;
+        playerCode.playerAccuracy = saveData.info.playerAcc;
+        playerItem.playerCntGold = saveData.info.playerCntGold;
+        playerItem.enchantOrigin = saveData.info.enchantOrigin;
+        playerItem.cntHPPotion = saveData.info.HPPotion;
+        playerItem.cntMPPotion = saveData.info.MPPotion;
+        playerCode.strEnchantCnt = saveData.info.strCnt;
+        playerCode.accEnchantCnt = saveData.info.accCnt;
+        playerCode.HPEnchantCnt = saveData.info.HPCnt;
+        playerCode.MPEnchantCnt = saveData.info.MPCnt;
 
 
+        for (int i = 0; i < saveData.info.weapons.Length; i++)
+        {
+            if (saveData.info.weapons[i].baseAtk == 0)
+                return;
+
+            playerItem.weapons[i] = saveData.info.weapons[i];
+            playerCode.hasWeapons[saveData.info.weapons[i].weaponCode] = true; // 무기를 얻은 여부도 반영 해 준다.
+            playerItem.SetEnchantInfo(i); // playerItem -> weapon 반영(실제 데미지가 계산되는 곳으로)
+
+        }
+        
+    }
+
+    public void reSetUI()
+    {
+        uiManager.goldTxt.text = saveData.info.playerCntGold.ToString();
+    }
 
 
+}
+</code>
+</pre>
 
 
+![image](https://user-images.githubusercontent.com/66288087/205432153-ece6c466-83ea-49e9-a78a-99d40c8c86f5.png)
+
+저장 된 것이 자동으로 로드 된 모습이다.
