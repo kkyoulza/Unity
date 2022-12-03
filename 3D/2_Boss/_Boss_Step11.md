@@ -768,3 +768,8 @@ public class DataSet : MonoBehaviour
 ![image](https://user-images.githubusercontent.com/66288087/205432153-ece6c466-83ea-49e9-a78a-99d40c8c86f5.png)
 
 저장 된 것이 자동으로 로드 된 모습이다.
+
+![image](https://user-images.githubusercontent.com/66288087/205432285-996fa04e-7798-4481-8d47-00db4607e124.png)
+
+플레이어가 가지고 있는 무기 오브젝트 정보도 저장된 정보가 바로 반영됨을 볼 수 있다.
+
