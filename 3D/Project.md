@@ -21,7 +21,7 @@
 
 캐릭터 이동
 
-![image](https://user-images.githubusercontent.com/66288087/205892965-858d05b9-4cd2-4848-be82-a847ed212290.png)
+![image](https://user-images.githubusercontent.com/66288087/205896238-c1e8a25a-5594-4886-80ae-0dfe9ad94633.png)
 
 대쉬
 
