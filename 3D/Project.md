@@ -180,6 +180,13 @@
 - 3개의 스테이지
 - 여러 종류의 장애물 구현
 
+![image](https://user-images.githubusercontent.com/66288087/206095648-2b061dea-703f-4798-8a73-48a14492149f.png)
+
+![image](https://user-images.githubusercontent.com/66288087/206095669-2f23c4eb-41d8-443c-a5e8-e189e4ae469c.png)
+
+![image](https://user-images.githubusercontent.com/66288087/206095682-fbaab474-732a-4abd-bee4-775b814574d2.png)
+
+
 #### 구현 방식
 - 점프맵에서는 RigidBody를 통한 움직임 구현
 - 애니메이션 효과를 이용하여 발판 크기, 위치, 회전 각도 조절
@@ -191,6 +198,9 @@
 ### 점프 점수 개인 Top3 랭킹 판
 
 - 점프 맵의 점수를 저장하여 Top3 점수 노출
+
+![image](https://user-images.githubusercontent.com/66288087/206095607-0b5a61ae-da0e-4fb0-bbae-1641331db69d.png)
+
 
 #### 구현 방식
 - DontDestroyOnLoad를 통하여 없어지지 않는 오브젝트를 통하여 점프 맵 스테이지 이동 시에 점수를 저장하게 하였음
@@ -204,6 +214,10 @@
 
 - 캐릭터 상태 UI, 아이템 창, 장비 창, 스탯 창, 대화 창, 강화 창, 상점 UI, 점프 맵에서 도중 포기 UI 등을 구현
 - 아이템 창, 스탯 창, 장비 창은 상단 바를 드래그 하여 UI위치를 드래그 이동할 수 있게 하였음
+
+![image](https://user-images.githubusercontent.com/66288087/206095518-3b835bc2-89ff-4b87-9340-f0af272b567b.png)
+
+![image](https://user-images.githubusercontent.com/66288087/206095536-eca660de-786e-4664-9a4a-6c555f880858.png)
 
 #### 구현 방식
 
