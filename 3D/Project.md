@@ -80,12 +80,27 @@
 - 몬스터 코드를 상속 받아 Boss 코드 구현
 - 오브젝트 별로 몬스터 타입을 나타내는 enum을 설정하여 몬스터 별로 행동을 구별하였음
 
+[몬스터 관련 내용 상세](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/Boss_Step5.md)<br>
+[보스 관련 내용 상세](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/Boss_Step6.md)
+
 <hr>
 
 ### 무기 강화
 
+- 강화 시스템 구현
+- 강화 UI 구현
 
+#### 구현 방식
 
+- PlayerItem.cs(아이템 관리용)를 별개로 만들어 강화 코드와 연계하였음
+
+![image](https://user-images.githubusercontent.com/66288087/206086004-ccc16f9b-c536-4b5e-8517-015d2fda029f.png)
+
+강화 시스템 구조
+
+[강화 세부 내용](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/Boss_Step4.md)
+
+<hr>
 
 ### 상점
 
