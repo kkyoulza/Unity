@@ -162,6 +162,9 @@
 - 던전에 들어가지 않고 골드를 벌 수 있는 수단
 - 자동으로 일정 시간마다 스폰이 되게 만들어 주었음
 
+![image](https://user-images.githubusercontent.com/66288087/206093640-823a55ac-fa41-4e18-a1dc-e46d80af31a0.png)
+
+
 #### 구현 방식
 
 - 스포너에 Trigger를 마련 해 두고, 돌 Tag를 가진 물체가 위에 존재하면 시간을 카운트 하지 않고, 존재하지 않을 때, 시간을 카운트 하여 Instantiate를 통해 소환 해 주었다.
@@ -173,20 +176,46 @@
 
 ### 점프 맵
 
+- 점프 대상 플레이어(공)
+- 3개의 스테이지
+- 여러 종류의 장애물 구현
 
+#### 구현 방식
+- 점프맵에서는 RigidBody를 통한 움직임 구현
+- 애니메이션 효과를 이용하여 발판 크기, 위치, 회전 각도 조절
 
+[점프 맵 관련 내용들](https://github.com/kkyoulza/Unity/tree/main/3D/1_Jump)
 
+<hr>
 
 ### 점프 점수 개인 Top3 랭킹 판
 
+- 점프 맵의 점수를 저장하여 Top3 점수 노출
 
+#### 구현 방식
+- DontDestroyOnLoad를 통하여 없어지지 않는 오브젝트를 통하여 점프 맵 스테이지 이동 시에 점수를 저장하게 하였음
+- 파일 저장을 통하여 게임을 껐다가 켜도 랭킹 점수가 유지되게 하였음
 
+[점프맵 점수 저장 관련](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/_Boss_Step11.md)
+
+<hr>
 
 ### UI
 
+- 캐릭터 상태 UI, 아이템 창, 장비 창, 스탯 창, 대화 창, 강화 창, 상점 UI, 점프 맵에서 도중 포기 UI 등을 구현
+- 아이템 창, 스탯 창, 장비 창은 상단 바를 드래그 하여 UI위치를 드래그 이동할 수 있게 하였음
 
+#### 구현 방식
 
+- Unity 내 Canvas를 통한 구현
+- UIManager.cs를 제작하여 매니징 역할 부여
+- IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler를 통하여 마우스가 아이템 창, 스탯 창, 장비 창 상단 바를 드래그 하여 이동할 수 있게 하였음
 
+[UI 관련 내용](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/Boss_Step8.md)
+
+<hr>
+
+## 게임 플레이 영상
 
 
 
