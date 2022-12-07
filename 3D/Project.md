@@ -231,6 +231,7 @@
 
 ## 게임 플레이 영상
 
+https://www.youtube.com/watch?v=pQD4eDRPNII&feature=youtu.be
 
 
 
