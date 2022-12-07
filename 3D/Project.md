@@ -64,7 +64,7 @@
 - 무기 교체는 캐릭터의 이동과 같은 방식으로 키를 설정하여 다른 무기로의 Swap을 해 주고, 캐릭터의 손에 있는 무기 Object의 SetActive를 true/false 시켜 주었음
 - 무기는 습득 순서대로 저장되는 GameObject 배열과, 무기 코드 순서대로 저장되는 배열을 두어 관리하였음
 
-[습득, 장착 관련 코드 링크](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/Boss_Step2.md)
+[습득, 장착 관련 코드 링크](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/Boss_Step2.md)<br>
 [공격 관련 코드 링크](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/Boss_Step3.md)
 
 <hr>
@@ -104,26 +104,72 @@
 
 ### 상점
 
+- 아이템 판매 구현
+- 일괄 판매 구현
+
+![image](https://user-images.githubusercontent.com/66288087/206086426-8cc87e25-68f0-44bb-95ce-cdf8567651cb.png)
+
+![image](https://user-images.githubusercontent.com/66288087/206086449-f52f83b5-f67a-4827-93f5-1cdc4b150c62.png)
 
 
+#### 구현 방식
+
+- UI를 관리하는 UIManager.cs 코드에서 아이템 코드를 매개변수로 받아 들여 아이템을 구매하는 함수를 제작하였음
+
+[상점 관련 내용](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/_Boss_Step10.md)
+
+<hr>
 
 ### 스탯 강화
 
+- 스탯 창 UI에서 버튼을 통하여 스탯 강화가 가능하게 하였음
 
+![image](https://user-images.githubusercontent.com/66288087/206086622-cb578d70-2a9c-4e2d-9fbd-972b6176d887.png)
 
+#### 구현 방식
 
+- UI Manager 내부에 함수를 만들어 구현
+
+[스탯 강화 관련 내용](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/_Boss_Step10.md)
+
+<hr>
 
 ### 던전 스테이지
 
+- 여러 개의 방으로 구성
+- 몬스터를 다 잡으면 다음 방으로 향하는 문이 열리게 하였음
+- 보스 몬스터까지 잡게 되면 보상을 받을 수 있는 방으로 이동 가능
+- 보상은 랜덤
+- 캐릭터가 죽었을 때(HP = 0) 행동 구현
+
+![image](https://user-images.githubusercontent.com/66288087/206086873-0760f55c-63e0-4006-93ce-bcea52ba35db.png)
 
 
+#### 구현 방식
 
+- Trigger를 통하여 Player가 닿게 되면 아래 사진과 같이 설정 한 존에 따라서 다르게 몬스터를 스폰 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/206086989-77545a5b-57a9-4c0e-ac6a-7f34668b17cd.png)
+
+- 캐릭터가 죽었을 때의 판단은 PlayerCode.cs(캐릭터 코드)에서 이루어 지며, 캐릭터가 마을로 다시 돌아가게 하였다.(씬 이동)
+
+[스테이지 관련 내용](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/Boss_Step9.md)
+
+<hr>
 
 ### 파밍용 돌(스포너 자동 스폰)
 
+- 던전에 들어가지 않고 골드를 벌 수 있는 수단
+- 자동으로 일정 시간마다 스폰이 되게 만들어 주었음
 
+#### 구현 방식
 
+- 스포너에 Trigger를 마련 해 두고, 돌 Tag를 가진 물체가 위에 존재하면 시간을 카운트 하지 않고, 존재하지 않을 때, 시간을 카운트 하여 Instantiate를 통해 소환 해 주었다.
+- 스포너와 돌 둘 다 Prefab화 시켜 주었다.
 
+[파밍용 돌 관련 내용](https://github.com/kkyoulza/Unity/blob/main/3D/2_Boss/Boss_Step7.md)
+
+<hr>
 
 ### 점프 맵
 
@@ -133,6 +179,10 @@
 
 ### 점프 점수 개인 Top3 랭킹 판
 
+
+
+
+### UI
 
 
 
