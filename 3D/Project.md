@@ -86,7 +86,9 @@
 - 세 가지 타입의 몬스터
 - 세 개의 패턴을 가진 보스
 
-![image](https://user-images.githubusercontent.com/66288087/207778695-ddba7638-7d90-42cd-93b4-82afab7ce78f.png)
+![boss_5_3](https://user-images.githubusercontent.com/66288087/207778790-7322c019-92d2-4b05-8154-bb548dd32a0f.gif)
+
+![boss_6_2](https://user-images.githubusercontent.com/66288087/207778820-18202f53-e68d-4bba-8786-d3c8f7bc3bbd.gif)
 
 
 #### 구현 방식
