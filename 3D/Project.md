@@ -86,6 +86,8 @@
 - 세 가지 타입의 몬스터
 - 세 개의 패턴을 가진 보스
 
+![image](https://user-images.githubusercontent.com/66288087/207778695-ddba7638-7d90-42cd-93b4-82afab7ce78f.png)
+
 
 #### 구현 방식
 - 코루틴(CoRoutine)을 사용하여 공격 딜레이 설정
