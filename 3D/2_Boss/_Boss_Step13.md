@@ -369,6 +369,35 @@ void UseSkills()
 
 이제 실행 해 보면
 
+![image](https://user-images.githubusercontent.com/66288087/209323348-527056ee-8e77-4c17-9e83-91c94c651b02.png)
+
+스킬 사용 중일 때는 스프레드가 발동 되다가
+
+![image](https://user-images.githubusercontent.com/66288087/209323248-3f741aed-cd4e-454a-b374-b146c7381611.png)
+
+스킬이 끝나게 되면 위 사진처럼 다시 일반 공격이 됨을 볼 수 있다. (캡처를 이것을 먼저 한 다음에 스킬을 다시 발동시켜 위 사진을 찍어서 시간이 뒤바뀌었다..)
+
+![image](https://user-images.githubusercontent.com/66288087/209323555-9b694e06-57ff-49c7-abdf-3cf1ba7270e5.png)
+
+그리고 쿨타임 30초, 스킬 가동 시간 20초로 설정 해 놓은 것도 잘 발동되고 있음을 볼 수 있다.
+
+![image](https://user-images.githubusercontent.com/66288087/209323643-1be9ed40-64d6-44fb-83fb-14a6c64728b9.png)
+
+Debug.Log()를 넣어 주어 쿨타임 중과 스킬 발동 중에 사용될 수 없는 것이 잘 되는지 확인 하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/209323732-21fff470-fea6-4343-bab0-5d4884d9aa56.png)
+
+스킬이 끝나고는 다시 잘 사용됨을 볼 수 있다.
+
+<hr>
+
+### 근접 1번스킬
+
+근접 1번 스킬의 컨셉은.. 무기의 크기를 순간적으로 엄청 늘리는 것이다.
+
+물론 버프형식이고, 10초 가동에 30초 쿨타임으로 한번 해 볼 생각이다.
+
+
 
 
 
