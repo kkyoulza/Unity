@@ -16,6 +16,7 @@ public class PlayerCode : MonoBehaviour
 
     public int playerMaxAtk; // 최대 공격력
     public int playerMinAtk; // 최소 공격력
+    public SaveInformation saveJump; // 점프맵 정보
 
     // 명중률 계산 -> 기본 명중률 50% + 추가 명중률 에 log를 씌워서 10으로 나눈 후 더함 (기본 명중률 5, 0.5 + 0.06 = 0.56 정도에서 시작)
     // 공격력 계산 -> 최소 공격력 : (캐릭터 힘 + 무기 공격력) * 명중률(최대 95%)
@@ -55,6 +56,10 @@ public class PlayerCode : MonoBehaviour
     bool equipDown; // 캐릭터 장비 창 키
     bool HPKey; // HP포션 키
     bool MPKey; // MP포션 키
+    bool escKey; // esc 키
+
+    // 스킬 키 모음
+    bool spreadShotKey; // range1 skill key
 
 
     // 상태 변수(bool)
@@ -83,7 +88,9 @@ public class PlayerCode : MonoBehaviour
 
     int cntindexWeapon = -1; // 현재 끼고 있는 무기 index, 초기 값은 -1로 해 준다.
 
+    // 플레이어의 타 컴포넌트
     PlayerItem playerItem; // 플레이어가 가지고 있는 아이템 정보들이 담겨있음
+    PlayerSkills playerSkills; // 플레이어가 가지고 있는 스킬들
 
     //쿨타임 관련
     public GameObject manager;
@@ -107,10 +114,14 @@ public class PlayerCode : MonoBehaviour
         ui = UIManager.GetComponent<UIManager>(); // ui 매니저 컴포넌트
         anim = GetComponentInChildren<Animator>(); // 자식 오브젝트에 있는 컴포넌트를 가져온다.
         coolManager = manager.GetComponent<CoolTimeManager>(); // 쿨타임 매니저를 불러온다.
+
         playerItem = GetComponent<PlayerItem>(); // 아이템 컴포넌트
+        playerSkills = GetComponent<PlayerSkills>(); // 스킬 정보들
+
         rigid = GetComponent<Rigidbody>();
         meshs = GetComponentsInChildren<MeshRenderer>(); // 여러 개를 가져오는 것이니 Components s 꼭 붙이기!
         saveinfo = GameObject.FindGameObjectWithTag("saveInfo").GetComponent<SaveInfos>();
+        saveJump = GameObject.FindGameObjectWithTag("information").GetComponent<SaveInformation>();
     }
 
     // Start is called before the first frame update
@@ -128,6 +139,7 @@ public class PlayerCode : MonoBehaviour
             Move_Ani(); // 캐릭터 움직임
             Jump(); // 점프
             Attack(); // 공격
+            UseSkills();
             ReLoad(); // 재장전
             TrunChar(); // 캐릭터 회전
             Dodge(); // 캐릭터 구르기
@@ -177,6 +189,15 @@ public class PlayerCode : MonoBehaviour
             AtkDelay = 0f;
         }
 
+    }
+
+    void UseSkills()
+    {
+        if (spreadShotKey)
+        {
+            StartCoroutine(playerSkills.onRangeSkillCoolTime(0));
+            StartCoroutine(playerSkills.onRangeSkill(0));
+        }
     }
 
     void ReLoad()
@@ -241,6 +262,11 @@ public class PlayerCode : MonoBehaviour
         HPKey = Input.GetKeyDown(KeyCode.F);
         MPKey = Input.GetKeyDown(KeyCode.G);
 
+        spreadShotKey = Input.GetKeyDown(KeyCode.H);
+
+
+        escKey = Input.GetButtonDown("Cancel");
+
     }
 
     void onUI()
@@ -269,6 +295,12 @@ public class PlayerCode : MonoBehaviour
             else
                 ui.OffEquipUI();
         }
+
+        if (escKey)
+        {
+            ui.onOffExitUI();
+        }
+
     }
 
     void Move_Ani()
@@ -463,6 +495,9 @@ public class PlayerCode : MonoBehaviour
                     case "Shop":
                         ui.PopUI.SetActive(false);
                         ui.shopUIPanel.SetActive(true);
+                        break;
+                    case "showRank":
+                        ui.onOffRankingUI();
                         break;
                 }
                 

@@ -29,6 +29,7 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public GameObject StatusUI; // 캐릭터 스텟 창 UI
     public GameObject equipUI; // 캐릭터 장비 창 UI
     public GameObject EnchantPanel; // 강화 창
+    public GameObject rankingUI; // 랭킹 창
 
     // UI Text
     public Text popText; // popUI의 텍스트
@@ -75,10 +76,18 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public Text HPTxt;
     public Text MPTxt;
 
+    // ranking UI
+    public Text topScoreTxt;
+    public Text secondScoreTxt;
+    public Text thirdScoreTxt;
+
     //Bullet UI
     public GameObject bulletUI;
     public Text maxBullet;
     public Text cntBullet;
+
+    // esc UI
+    public GameObject escUI; // esc UI
 
     // 체력, 마나 관련
     public GameObject HP;
@@ -300,6 +309,36 @@ public class UIManager : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public void NoticeOff()
     {
         PopUI.SetActive(false);
+    }
+
+    public void onOffRankingUI()
+    {
+        if (!rankingUI.activeSelf)
+        {
+            topScoreTxt.text = GameObject.FindGameObjectWithTag("information").GetComponent<SaveInformation>().info.topScore[0].ToString() + "점";
+            secondScoreTxt.text = GameObject.FindGameObjectWithTag("information").GetComponent<SaveInformation>().info.topScore[1].ToString() + "점";
+            thirdScoreTxt.text = GameObject.FindGameObjectWithTag("information").GetComponent<SaveInformation>().info.topScore[2].ToString() + "점";
+            rankingUI.SetActive(true);
+        }
+        else
+        {
+            rankingUI.SetActive(false);
+            playerInfo.isTalk = false;
+        }
+    }
+    
+    public void onOffExitUI()
+    {
+        if (!escUI.activeSelf)
+        {
+            Time.timeScale = 0f;
+            escUI.SetActive(true);
+        }
+        else
+        {
+            Time.timeScale = 1.0f;
+            escUI.SetActive(false);
+        }
     }
 
     void fullEnchantNotice(WeaponItemInfo imsi)

@@ -5,6 +5,7 @@ using UnityEngine;
 public class Weapon : MonoBehaviour
 {
     PlayerCode playerCode;
+    PlayerSkills playerSkills;
 
     // 공통
     public int itemCode; // 아이템 종류 코드
@@ -36,6 +37,7 @@ public class Weapon : MonoBehaviour
     private void Awake()
     {
         playerCode = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCode>();
+        playerSkills = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerSkills>();
     }
 
     public void Use()
@@ -50,8 +52,16 @@ public class Weapon : MonoBehaviour
         {
             bullet.GetComponent<Bullet>().SetDamage(AtkDmg); // 데미지 설정
             cntCount--;
-            StopCoroutine("Shot"); // 동작하고 있는 중에도 다 정지시킬 수 있음
-            StartCoroutine("Shot");
+            if (playerSkills.isRangeSkillOn[0])
+            {
+                StopCoroutine("SpreadShot"); // 동작하고 있는 중에도 다 정지시킬 수 있음
+                StartCoroutine("SpreadShot");
+            }
+            else
+            {
+                StopCoroutine("Shot"); // 동작하고 있는 중에도 다 정지시킬 수 있음
+                StartCoroutine("Shot");
+            }
         }
     }
 
@@ -99,6 +109,47 @@ public class Weapon : MonoBehaviour
 
         caseRigid.AddForce(caseVec, ForceMode.Impulse);
         caseRigid.AddTorque(Vector3.up * 10, ForceMode.Impulse); // 회전하는 힘을 주는 것!
+    }
+
+    IEnumerator SpreadShot()
+    {
+        // 총알 발사
+        GameObject instantBulletOne = Instantiate(bullet, bulletPos.position, bulletPos.rotation);
+        Rigidbody bulletRigidOne = instantBulletOne.GetComponent<Rigidbody>();
+        GameObject instantBulletTwo = Instantiate(bullet, bulletPos.position, bulletPos.rotation);
+        Rigidbody bulletRigidTwo = instantBulletTwo.GetComponent<Rigidbody>();
+        GameObject instantBulletThreee = Instantiate(bullet, bulletPos.position, bulletPos.rotation);
+        Rigidbody bulletRigidThree = instantBulletThreee.GetComponent<Rigidbody>();
+
+        Vector3 additionalBulletRot2 = bulletPos.forward;
+        Vector3 additionalBulletRot3 = bulletPos.forward;
+
+        additionalBulletRot2.x += 0.1f;
+        additionalBulletRot3.x -= 0.1f;
+
+        bulletRigidOne.velocity = bulletPos.forward * 50; // 총알의 속도를 설정
+        bulletRigidTwo.velocity = additionalBulletRot2 * 50; // 총알의 속도를 설정
+        bulletRigidThree.velocity = additionalBulletRot3 * 50; // 총알의 속도를 설정
+
+        yield return null; // 1프레임 쉬고
+
+        // 탄피 배출
+
+        GameObject instantCase = Instantiate(bulletCase, bulletCasePos.position, bulletCasePos.rotation);
+        Rigidbody caseRigid = instantCase.GetComponent<Rigidbody>();
+        GameObject instantCase2 = Instantiate(bulletCase, bulletCasePos.position, bulletCasePos.rotation);
+        Rigidbody caseRigid2 = instantCase.GetComponent<Rigidbody>();
+        GameObject instantCase3 = Instantiate(bulletCase, bulletCasePos.position, bulletCasePos.rotation);
+        Rigidbody caseRigid3 = instantCase.GetComponent<Rigidbody>();
+
+        Vector3 caseVec = bulletCasePos.forward * Random.Range(-3, -1) + Vector3.up * Random.Range(2, 3); // 랜덤한 힘으로 배출!
+
+        caseRigid.AddForce(caseVec, ForceMode.Impulse);
+        caseRigid.AddTorque(Vector3.up * 10, ForceMode.Impulse); // 회전하는 힘을 주는 것!
+        caseRigid2.AddForce(caseVec, ForceMode.Impulse);
+        caseRigid2.AddTorque(Vector3.up * 10, ForceMode.Impulse); // 회전하는 힘을 주는 것!
+        caseRigid3.AddForce(caseVec, ForceMode.Impulse);
+        caseRigid3.AddTorque(Vector3.up * 10, ForceMode.Impulse); // 회전하는 힘을 주는 것!
     }
 
 

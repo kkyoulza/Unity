@@ -69,6 +69,19 @@ public class PlayerItem : MonoBehaviour
         
     }
 
+    public int checkIndex(WeaponItemInfo[] input)
+    {
+        for(int i = 0; i < input.Length; i++)
+        {
+            if(input[i].baseAtk == 0)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     public void GetInfo(GameObject obj)
     {
         Item item = obj.GetComponent<Item>();
@@ -86,8 +99,8 @@ public class PlayerItem : MonoBehaviour
                     Bullet bullet = weapon.bullet.GetComponent<Bullet>();
                     bullet.SetDamage(weapon.Damage);
                 }
-                weapons[weaponIndex] = weaponinfo;
-                weaponIndex++;
+                weapons[checkIndex(weapons)] = weaponinfo;
+                // weaponIndex++;
                 break;
         }
 

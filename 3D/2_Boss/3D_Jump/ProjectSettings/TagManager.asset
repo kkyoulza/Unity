@@ -42,6 +42,7 @@ TagManager:
   - topBox
   - dungeonUI
   - Shop
+  - showRank
   layers:
   - Default
   - TransparentFX

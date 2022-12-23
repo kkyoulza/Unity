@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,8 +32,7 @@ public class Player : MonoBehaviour
 
         manager = GameObject.FindGameObjectWithTag("Manager");
         saveObject = GameObject.FindGameObjectWithTag("information");
-        
-
+      
         ReturnPos = startPos.transform.position;
         managing = manager.GetComponent<Managing>();
         saveInfo = saveObject.GetComponent<SaveInformation>();
@@ -94,8 +94,16 @@ public class Player : MonoBehaviour
                 break;
             case 3:
                 saveInfo.stageUp();
+                if (saveInfo.info.topScore[2] < saveInfo.info.totalScore)
+                {
+                    saveInfo.info.topScore[2] = saveInfo.info.totalScore;
+                    Array.Sort(saveInfo.info.topScore);
+                    Array.Reverse(saveInfo.info.topScore);
+                }
+                saveInfo.info.cntScore = 0;
                 saveInfo.SaveInfoToFile();
-                saveStats.info.playerCntGold += saveInfo.info.totalScore * 10;
+                saveStats.info.playerCntGold += saveInfo.info.totalScore * 100;
+                saveInfo.info.reset(); // 점수 리셋
                 SceneManager.LoadScene("Boss1");
                 break;
         }
@@ -134,7 +142,7 @@ public class Player : MonoBehaviour
         {
             rigid.velocity = Vector3.zero;
             dontMove = true;
-            saveInfo.SumScore(); // 현재 스테이지 점수를 합산
+            // saveInfo.SumScore(); // 현재 스테이지 점수를 합산
             if(saveInfo.GetStage() == 3)
             {
                 managing.StageClearGainGoldUI();

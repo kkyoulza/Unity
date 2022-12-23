@@ -73,6 +73,7 @@
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Rock.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Coin.cs" />
     <Compile Include="Assets\Scripts\Boss\BossMissile.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\Dialog.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\DataSet.cs" />
     <Compile Include="Assets\Scripts\JumpMap\StartNotice.cs" />
     <Compile Include="Assets\Scripts\Boss\BossRock.cs" />
@@ -95,7 +96,7 @@
     <Compile Include="Assets\Scripts\LobbyAndPlayer\ChooseBtnE.cs" />
     <Compile Include="Assets\Scripts\LobbyAndPlayer\Drag.cs" />
     <Compile Include="Assets\Scripts\Boss\StageStart.cs" />
-    <Compile Include="Assets\Scripts\LobbyAndPlayer\Dialog.cs" />
+    <Compile Include="Assets\Scripts\LobbyAndPlayer\PlayerSkills.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />

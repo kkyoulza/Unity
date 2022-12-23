@@ -1,12 +1,17 @@
 using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Managing : MonoBehaviour
 {
     GameObject player; // 플레이어 오브젝트
     GameObject saveObject; // 정보 저장 오브젝트
+    public GameObject exitUI; // exit UI
+    public Text ScoreTxt; // scoreTxt;
+    SaveInfos savestats; // playerstat
 
     SaveInformation saveInfo; // 정보 저장 코드
     Vector3 startPos; // 시작 포지션(세이브 포인트를 먹기 전 리스폰 위치)
@@ -31,6 +36,7 @@ public class Managing : MonoBehaviour
     {
         player = GameObject.FindGameObjectWithTag("Player");
         saveObject = GameObject.FindGameObjectWithTag("information");
+        savestats = GameObject.FindGameObjectWithTag("saveInfo").GetComponent<SaveInfos>();
 
         saveInfo = saveObject.GetComponent<SaveInformation>();
         startPos = player.transform.position;
@@ -88,12 +94,14 @@ public class Managing : MonoBehaviour
                 score = int.Parse(scoreText.text);
                 score++;
                 saveInfo.addCntScore(1); // 점수 관리 오브젝트에 1점 추가
+                saveInfo.info.totalScore += 1;
                 scoreText.text = score.ToString();
                 break;
             case 1: // gold
                 score = int.Parse(scoreText.text);
                 score += 10;
                 saveInfo.addCntScore(10); // 점수 관리 오브젝트 갱신
+                saveInfo.info.totalScore += 10;
                 scoreText.text = score.ToString();
                 break;
         }
@@ -211,6 +219,7 @@ public class Managing : MonoBehaviour
         panel.SetActive(true);
         noticeText.text = "오른쪽, 왼쪽 길 중에 한 곳을 선택하세요!\n 맵에 대한 자세한 설명을 보시려면 물음표에 가까이 가주세요!";
     }
+
     public void ShowInfoStage2Plus()
     {
         panel.SetActive(true);
@@ -228,14 +237,41 @@ public class Managing : MonoBehaviour
     public void StageClearUI()
     {
         panel.SetActive(true);
-        noticeText.text = "스테이지 클리어!\n 점수 : " + saveInfo.GetCntScore()+"\n 누적 점수 : "+saveInfo.GetTotalScore();
+        noticeText.text = "스테이지 점수 : " + saveInfo.GetCntScore()+"\n 누적 점수 : "+saveInfo.GetTotalScore();
     }
 
     public void StageClearGainGoldUI()
     {
         panel.SetActive(true);
-        noticeText.text = "전 스테이지 클리어 완료!\n 획득 골드의 10배 만큼 골드를 획득합니다!\n 획득 골드 : "+saveInfo.info.totalScore * 10+"G";
+        noticeText.text = "전 스테이지 클리어 완료!\n 완주 시, 획득 골드의 100배 만큼 골드를 획득합니다!\n 획득 골드 : "+saveInfo.info.totalScore * 100+"G";
     }
 
+    public void onExitUI()
+    {
+        if (!exitUI.activeSelf)
+        {
+            ScoreTxt.text = saveInfo.info.totalScore.ToString() + " (획득 골드 " + saveInfo.info.totalScore * 10 + ")";
+            exitUI.SetActive(true);
+        }
+        else
+        {
+            exitUI.SetActive(false);
+        }
+    }
+
+    public void doExit()
+    {
+        if (saveInfo.info.topScore[2] < saveInfo.info.totalScore) // 항상 정렬을 하니 마지막 원소와 비교 해 준다.
+        {
+            saveInfo.info.topScore[2] = saveInfo.info.totalScore;
+            Array.Sort(saveInfo.info.topScore);
+            Array.Reverse(saveInfo.info.topScore);
+        }
+        savestats.info.playerCntGold += saveInfo.info.totalScore * 10;
+        saveInfo.info.cntScore = 0;
+        saveInfo.SaveInfoToFile();
+        saveInfo.info.reset();
+        SceneManager.LoadScene("Boss1");
+    }
 
 }

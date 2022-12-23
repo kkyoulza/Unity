@@ -15,6 +15,7 @@ public class Info{
     public int fallCountone, fallCounttwo, fallCountthree; // 스테이지 1,2,3에서 떨어진 횟수
     public int totalFallCount; // 전 스테이지 통합 떨어진 횟수
 
+    public int[] topScore; // 탑3 스코어
 
     public Info(int cnt, int total)
     {
@@ -22,13 +23,23 @@ public class Info{
         this.totalFallCount = total;
     }
 
+    public void reset()
+    {
+        cntScore = 0;
+        totalScore = 0;
+        firstScore = 0;
+        secondScore = 0;
+        thirdScore = 0;
+    }
+
 }
 
 public class SaveInformation : MonoBehaviour
 {
     public Info info = new Info(0, 0); // 맨 처음에 0으로 시작
-
     int currentStage = 1; // 현재 스테이지를 나타낸다.
+
+    public bool isLoad; // 맨 처음 파일에서 정보를 로드했는가?
 
     // Start is called before the first frame update
 
@@ -38,6 +49,13 @@ public class SaveInformation : MonoBehaviour
         if (objs.Length > 1) // 만약 이미 전에 생성된 Obj가 있다면 배열의 길이는 2가 될 것이다.
             Destroy(gameObject); // DontDestroy로 지정된 것은 Awake가 다시 실행되지 않으므로 새로 생성되는 것만 삭제한다.
         DontDestroyOnLoad(gameObject); // 씬이 바뀌어도 사라지지 않게한다.
+
+        if (!isLoad)
+        {
+            LoadInfoFile();
+            isLoad = true;
+        }
+
         Debug.Log("SaveBase");
     }
 
@@ -52,6 +70,7 @@ public class SaveInformation : MonoBehaviour
         
     }
 
+    /*
     public void SumScore()
     {
         // 누적 점수에 현재 스테이지 점수를 더한다.
@@ -59,6 +78,7 @@ public class SaveInformation : MonoBehaviour
         Debug.Log("점수 합산 완료, 총 점수 : " + info.totalScore);
 
     }
+    */
 
     public void addCntScore(int add)
     {
@@ -136,7 +156,9 @@ public class SaveInformation : MonoBehaviour
 
             FileStream fs = new FileStream(path, FileMode.Open);
             BinaryFormatter formatter = new BinaryFormatter();
-            Info info = formatter.Deserialize(fs) as Info; // 역 직렬화 후, 클래스 형태에 맞는 객체에 다시 저장
+            Info infoImsi = formatter.Deserialize(fs) as Info; // 역 직렬화 후, 클래스 형태에 맞는 객체에 다시 저장
+
+            info = infoImsi;
 
             Debug.Log("저장 된 현재 점수 : " + info.cntScore);
             Debug.Log("저장 된 누적 점수 : " + info.totalScore);

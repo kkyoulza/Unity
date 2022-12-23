@@ -9,20 +9,24 @@ using System.IO;
 public class playerInfo
 {
     public WeaponItemInfo[] weapons = new WeaponItemInfo[100]; // 먹은 무기 스탯 정보
+
     public int playerMaxHealth; // 최대 체력
     public int playerCntHealth; // 현재 체력
     public int playerCntMP; // 현재 마나
     public int playerMaxMP; // 최대 마나
     public int playerStrength; // 플레이어 힘 스탯
     public int playerAcc; // 플레이어 명중률
+
     public long playerCntGold; // 플레이어 현재 골드
     public int enchantOrigin; // 강화 기원 조각 개수
     public int HPPotion; // HP포션 개수
     public int MPPotion; // MP포션 개수
+
     public int strCnt; // str강화 횟수
     public int accCnt; // acc강화 횟수
     public int HPCnt; // HP강화 횟수
     public int MPCnt; // MP강화 횟수
+
     public bool[] isGained = new bool[3]; // 무기를 얻은 현황
 
 }
@@ -31,6 +35,7 @@ public class playerInfo
 public class SaveInfos : MonoBehaviour
 {
     public playerInfo info = new playerInfo();
+    public bool isLoad;
 
     void Awake()
     {
@@ -38,6 +43,11 @@ public class SaveInfos : MonoBehaviour
         if (objs.Length > 1) // 만약 이미 전에 생성된 saveObj가 있다면 배열의 길이는 2가 될 것이다.
             Destroy(gameObject); // DontDestroy로 지정된 것은 Awake가 다시 실행되지 않으므로 새로 생성되는 것만 삭제한다.
         DontDestroyOnLoad(gameObject); // 사라지지 않게 선언한다.
+        if (!isLoad)
+        {
+            LoadInfoFile();
+            isLoad = true;
+        }
         Debug.Log("Awake_Save");
     }
 
@@ -80,6 +90,49 @@ public class SaveInfos : MonoBehaviour
         info.accCnt = accCnt;
         info.HPCnt = HPCnt;
         info.MPCnt = MPCnt;
+    }
+
+
+    public void SaveInfoToFile()
+    {
+
+        string fileName = "PlayerInfo";
+        string path = Application.dataPath + "/" + fileName + ".dat";
+
+        FileStream fs = new FileStream(path, FileMode.Create); // 파일 통로 생성
+        BinaryFormatter formatter = new BinaryFormatter();
+        formatter.Serialize(fs, info); // 직렬화 하여 저장
+
+        Debug.Log("파일 저장 완료");
+
+        fs.Close();
+
+        Application.Quit();
+
+    }
+
+    public void LoadInfoFile()
+    {
+        string fileName = "PlayerInfo";
+        string path = Application.dataPath + "/" + fileName + ".dat";
+
+        if (File.Exists(path))
+        {
+            // 만약 파일이 존재하면
+
+            FileStream fs = new FileStream(path, FileMode.Open);
+            BinaryFormatter formatter = new BinaryFormatter();
+            playerInfo infoImsi = formatter.Deserialize(fs) as playerInfo; // 역 직렬화 후, 클래스 형태에 맞는 객체에 다시 저장
+
+            info = infoImsi;
+
+            fs.Close();
+        }
+        else
+        {
+            // 파일이 존재하지 않으면
+            Debug.Log("파일이 존재하지 않음");
+        }
     }
 
 }
