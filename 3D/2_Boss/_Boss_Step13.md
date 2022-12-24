@@ -398,8 +398,326 @@ Debug.Log()를 넣어 주어 쿨타임 중과 스킬 발동 중에 사용될 수
 물론 버프형식이고, 10초 가동에 30초 쿨타임으로 한번 해 볼 생각이다.
 
 
+#### 코드 설정
+
+코드는 간단하게 할 수 있다.
+
+우선, 이것은 버프가 유지되는 것이 외부로 보여야 하기 때문에 따로 코루틴을 하나 더 만들어 준다.(PlayerSkills.cs 내부에)
+
+그리고, public으로 설정 해 두었다지만 맵이 바뀌게 되면 플레이어 스킬에 대한 쿨타임, 지속시간을 매번 갱신 해 주어야 한다는 불편함이 있다.
+
+따라서 PlayerSkills.cs 의 Awake() 함수에 초기 값을 설정 해 주었다.
+
+그렇게 설정 한 PlayerSkills.cs 코드는 아래와 같다.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerSkills : MonoBehaviour
+{
+    public bool[] meleeSkills = new bool[2];
+    // 근접공격 무기 착용시 발동 가능한 스킬 - 스킬 쿨타임이 돌아왔는지 여부 판단
+    public bool[] rangeSkills = new bool[2];
+    // 총 무기 착용시 발동 가능한 스킬(발동 여부 확인) - 스프레드 슈팅(0번)
+
+    public bool[] isMeleeSkillOn = new bool[2];
+    // 근접스킬이 지속 중인지 확인!
+    public bool[] isRangeSkillOn = new bool[2];
+    // 원거리스킬이 지속 중인지 확인!
+
+    public float[] meleeCoolTime = new float[2]; // 근접스킬 쿨타임
+    public float[] rangeCoolTime = new float[2]; // 원거리스킬 쿨타임
+
+    public float[] meleeSkillDurationTime = new float[2]; // 근거리 스킬 지속 시간(액티브 스킬이면 0으로 설정)
+    public float[] rangeSkillDurationTime = new float[2]; // 원거리 스킬 지속 시간(액티브 스킬이면 0으로 설정)
 
 
+    // Start is called before the first frame update
+    void Awake()
+    {
+        meleeCoolTime[0] = 30f;
+        rangeCoolTime[0] = 30f;
+        meleeSkillDurationTime[0] = 10f;
+        rangeSkillDurationTime[0] = 20f;
+    }
+
+// Update is called once per frame
+void Update()
+    {
+        
+    }
+
+    public IEnumerator onMeleeSkillCoolTime(int index)
+    {
+        if (!meleeSkills[index]) // 스킬 쿨타임이 아니라면
+            meleeSkills[index] = true; // 스킬 쿨타임임을 알려주고
+        else // 스킬이 쿨타임이라면
+            yield break; // 코루틴을 끝낸다.
+
+        yield return new WaitForSeconds(meleeCoolTime[index]); // 쿨타임 계산용
+
+        meleeSkills[index] = false;
+
+    }
+
+    public IEnumerator onMeleeSkill(int index)
+    {
+        if (!isMeleeSkillOn[index]) // 스킬 사용 중이 아니면
+            isMeleeSkillOn[index] = true; // 스킬 사용중임을 알려 주고
+        else // 스킬이 사용중이라면
+            yield break; // 코루틴을 끝낸다.
+
+        yield return new WaitForSeconds(meleeSkillDurationTime[index]); // 지속 시간 계산용
+
+        isMeleeSkillOn[index] = false;
+
+    }
+
+    public IEnumerator onRangeSkillCoolTime(int index)
+    {
+        if (!rangeSkills[index]) // 스킬 쿨타임이 아니라면
+            rangeSkills[index] = true; // 스킬 쿨타임임을 알려주고
+        else // 스킬이 쿨타임이라면
+        {
+            Debug.Log("쿨타임!");
+            yield break; // 코루틴을 끝낸다.
+        }
+            
+
+        Debug.Log("스킬 사용!");
+
+        yield return new WaitForSeconds(rangeCoolTime[index]);
+
+        Debug.Log("쿨타임 end");
+        rangeSkills[index] = false;
+
+    }
+
+    public IEnumerator onRangeSkill(int index)
+    {
+        if (!isRangeSkillOn[index]) // 스킬 사용 중이 아니면
+            isRangeSkillOn[index] = true; // 스킬 사용중임을 알려 주고
+        else // 스킬이 사용중이라면
+        {
+            Debug.Log("사용 중!");
+            yield break; // 코루틴을 끝낸다.
+        }
+
+        yield return new WaitForSeconds(rangeSkillDurationTime[index]); // 지속 시간 계산용
+
+        Debug.Log("스킬 끝!");
+
+        isRangeSkillOn[index] = false;
+
+    }
+
+    public IEnumerator onMeleeSkillOne()
+    {
+        PlayerCode player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCode>();
+        Weapon hammer = player.cntEquipWeapon.GetComponent<Weapon>();
+
+        if (meleeSkills[0])
+        {
+            //스킬이 쿨타임중이면
+            Debug.Log("쿨타임 중!");
+            yield break;
+        }
+
+        if (isMeleeSkillOn[0])
+        {
+            //스킬이 사용중이면 (혹시 노쿨버전일때)
+            Debug.Log("스킬 사용 중!");
+            yield break;
+        }
+
+        if(hammer.type == Weapon.AtkType.Range)
+        {
+            //알맞는 타입이 아니면
+            Debug.Log("근접 무기 착용 시에만 사용 가능!");
+            yield break;
+        }
+
+        StartCoroutine(onMeleeSkillCoolTime(0));
+        StartCoroutine(onMeleeSkill(0));
+
+        Vector3 scaleSize = hammer.transform.localScale;
+        scaleSize.x *= 2;
+        scaleSize.y *= 2;
+        scaleSize.z *= 2;
+
+        hammer.transform.localScale = scaleSize;
+
+        yield return new WaitForSeconds(meleeSkillDurationTime[0]);
+
+        scaleSize.x *= 0.5f;
+        scaleSize.y *= 0.5f;
+        scaleSize.z *= 0.5f;
+
+        hammer.transform.localScale = scaleSize;
+
+        yield return null;
+    }
+
+
+}
+</code>
+</pre>
+
+onMeleeSkillOne() 코루틴을 추가 해 주어, 근접공격의 첫 번째 스킬을 사용할 때 발동되게 하였다.
+
+키는 똑같이 H키로 하며, 어떤 무기를 착용하고 있는지에 따라 발동되는 스킬이 달라지게 하였다.
+(그 것은 PlayerCode.cs 부분에 있다.)
+
+
+<pre>
+<code>
+void UseSkills()
+{
+    if (spreadShotKey)
+    {
+        if(cntEquipWeapon.type == Weapon.AtkType.Range)
+        {
+            StartCoroutine(playerSkills.onRangeSkillCoolTime(0));
+            StartCoroutine(playerSkills.onRangeSkill(0));
+        }
+        else
+        {
+
+            StartCoroutine(playerSkills.onMeleeSkillOne());
+
+        }
+
+    }
+}
+</code>
+</pre>
+
+근접 무기일때 사용하는 첫 번째 버프스킬은 원거리랑은 다른점이 있다.
+
+원거리는 외부의 변화 없이 공격할 때 그냥 여러 갈래로 총알이 나가는 것이기 때문에 공격 시에만 스킬이 켜져있는지 여부만을 따져서 할 수 있다.
+
+따라서 공통으로 만들어 놓은 쿨타임 계산 코루틴 함수와, 버프 지속시간 계산 코루틴 함수 두 개만 키면 된다.
+
+그런데 근접 버프는 다르다.
+
+망치 크기를 두 배로 늘리는 것이기 때문에 버프 시간동안에 늘린 상태를 유지해야 한다.
+
+따라서 크기 유지 코루틴을 하나 만들어 주어, 그것을 수행시켰다.
+
+그런데 여기서
+
+<pre>
+<code>
+void UseSkills()
+{
+    if (spreadShotKey)
+    {
+        if(cntEquipWeapon.type == Weapon.AtkType.Range)
+        {
+            StartCoroutine(playerSkills.onRangeSkillCoolTime(0));
+            StartCoroutine(playerSkills.onRangeSkill(0));
+        }
+        else
+        {
+            StartCoroutine(playerSkills.onMeleeSkillCoolTime(0));
+            StartCoroutine(playerSkills.onMeleeSkill(0));
+            StartCoroutine(playerSkills.onMeleeSkillOne());
+        }
+
+    }
+}
+</code>
+</pre>
+
+이런 식으로 하게 되면 바로 쿨타임이 적용되어 정작 본 스킬 때(onMeleeSkillOne)는 스킬이 발동이 되지 않는 참사가 생긴다. (부끄럽게도 처음 세팅때 이러했다..)
+
+<pre>
+<code>
+public IEnumerator onMeleeSkillOne()
+{
+    PlayerCode player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerCode>();
+    Weapon hammer = player.cntEquipWeapon.GetComponent<Weapon>();
+
+    if (meleeSkills[0])
+    {
+        //스킬이 쿨타임중이면
+        Debug.Log("쿨타임 중!");
+        yield break;
+    }
+
+    if (isMeleeSkillOn[0])
+    {
+        //스킬이 사용중이면 (혹시 노쿨버전일때)
+        Debug.Log("스킬 사용 중!");
+        yield break;
+    }
+
+    if(hammer.type == Weapon.AtkType.Range)
+    {
+        //알맞는 타입이 아니면
+        Debug.Log("근접 무기 착용 시에만 사용 가능!");
+        yield break;
+    }
+
+    StartCoroutine(onMeleeSkillCoolTime(0));
+    StartCoroutine(onMeleeSkill(0));
+
+    Vector3 scaleSize = hammer.transform.localScale;
+    scaleSize.x *= 2;
+    scaleSize.y *= 2;
+    scaleSize.z *= 2;
+
+    hammer.transform.localScale = scaleSize;
+
+    yield return new WaitForSeconds(meleeSkillDurationTime[0]);
+
+    scaleSize.x *= 0.5f;
+    scaleSize.y *= 0.5f;
+    scaleSize.z *= 0.5f;
+
+    hammer.transform.localScale = scaleSize;
+
+    yield return null;
+}
+</code>
+</pre>
+
+그래서 이렇게 onMeleeSkillOne 코루틴 함수 안에
+
+StartCoroutine(onMeleeSkillCoolTime(0));
+StartCoroutine(onMeleeSkill(0));
+
+쿨타임과 버프지속 시작 코루틴 함수를 넣어 주었다.
+
+그렇게 하여 망치의 크기가 커졌을 때 쿨타임과 버프 시간이 카운트 되게 해 주었다.
+
+![image](https://user-images.githubusercontent.com/66288087/209431066-f5bce1b3-1ec2-417c-9dbd-5ed089d35271.png)
+
+스킬 사용 모습
+
+![image](https://user-images.githubusercontent.com/66288087/209431093-e31be676-5a31-4499-b31f-59eac88c1a30.png)
+
+일반 망치로 때리는 모습
+
+![image](https://user-images.githubusercontent.com/66288087/209431079-dc0bfdde-b436-4322-ba61-0b792e8abd9c.png)
+
+![image](https://user-images.githubusercontent.com/66288087/209431111-68dbea75-21ba-4012-8b15-f094fb3f8300.png)
+
+큰 망치로 때리는 모습들
+
+더 큰 범위의 몬스터들을 정리하기 좋다.
+
+<hr>
+
+### 원거리 2번째 스킬
+
+원거리 두 번째 스킬은 왕 총탄을 3번 연속 발사하는 액티브 스킬로 만들어 보고자 한다.
+
+액티브 스킬이기에 따로 키를 세팅 해 주어야 한다.
+(키는 당장 불편하더라도 나중에 교통정리를 해 줄 생각이다.)
 
 
 
