@@ -256,5 +256,5 @@ https://www.youtube.com/watch?v=pQD4eDRPNII&feature=youtu.be
 
 <hr>
 
-- 현재도 계속 기능 추가, 버그 수정 등의 보완을 하고 있습니다.
+[이곳](https://github.com/kkyoulza/Unity/tree/main/3D/2_Boss)에서 계속 버그 수정, 기능 추가 등을 하고 있다.
 
