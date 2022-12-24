@@ -254,5 +254,7 @@
 https://www.youtube.com/watch?v=pQD4eDRPNII&feature=youtu.be
 
 
+<hr>
 
+- 현재도 계속 기능 추가, 버그 수정 등의 보완을 하고 있습니다.
 
