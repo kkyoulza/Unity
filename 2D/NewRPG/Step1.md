@@ -160,6 +160,18 @@ public void GetButtonUp(string whatBtn)
 
 그리고 ButtonUp 함수에서는 버튼을 뗐을 때 속도를 줄여주는 부분을 넣어 주었다. 저 부분은 키보드를 뗐을 때도 발동되게 만든 함수가 있지만.. 키보드를 떼는 경우를 조건으로 넣어 주어서 버튼을 뗄 때는 별개로 세팅 해 주어야 한다.
 
+##### 모바일 UI 세팅
+
+잠깐 모바일 움직임 버튼 세팅을 정리하겠다.
+
+버튼은 누르는 이벤트와 눌렀다 떼는 이벤트 두 개가 있어야 한다.
+
+따라서 위와 그 이벤트에 대응 될 함수를 두 개 만들었고, 그 것을 적용시켜야 한다.
+
+![image](https://user-images.githubusercontent.com/66288087/209970882-0c68f416-bf3b-4619-af0b-325978b103db.png)
+
+위 사진과 같이 Event Trigger를 통하여 PointerDown/PointerUp을 사용하였다.
+
 <pre>
 <code>
 void checkSprite()
