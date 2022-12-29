@@ -115,9 +115,9 @@ public void moveChar()
 ##### 위 코드에서 살펴 봐야 할 부분들
 
 - **위 함수는 FixedUpdate()에 존재**하여 움직임 명령이 입력되는 즉시 움직인다. 
-- **directionValue** -> 버튼을 통해 입력받는 int(정수) 값, 1 - 오른쪽, 0 - 입력 없음, -1 - 왼쪽 이다.
+- **directionValue** -> 버튼을 통해 입력받는 int(정수) 값, **1 - 오른쪽, 0 - 입력 없음, -1 - 왼쪽** 이다.
 - **h** -> Input.GetAxisRaw("Horizontal")을 통하여 키보드의 좌, 우 화살표로 입력받는 값을 float값으로 받게 된다. directionValue 값을 더해 주어 모바일/PC에 대한 처리를 한 번에 진행하였다.
-- **statInfo.playerMaxSpeed** -> 플레이어의 최대 속도이다. statInfo는 밑에 적을 PlayerStats.cs 코드에 있는 StatInformation 클래스 객체가 statInfo이다. statInfo에는 플레이어의 체력, 공격력 등의 스탯 정보가 들어 있다.
+- **statInfo.playerMaxSpeed** -> **플레이어의 최대 속도**이다. statInfo는 밑에 적을 PlayerStats.cs 코드에 있는 StatInformation 클래스 객체가 statInfo이다. statInfo에는 플레이어의 체력, 공격력 등의 스탯 정보가 들어 있다.
 - 가장 아래에 있는 조건문은 애니메이션 처리를 위한 조건문이다. 아래에도 정리 하겠지만 **속도가 완전히 0이 됐을 때 걷는 애니메이션을 멈추게 하면 플레이어가 손을 떼도 걷는 애니메이션이 너무 늘어지게 나오기 때문에 어느 정도의 값으로 설정** 해 주었다.
 
 
