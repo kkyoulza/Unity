@@ -172,6 +172,10 @@ public void GetButtonUp(string whatBtn)
 
 위 사진과 같이 Event Trigger를 통하여 PointerDown/PointerUp을 사용하였다.
 
+<hr>
+
+##### 좌/우 반전 세팅
+
 <pre>
 <code>
 void checkSprite()
@@ -195,7 +199,9 @@ GetButton으로 좌/우 방향키가 입력 되는 시점일 때 발동하거나
 
 따라서 **왼쪽이 입력될 때 맞는 조건**을 넣어 줌으로써, **왼쪽을 볼 때 flipX가 발동**되게 해 주었다.
 
-Player.cs 원문
+<hr>
+
+**Player.cs 원문**
 
 <pre>
 <code>
