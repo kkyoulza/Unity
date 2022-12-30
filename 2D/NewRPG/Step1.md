@@ -406,13 +406,178 @@ else
 테스트를 해 주면 위 움짤과 같이 캐릭터가 움직임을 볼 수 있다.
 
 
-
 <hr>
 
 ### 캐릭터 점프
 
+캐릭터 점프도 유사하게 설정 해 주면 된다.
 
+Player.cs 코드에서 버튼 Down/Up 함수에 Jump 버튼을 추가 해주고, 점프 키가 눌렸음을 알려 주는 jumpKey라는 bool 변수를 추가 해 준다.
 
+<pre>
+<code>
+public void GetButtonDown(string whatBtn)
+{
+    switch (whatBtn)
+    {
+        case "L":
+            directionValue = -1;
+            break;
+        case "R":
+            directionValue = 1;
+            break;
+        case "Jump":
+            jumpKey = true;
+            tojump();
+            break;
+    }
+}
 
+public void GetButtonUp(string whatBtn)
+{
+    switch (whatBtn)
+    {
+        case "L":
+            rigid.velocity = new Vector2(0.5f * rigid.velocity.normalized.x, rigid.velocity.y); // 버튼을 뗐을 때 속도를 줄여야 한다.(미끄러지지 않게)
+            directionValue = 0;
+            break;
+        case "R":                
+            rigid.velocity = new Vector2(0.5f * rigid.velocity.normalized.x, rigid.velocity.y);
+            directionValue = 0;
+            break;
+        case "Jump":
+            jumpKey = false;
+            break;
+    }
+}
+</code>
+</pre>
 
+점프 키는 아래와 같이 왼쪽 Alt 키로 설정 해 준다.
 
+<pre>
+<code>
+ void getKeys()
+{
+    jumpKey = Input.GetKeyDown(KeyCode.LeftAlt); // 왼쪽 Alt 키를 통해 점프를 할 수 있음
+}
+</code>
+</pre>
+
+그리고 점프키를 누르게 되었다는 것을 인식하는 함수를 만들어 주고, Update()에 넣어 준다.
+
+<pre>
+<code>
+public void tojump()
+{
+    if (jumpKey && (jumpCount > 0 || !anim.GetBool("isJump")))
+    {
+        anim.SetBool("isJump", true);
+        rigid.AddForce(Vector2.up * statInfo.playerJumpPower,ForceMode2D.Impulse);
+        jumpCount--;
+    }
+}
+</code>
+</pre>
+
+- 점프를 하게 되면 위에서 만들어 두었던 점프 애니메이션이 발동 되어 점프를 하고 있음을 알려 주고, y축 양의 방향으로 힘을 주게 된다.
+- **ForceMode2D.Impulse**를 사용하여 **즉각적인 힘**을 주게 된다.
+- 조건문에 있는 jumpCount는 무한정 점프를 하는 것을 막기 위함이다.
+- isJump 매개변수의 상태를 조건문에 넣음으로써 **점프중이 아니거나 점프 카운트가 남았을 때** 점프를 할 수 있게 해 주었다.
+
+<hr>
+
+<pre>
+<code>
+public void GetButtonDown(string whatBtn)
+{
+    switch (whatBtn)
+    {
+        case "L":
+            directionValue = -1;
+            break;
+        case "R":
+            directionValue = 1;
+            break;
+        case "Jump":
+            jumpKey = true;
+            tojump();
+            break;
+    }
+}
+</code>
+</pre>
+
+위에 적어 놓았던 코드 중에서, 버튼으로 점프 하는 것을 만들어 놓은 것이 있는데, 여기에는 jumpKey를 on하고 끝나는 것이 아닌, 점프 함수가 추가로 이어지게 하여 바로 점프를 할 수 있게 해 주었다.
+
+<hr>
+
+#### 착지 확인
+
+그런데, JumpCount를 통하여 남은 점프 횟수를 관리 한다고 했는데.. JumpCount는 언제 초기화가 될까?
+
+바로 땅에 닿았을 때 초기화가 된다.
+
+땅에 닿았다는 것은 어떻게 체크할 수 있을까?
+
+바로 LayCast를 이용하여 체크 해 준다.
+
+<hr>
+
+#### LayCast
+
+LayCast는 레이저를 쏘아서 닿는 것을 출력 해 준다.
+
+<pre>
+<code>
+public void checkLanding()
+{
+    if(rigid.velocity.y < 0)
+    {
+        // y축 속도가 음수 = 떨어지고 있음
+        // 떨어지고 있을 때, 착지 체크를 진행한다.
+
+        Debug.DrawRay(rigid.position, Vector3.down, new Color(0, 1, 0)); // 레이저를 그린다. (시각적으로 보기 위함)
+
+        RaycastHit2D rayHit = Physics2D.Raycast(rigid.position, Vector3.down, 1, LayerMask.GetMask("Platform")); // 진짜 레이저 그리기 (시작위치, 방향, 거리)
+        // Platform이라는 이름의 레이어를 가진 것에 닿는지만 체크해라!
+
+        if(rayHit.collider != null)
+        {
+            // Platform에 닿았을 때
+
+            if (rayHit.distance < 0.8f) // 일정 거리 미만으로 가까워졌을 때
+            {
+                anim.SetBool("isJump", false); // 점프 애니메이션 해제
+                jumpCount = statInfo.playerMaxJumpCount; // 점프 카운트 리셋
+            }
+
+        }
+
+    }
+
+}
+</code>
+</pre>
+
+쏘는 레이저는 보이지 않지만, Debug.DrawRay를 통하여 화면에 보이게 할 수 있다.
+
+RayCast에는 (시작 지점, 레이저 방향, 거리, 특정 레이어 설정) 이 들어가게 된다.
+
+레이저를 쏘는 장면을 화면으로 보면
+
+![image](https://user-images.githubusercontent.com/66288087/210056024-a1d1dc86-a171-4688-8173-5f8a42ca6470.png)
+
+위 사진과 같이 보이게 된다. (연두색이라 잘 안보이지만.. 다리 사이로 무언가가 나가고 있음을 볼 수 있을 것이다.)
+
+아래 조건문에서 땅에 닿았을 때, rayHit.collider에 무언가가 감지 될 것이다.
+
+여기에서도 걸음이 멈출 때와 유사하게 완전히 바닥에 닿았을 때가 아닌, 땅까지의 거리가 0.8f 일 때 점프 카운트가 차고 애니메이션이 풀리게 만들어 주었다.
+
+<hr>
+
+![2d_1_2](https://user-images.githubusercontent.com/66288087/210056820-2d89506a-f7a2-4472-aed8-884802880e3a.gif)
+
+점프를 하는 움짤이다.
+
+점프 버튼은 좌/우 버튼과 똑같이 EventTrigger를 통하여 만들어 주었으며, 매개변수에 Jump를 넣어 주었다.
