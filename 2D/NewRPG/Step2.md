@@ -320,6 +320,34 @@ FlipX와 다른 점이 있다면
 
 **자식 오브젝트들의 위치도 대칭이동** 된다는 것이다.
 
+아래와 같이 Player.cs의 checkSprite() 함수를 바꾸어 준다.
+
+<pre>
+<code>
+void checkSprite()
+{
+    // 캐릭터의 좌/우 반전 설정
+    if(Input.GetButton("Horizontal") || directionValue != 0)
+    {
+        // 좌, 우로 이동할 때
+        // sprite.flipX = (Input.GetAxisRaw("Horizontal") == -1) || (directionValue == -1); // 왼쪽일 때 바꾸어 주어야 하니 왼쪽으로 이동할 때 맞는 조건을 넣어 주었다.
+
+        if((Input.GetAxisRaw("Horizontal") == -1) || (directionValue == -1)) // 위 조건을 똑같이 써 주어, 왼쪽을 볼 때는 scale에 (-1,1,1)벡터를 넣어 준다. (-1,0,0)넣으면 캐릭터가 사라진다.
+        {
+            transform.localScale = new Vector3(-1, 1, 1); // scale의 x 좌표를 -1로 바꾸어 주면 scale에 들어가는 것이 벡터이니 방향이 바뀌게 된다.
+        }
+        else
+        {
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+
+    }
+}
+</code>
+</pre>
+
+<hr>
+
 ### 왜 그럴까?
 
 아래 이야기 하는 이유는 추측이다.
