@@ -429,6 +429,8 @@ Enter/Exit로 바꾼 모습
 
 몬스터는 플레이어의 공격에 닿게 되면 피격이 된다.
 
+![image](https://user-images.githubusercontent.com/66288087/210236668-5652c6ff-7b85-44fb-8e34-f8ec0f510b7f.png)
+
 즉, 앞서 만들었던 플레이어 자식 오브젝트인 스킬 오브젝트에 닿게 되면 피격 함수를 발동시키면 된다.
 
 몬스터에 들어 갈 Enemy.cs 코드를 만들어 보자
@@ -581,24 +583,292 @@ Trigger에서는 이제 공격이 인식 되면 피격을 받는 것을 처리 �
 
 대신 그림으로 어떤 상황인지 정리 하도록 하겠다.
 
+![image](https://user-images.githubusercontent.com/66288087/210236454-3380e050-5035-48d3-88c6-04ff38743c77.png)
+
+바로, 공격을 하면서 생기는 딜레이 동안에 해당 몬스터의 데미지가 계산 된 이후, 다시 공격 범위에 닿게 하였을 때 한 번의 입력으로 의도치 않은 두 번의 공격을 하게 되는 현상이 발생하였다.
+
+이러한 현상을 방지하기 위해 해결책들을 고심하기 시작하였다.
+
+<hr>
+
+#### 첫 번째 생각 : 해당 스킬에 맞았을 때, 스킬 딜레이 동안 해당 스킬에 피격당했음을 체크하고, 코루틴을 통하여 체크한 것을 해제하는 방식
+
+즉, 스킬별로 스킬이 의도한 대로 맞았는지 체크하는 방식이다.
+
+이 방법을 사용하려면 각 몬스터 별로 어떤 스킬에 맞았는지 계산을 해 주어야 한다.
+
+그렇다는 것은 앞서 만들었던 skillInfo에 또 다른 체크 박스를 추가 해 주어야 한다.
+
+생각을 해 보면서, 이렇게 무언가를 붙이면서 하기 보다는 근본적으로 이 문제를 해결 해 보고 싶었다.
+
+따라서 이 방법은 최후의 수단으로 사용하기로 하였다.
+
+무엇보다, 이 방법을 사용하게 되면 스킬의 다양성?을 제한할 것 같았다.
+
+<hr>
+
+#### 두 번째 생각 : 몬스터가 해당 스킬에 맞았을 때, 그 스킬의 BoxCollider를 스킬 이펙트 애니메이션이 끝나는 시점까지 해제하는 것
+
+즉, 처음에 때렸던 대상을 때리고 나서는 BoxCollider를 비활성화 하여 의도치 않은 추가타를 때릴 여지를 만들어 주지 않는 방법이다.
+
+이 방법을 사용하기 위하여 SkillInfo.cs(스킬 오브젝트 자체에 들어간 코드)에 코루틴을 추가하여 관리 해 주었다.
+
+(앞에서 OnTriggerEnter에서 다른 코드에 있는 코루틴을 사용하는데 지장이 있었다고 했는데 이 방법을 사용하면서 생겼던 것이다.)
+
+그런데, 이 것도 문제가 생겼다.
+
+몬스터 공격 -> 몬스터 코드에서 Box 비활성화 코루틴 시작을 명령 -> 스킬 오브젝트에서 BoxCollider 비활성화 코드 실행 -> 스킬 딜레이 이후 다시 활성화
+
+의 순서인데..
+
+몬스터가 죽어서 사라지게 되면 스킬 오브젝트에서 BoxCollider 비활성화 코드(코루틴)가 끊기는 것이다.
+
+**즉, Box Collider가 활성화가 되지 않는다.**
+
+바로 없애지 말고, 스킬 딜레이동안 그냥 모습만 보이지 않게만 해 볼까 생각했지만.. 몬스터 카운팅을 할 때 불편할 것 같아서 그냥 다시 빠꾸했다.
+
+<hr>
+
+#### 세 번째 생각 : 공격 딜레이동안, 반대 방향으로 움직이지 못하게 하였다. (캐릭터가 뒤집히지 못하게!!)
+
+방법을 생각 해 보던 중, 메이플스토리 게임에서 아델이 점프-디바이드를 사용하는 모습이 생각이 났다.
+
+점프-디바이드를 사용할 때, 움직일 수는 있지만 칼로 내려치는 동시에 반대 방향으로 움직이는 것은 한 번도 본 적이 없었다.
+
+여기서 아이디어가 떠올랐다!
+
+스킬 애니메이션이 발동되는 동안**만!** 반대 방향으로 이동하여 캐릭터를 뒤집지 못하게 하는 것이다.
+
+(앞으로 이동 및 점프는 가능!!)
+
+대신, 스킬 애니메이션 딜레이는 대폭 줄였다. (기존 0.6f -> 0.3f)
+
+그리고 애니메이션도 끝 부분을 제거 해 주어, 이펙트를 간소화 시켜 주었다. (평타이기 때문에 한 작업이다. 나중에 추가 할 스킬들은 컨셉에 맞게 길이 조정 예정)
+
+<hr>
+
+#### 공격 시 방향 전환 x 결과
+
+![2d_2_3](https://user-images.githubusercontent.com/66288087/210238599-8199691d-8dbb-4db3-9d75-c2d1fa268939.gif)
+
+위 움짤처럼 공격시에는 뒤로 돌지 않음을 볼 수 있다.
+
+(전에는 공격 애니메이션 후반부가 좌/우 반전되어 나가는 경우도 있었다.)
+
+공격에 대한 적용 모습이고, 몬스터가 피격되는 종합적인 모습은 마지막에 움짤로 첨부할 것이다.
+
+<hr>
+
+### 데미지, HP 바
+
+몬스터에게 몇의 데미지를 입혔는지를 시각적으로 볼 수 있는 데미지 텍스트와 몬스터의 잔여 HP 양을 가늠할 수 있는 HP바는 필수적이다.
+
+<hr>
+
+#### 데미지
+
+데미지는 앞서 3D로 쿼터뷰 게임에서도 만든적이 있었다.
+
+TextMeshPro 오브젝트를 만들어 주어, 아래 코드 dmgSkins.cs 를 넣어 주어 Prefab화 해 준다.
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro;
+
+public class dmgSkins : MonoBehaviour
+{
+    TextMeshPro dmgText;
+    Color alpha;
+
+    public float movingSpeed;
+    public float alphaSpeed;
+    public int damage;
 
 
+    // Start is called before the first frame update
+    void Start()
+    {
+        dmgText = GetComponent<TextMeshPro>();
+        dmgText.text = damage.ToString();
 
+        alpha = dmgText.color;
+        Invoke("DestroyDmg", 2.0f); // 2초 뒤에 데미지가 사라지게!
 
+    }
 
+    // Update is called once per frame
+    void Update()
+    {
+        transform.Translate(new Vector3(0, 1 * movingSpeed * Time.deltaTime, 0));
+        alpha.a = Mathf.Lerp(alpha.a, 0, Time.deltaTime * alphaSpeed);
+        dmgText.color = alpha;
+    }
 
+    public void DestroyDmg()
+    {
+        Destroy(gameObject);
+    }
 
+}
+</code>
+</pre>
 
+데미지가 생성되면 Start()에서 (Awake()를 사용하고 그곳에 데미지를 넣어주면 코드로 데미지를 넣어줄 때 적용이 되지 않는다. Awake()가 먼저 실행되기에 그런 것 같다.) 몬스터 피격 시 세팅 된 데미지를 텍스트에 넣어 준다.
 
+그 다음, 일정 시간 뒤에 데미지를 사라지게 하는 Invoke를 설정 해 주고, Update에서 데미지가 위로 떠오르면서 천천히 사라지게 해 준다.
 
+**Mathf.Lerp**는 선형 보간 즉, 양 값 사이에서 특정 비율에 있는 값을 출력 해 준다.
 
+위 코드에서는 현재 투명도 값과 0 사이에서 Time.deltaTime으로 얻는 프레임 간격 값을 이용하여 점점 0에 다가가는 값을 alpha.a에 적용 해 준다.
 
+(즉, 점점 투명해 진다는 것이다. -> alphaSpeed 값을 통하여 투명화 속도를 조절할 수 있다.)
 
+![image](https://user-images.githubusercontent.com/66288087/210239621-829fe7e0-a54c-498c-a389-607a703e7d8c.png)
 
+데미지에 아웃 라인도 적용 해 주었다.
 
+이것은 Prefab화 해 주고, 앞서 적었던 Enemy.cs 코드에서 데미지를 Instantiate를 통해 소환 하는데, 그 부분을 다시 가져와 보았다.
 
+<pre>
+<code>
+GameObject imsiDmg = Instantiate(dmg);
+imsiDmg.GetComponent<dmgSkins>().damage = ((int)skillInfo.skillDmg - monsterDef);
+monsterCntHP -= ((int)skillInfo.skillDmg - monsterDef);
 
+float hpRatio = (monsterCntHP / monsterMaxHP); 
+// HP를 int로 설정 했을 때는 나눈 값에 float로 명시적 형 변환을 하면 이미 늦는다. 따라서 HP값 앞에 float로 해 주었어야 했다.
 
+HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
+imsiDmg.transform.position = dmgPos.transform.position;
+</code>
+</pre>
+dmg를 임시로 소환하고, 두 번째 줄에서 데미지 값을 세팅 해 준다.
 
+그 다음 마지막 줄에서 소환된 데미지 텍스트를 위치시킬 위치를 지정 해 준다.
 
+![image](https://user-images.githubusercontent.com/66288087/210239929-83aa8b54-d84c-4490-a0c8-342a102b7245.png)
 
+나는 몬스터의 하위 오브젝트로 빈 오브젝트를 만들어 해당 오브젝트의 위치로 세팅 해 주었다.
+
+![image](https://user-images.githubusercontent.com/66288087/210240035-ff27e70b-0be1-4c18-a28f-962e229e5456.png)
+
+dmgPos의 위치
+
+<hr>
+
+#### HP 바 설정
+
+HP 바는 UI Canvas를 통해 설정할 수 있다.
+
+처음에는 Canvas가 씬 내부에 하나만 존재할 수 있는 줄 알았다.
+
+하지만 그게 아니었다.
+
+일단 새롭게 Canvas 하나를 만들고 몬스터 하위에 넣어 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/210240288-d8e8c6cf-32fe-43a2-9227-8cae724cd413.png)
+
+그리고 캔버스 오른쪽 Inspector에서
+
+![image](https://user-images.githubusercontent.com/66288087/210240340-2123e5a4-0fc5-447c-9cf7-8686b614acbf.png)
+
+위와 같이 Canvas에서 Render Mode를 World Space로 설정하고, Canvas Scaler를 체크 해제 해 준다.
+
+그렇게 되면 캔버스를 움직일 수 있게 되고, 캔버스의 사이즈도 자유롭게 변경할 수 있게 되었다.
+
+Scaler를 통해 캔버스 사이즈가 고정되었던 것으로 추측된다.
+
+이제, HP Bar를 하나 만들어 준다.
+
+별건 아니고, 직사각형을 하나 만들고, Anchor를 왼쪽으로 설정 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/210240614-623ad662-f67c-46dd-bfe9-c3e75b08076e.png)
+
+그렇게 되면 사이즈를 줄일 때, Anchor이 고정되며 그 방향으로 줄어들기 때문이다.
+
+그리고 Enemy에도 HP Bar를 받을 수 있는 게임 오브젝트 변수를 넣어 주고, 아래 코드처럼 넣어 준다.
+
+<pre>
+<code>
+GameObject imsiDmg = Instantiate(dmg);
+imsiDmg.GetComponent<dmgSkins>().damage = ((int)skillInfo.skillDmg - monsterDef);
+monsterCntHP -= ((int)skillInfo.skillDmg - monsterDef);
+
+float hpRatio = (monsterCntHP / monsterMaxHP); 
+// HP를 int로 설정 했을 때는 나눈 값에 float로 명시적 형 변환을 하면 이미 늦는다. 따라서 HP값 앞에 float로 해 주었어야 했다.
+
+HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
+imsiDmg.transform.position = dmgPos.transform.position;
+</code>
+</pre>
+
+위에서도 봤지만..
+
+HP Bar의 크기 조절을 중심으로 보면
+
+우선 hpRatio는 말 그대로 몬스터의 현재 체력을 최대 체력으로 나눈 것이다.
+
+여기서 주의할 점이 있다.
+
+**몬스터의 현재/최대 체력을 int로 설정 했다면 한 대를 때리면 HP Bar가 사라질 것이다.**
+
+왜냐하면 **int끼리의 나누기**는 **버림**을 수행하기 때문이다.
+
+즉, **0.xx -> 0**이 된다.
+
+그래서 아래처럼
+
+<pre>
+<code>
+float hpRatio = (float)(monsterCntHP / monsterMaxHP); 
+</code>
+</pre>
+
+를 해 주면 되겠지..? 
+
+가 아니다.
+
+괄호 속에서 이미 0이 되어 나오기 때문에 형변환을 해 줄거면 괄호 속에
+
+<pre>
+<code>
+float hpRatio = ((float)monsterCntHP / (float)monsterMaxHP); 
+</code>
+</pre>
+
+위 코드처럼 해 주어야 한다.
+
+그런데, 그냥 처음부터 현재 체력, 최대 체력을 float로 정의 해 주는 것이 편하다.
+
+<br>
+
+아무튼, 이렇게 해 준 다음
+
+<pre>
+<code>
+HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
+</code>
+</pre>
+
+HP 바의 **사이즈를 조절** 해 준다.
+
+**사이즈**는 **RectTransform을 이용** 해 주며, **using UnityEngine.UI;**를 **코드 맨 위**에 **추가** 해 주도록 하자.
+
+사이즈는 sizeDelta를 통해 조절 해 주며, Vector값을 넣어 준다.
+
+원래 hpRatio에 100퍼센트 기준 바의 최대 길이를 곱해 주어야 하는데, 1로 설정했기 때문에 그냥 비율만 넣어 주었다.
+
+이렇게 하고 실행 해 보면..
+
+<hr>
+
+### 시연 움짤
+
+![2d_2_4](https://user-images.githubusercontent.com/66288087/210242301-a010f7d8-e9d0-42d4-b0e1-b78e9ab46f17.gif)
+
+좀 중간에 시간을 끌긴 했지만... 잘 적용됨을 볼 수 있었다.
+
+다음에는 플레이어가 맞는 것과, 몬스터 보상, 움직이는 몬스터 등을 만들어 보도록 하겠다.
