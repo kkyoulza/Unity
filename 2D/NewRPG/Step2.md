@@ -427,6 +427,175 @@ Enter/Exit로 바꾼 모습
 
 ### 몬스터 피격
 
+몬스터는 플레이어의 공격에 닿게 되면 피격이 된다.
+
+즉, 앞서 만들었던 플레이어 자식 오브젝트인 스킬 오브젝트에 닿게 되면 피격 함수를 발동시키면 된다.
+
+몬스터에 들어 갈 Enemy.cs 코드를 만들어 보자
+
+<pre>
+<code>
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Enemy : MonoBehaviour
+{
+    public bool isFixed; // 고정 몬스터인가?
+    public enum Type { Normal, Fire, Ice, Land };
+    public Type monsterType; // 몬스터 속성
+
+    public float monsterCntHP;
+    public float monsterMaxHP;
+    public int monsterAtk; 
+    public int monsterDef;
+
+    GameObject skillObj;
+    public GameObject dmg; // 데미지 Prefab
+    public GameObject dmgPos; // 데미지 생성 위치
+
+    public GameObject HPBar; // HP Bar
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.gameObject.layer == 10)
+        {
+            skillObj = collision.gameObject;
+            StartCoroutine(attacked());
+        }
+    }
+
+    public IEnumerator attacked() // 공격 당했을 때
+    {
+        SpriteRenderer sprite = GetComponent<SpriteRenderer>();
+        Skills skillInfo = skillObj.GetComponent<SkillInfo>().thisSkillInfo;
+        sprite.color = Color.red; // 피격 시 빨갛게
+
+        /*
+        
+        한 번의 공격에서 한 번의 판정이 나야 한다. 따라서 이펙트 딜레이가 끝날 때 까지 Box 비활성화.. 를 하였지만.. 
+        몬스터를 잡게 되면 해당 코루틴도 중단 되는 바람에 한 마리의 몬스터를 잡게 되면 Box가 다시 활성화 되지 않는다.
+
+        물론, 잡는 시점에 활성화를 시키면 어떠냐 싶은데.. 딜레이가 긴 스킬을 캔슬하는 용도로 사용될 수 있기 때문에 그 방법은 쓰지 못하였다.
+
+        원인을 다시 생각 해 보면
+
+        때리고 나서 이펙트가 없어지기 전에 방향을 바꿔서 Box를 다시 닿게 하면 원래 타수보다 더 많은 공격을 하게 되는 것이다.
+
+        그렇다면 공격 중에 방향을 바꾸지 못하게 하면 어떨까?.. 하고 생각 해 보니
+
+        메이플에서도 공격을 할 때, 공격 동작에서는 방향을 바꿀 수는 없다. (이동은 된다.)
+
+        따라서, 방향의 기준인 Scale의 x좌표를 이용하여 Player에서 공격 딜레이 중 방향 전환을 제한하였다.
+
+         */
+        
+
+        for (int i = 0; i < skillInfo.atkCnt; i++)
+        {
+            Debug.Log((i + 1) + "타");
+
+            GameObject imsiDmg = Instantiate(dmg);
+            imsiDmg.GetComponent<dmgSkins>().damage = ((int)skillInfo.skillDmg - monsterDef);
+            monsterCntHP -= ((int)skillInfo.skillDmg - monsterDef);
+
+            float hpRatio = (monsterCntHP / monsterMaxHP); // HP를 int로 설정 했을 때는 나눈 값에 float로 명시적 형 변환을 하면 이미 늦는다. 따라서 HP값 앞에 float로 해 주었어야 했다.
+            HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
+            imsiDmg.transform.position = dmgPos.transform.position;
+            
+            if (monsterCntHP <= 0)
+            {
+                Destroy(gameObject);
+                Debug.Log("몬스터 퇴치!");
+            }
+
+        }
+
+        yield return new WaitForSeconds(0.1f);
+
+        sprite.color = Color.white;
+
+    }
+
+
+}
+</code>
+</pre>
+
+전문이다.
+
+그 중에서 OnTriggerEnter2D와 attacked 코루틴 함수를 주목 해 보면
+
+OnTriggerEnter2D에서는 **닿는 물체의 레이어**를 따짐을 볼 수 있다.
+
+당연한 것이다.
+
+몬스터는 기본적으로는 땅에 고정되어 있거나 땅 위를 걸어다니니 땅 Collider에도 닿게 된다.
+
+분별 없이 닿는 모든 것을 공격으로 인식할 수 있으니 플레이어가 가진 스킬에 별도의 레이어를 할당시켜 해당 레이어만을 공격으로 인식하게 해 주어야 한다.
+
+![image](https://user-images.githubusercontent.com/66288087/210234018-36b003e5-1b65-4485-a3c0-1a4c138c319d.png)
+
+Atk로 레이어를 설정하였음
+
+![image](https://user-images.githubusercontent.com/66288087/210234048-88e6f2d1-6c06-4d5c-8bf6-57d9da34702e.png)
+
+스킬 레이어도 설정하였다. (꿈이 커서 방어 스킬 레이어도 추가하였음..)
+
+Trigger에서는 이제 공격이 인식 되면 피격을 받는 것을 처리 할 코루틴 함수로 이동한다.
+
+(처음에는 트리거 함수에서 다 처리했고 Sprite 부분만 코루틴을 사용하였지만 트리거 안에서 다른 코드에 있는 코루틴이 잘 발동되지 않아서 이사시켰다.)
+
+<br>
+
+우선 공격을 당하게 되면 몬스터가 뻘개져야 한다. (공격을 당했기 때문에!)
+
+그 다음, 스킬에 설정 된 타수만큼 데미지가 반복해서 들어가야 한다. (for문 사용!)
+
+그리고 일정 딜레이 이후 빨갛게 된 상태를 해제시켜 주면 된다.
+
+혹시 공격 중에 몬스터 피가 0 이하가 되면 몬스터를 제거 해 준다. (보상드랍 코드는 추가 예정)
+
+공격은 끝... 인줄 알았지만
+
+문제가 생겼다.
+
+<hr>
+
+#### 의도치 않은 추가 공격 꼼수
+
+이미 지금은 해결 했고.. 당시에는 해결에만 몰두하다보니 사진을 못찍었다.
+
+대신 그림으로 어떤 상황인지 정리 하도록 하겠다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
