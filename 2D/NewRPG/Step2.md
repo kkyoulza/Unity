@@ -28,8 +28,7 @@ AtkPoint 위치
 
 아래에 Player.cs에서 키 입력과 공격 발동 함수를 가져왔다.
 
-<pre>
-<code>
+```c#
 void getKeys()
 {
     jumpKey = Input.GetKeyDown(KeyCode.LeftAlt); // 왼쪽 Alt 키를 통해 점프를 할 수 있음
@@ -44,8 +43,7 @@ public void normalAttack()
         StartCoroutine(playerSkill.ableAtkSkill(0, 0.6f,statInfo.afterDelay));
     }
 }
-</code>
-</pre>
+```
 
 왼쪽 컨트롤 키를 누르게 되면 attackKey가 true가 되며, 공격 함수에서 attack키가 입력되었고, 공격 중이지 않을 때, 공격이 발동되게 해 주었다.
 
@@ -63,8 +61,7 @@ RPG에서 플레이어의 스킬 사용은 필수적이다.
 
 PlayerSkills.cs 코드는 아래와 같다.
 
-<pre>
-<code>
+```c#
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -123,8 +120,7 @@ public class PlayerSkills : MonoBehaviour
     } 
 
 }
-</code>
-</pre>
+```
 
 우선 스킬들에 대한 정보 저장도 필수이니 Skills 라는 클래스를 만들어 주었으며, Skills 클래스 형태의 객체들을 저장하기 위한 배열인 skillInfos를 만들어 주었다.
 
@@ -155,8 +151,7 @@ public class PlayerSkills : MonoBehaviour
 
 여기서 잠시 플레이어 스탯 클래스를 가져와 보면 (PlayerStats.cs)
 
-<pre>
-<code>
+```c#
 [System.Serializable]
 public class StatInformation
 {
@@ -190,8 +185,7 @@ public class StatInformation
     }
 
 }
-</code>
-</pre>
+```
 
 <br>
 
@@ -240,8 +234,7 @@ Any State는 어떤 상태에서도 해당 애니메이션으로 돌입할 수 �
 
 ![image](https://user-images.githubusercontent.com/66288087/210129347-4412a498-0e21-4c78-88fc-ba761f303adf.png)
 
-<pre>
-<code>
+```c#
 public void GetButtonDown(string whatBtn)
 {
     switch (whatBtn)
@@ -283,8 +276,7 @@ public void GetButtonUp(string whatBtn)
             break;
     }
 }
-</code>
-</pre>
+```
 
 버튼에 대한 코드이다.
 
@@ -322,8 +314,7 @@ FlipX와 다른 점이 있다면
 
 아래와 같이 Player.cs의 checkSprite() 함수를 바꾸어 준다.
 
-<pre>
-<code>
+```c#
 void checkSprite()
 {
     // 캐릭터의 좌/우 반전 설정
@@ -343,8 +334,7 @@ void checkSprite()
 
     }
 }
-</code>
-</pre>
+```
 
 <hr>
 
@@ -435,8 +425,7 @@ Enter/Exit로 바꾼 모습
 
 몬스터에 들어 갈 Enemy.cs 코드를 만들어 보자
 
-<pre>
-<code>
+```c#
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -484,27 +473,7 @@ public class Enemy : MonoBehaviour
     {
         SpriteRenderer sprite = GetComponent<SpriteRenderer>();
         Skills skillInfo = skillObj.GetComponent<SkillInfo>().thisSkillInfo;
-        sprite.color = Color.red; // 피격 시 빨갛게
-
-        /*
-        
-        한 번의 공격에서 한 번의 판정이 나야 한다. 따라서 이펙트 딜레이가 끝날 때 까지 Box 비활성화.. 를 하였지만.. 
-        몬스터를 잡게 되면 해당 코루틴도 중단 되는 바람에 한 마리의 몬스터를 잡게 되면 Box가 다시 활성화 되지 않는다.
-
-        물론, 잡는 시점에 활성화를 시키면 어떠냐 싶은데.. 딜레이가 긴 스킬을 캔슬하는 용도로 사용될 수 있기 때문에 그 방법은 쓰지 못하였다.
-
-        원인을 다시 생각 해 보면
-
-        때리고 나서 이펙트가 없어지기 전에 방향을 바꿔서 Box를 다시 닿게 하면 원래 타수보다 더 많은 공격을 하게 되는 것이다.
-
-        그렇다면 공격 중에 방향을 바꾸지 못하게 하면 어떨까?.. 하고 생각 해 보니
-
-        메이플에서도 공격을 할 때, 공격 동작에서는 방향을 바꿀 수는 없다. (이동은 된다.)
-
-        따라서, 방향의 기준인 Scale의 x좌표를 이용하여 Player에서 공격 딜레이 중 방향 전환을 제한하였다.
-
-         */
-        
+        sprite.color = Color.red; // 피격 시 빨갛게       
 
         for (int i = 0; i < skillInfo.atkCnt; i++)
         {
@@ -534,8 +503,7 @@ public class Enemy : MonoBehaviour
 
 
 }
-</code>
-</pre>
+```
 
 전문이다.
 
@@ -671,8 +639,7 @@ Trigger에서는 이제 공격이 인식 되면 피격을 받는 것을 처리 �
 
 TextMeshPro 오브젝트를 만들어 주어, 아래 코드 dmgSkins.cs 를 넣어 주어 Prefab화 해 준다.
 
-<pre>
-<code>
+```c#
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -713,8 +680,7 @@ public class dmgSkins : MonoBehaviour
     }
 
 }
-</code>
-</pre>
+```
 
 데미지가 생성되면 Start()에서 (Awake()를 사용하고 그곳에 데미지를 넣어주면 코드로 데미지를 넣어줄 때 적용이 되지 않는다. Awake()가 먼저 실행되기에 그런 것 같다.) 몬스터 피격 시 세팅 된 데미지를 텍스트에 넣어 준다.
 
@@ -732,8 +698,7 @@ public class dmgSkins : MonoBehaviour
 
 이것은 Prefab화 해 주고, 앞서 적었던 Enemy.cs 코드에서 데미지를 Instantiate를 통해 소환 하는데, 그 부분을 다시 가져와 보았다.
 
-<pre>
-<code>
+```c#
 GameObject imsiDmg = Instantiate(dmg);
 imsiDmg.GetComponent<dmgSkins>().damage = ((int)skillInfo.skillDmg - monsterDef);
 monsterCntHP -= ((int)skillInfo.skillDmg - monsterDef);
@@ -743,8 +708,8 @@ float hpRatio = (monsterCntHP / monsterMaxHP);
 
 HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
 imsiDmg.transform.position = dmgPos.transform.position;
-</code>
-</pre>
+```
+
 dmg를 임시로 소환하고, 두 번째 줄에서 데미지 값을 세팅 해 준다.
 
 그 다음 마지막 줄에서 소환된 데미지 텍스트를 위치시킬 위치를 지정 해 준다.
@@ -791,8 +756,7 @@ Scaler를 통해 캔버스 사이즈가 고정되었던 것으로 추측된다.
 
 그리고 Enemy에도 HP Bar를 받을 수 있는 게임 오브젝트 변수를 넣어 주고, 아래 코드처럼 넣어 준다.
 
-<pre>
-<code>
+```c#
 GameObject imsiDmg = Instantiate(dmg);
 imsiDmg.GetComponent<dmgSkins>().damage = ((int)skillInfo.skillDmg - monsterDef);
 monsterCntHP -= ((int)skillInfo.skillDmg - monsterDef);
@@ -802,8 +766,7 @@ float hpRatio = (monsterCntHP / monsterMaxHP);
 
 HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
 imsiDmg.transform.position = dmgPos.transform.position;
-</code>
-</pre>
+```
 
 위에서도 봤지만..
 
@@ -821,11 +784,9 @@ HP Bar의 크기 조절을 중심으로 보면
 
 그래서 아래처럼
 
-<pre>
-<code>
+```c#
 float hpRatio = (float)(monsterCntHP / monsterMaxHP); 
-</code>
-</pre>
+```
 
 를 해 주면 되겠지..? 
 
@@ -833,11 +794,9 @@ float hpRatio = (float)(monsterCntHP / monsterMaxHP);
 
 괄호 속에서 이미 0이 되어 나오기 때문에 형변환을 해 줄거면 괄호 속에
 
-<pre>
-<code>
+```c#
 float hpRatio = ((float)monsterCntHP / (float)monsterMaxHP); 
-</code>
-</pre>
+```
 
 위 코드처럼 해 주어야 한다.
 
@@ -847,11 +806,9 @@ float hpRatio = ((float)monsterCntHP / (float)monsterMaxHP);
 
 아무튼, 이렇게 해 준 다음
 
-<pre>
-<code>
+```c#
 HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
-</code>
-</pre>
+```
 
 HP 바의 **사이즈를 조절** 해 준다.
 
