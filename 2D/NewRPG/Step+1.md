@@ -1,6 +1,107 @@
 # Step + 1. 캐릭터 피격 데미지 표시 및 캐릭터 오브젝트 교통정리
 
-오브젝트 풀로 몬스터를 소환하는 시스템을 구현하기 전에, 몬스터에 의한 플레이어 몸박 피격을 구현하는 도중 
+
+오브젝트 풀을 이용하여 몬스터를 소환하는 작업을 하기 전, 움직이는 몬스터에 대한 세팅, 그리고 플레이어 피격에 대해 먼저 구현하였다.
+
+
+## - 캐릭터 피격, 움직이는 몬스터 관련 물리 문제
+
+<hr>
+
+캐릭터가 몬스터에게 피격당했을 때, 캐릭터의 체력이 당연히 감소해야 한다.
+
+따라서 Player.cs에 OnTriggerStay2D() 를 넣어 피격시 체력이 깎이게끔 해 주도록 하자
+
+```c#
+private void OnTriggerStay2D(Collider2D collision)
+    {
+        if(collision.gameObject.layer == 8)
+        {
+            if (!isHit)
+            {
+                isHit = true;
+                int dmg = (collision.gameObject.GetComponent<Enemy>().monsterAtk - statInfo.playerDefense);
+                Debug.Log(collision.gameObject.name);
+                Debug.Log(this.name);
+                
+                StartCoroutine(playerHit(dmg));
+
+            }
+
+        }
+
+    }
+    
+    
+public IEnumerator playerHit(int dmg)
+    {
+        sprite.color = Color.gray;
+
+        statInfo.playerCntHP -= dmg;
+        GameObject imsiDmg = pooling.GetObj(0);
+        imsiDmg.GetComponent<dmgSkins>().setDamage(dmg);
+        imsiDmg.transform.position = dmgPos.transform.position;
+
+        yield return new WaitForSeconds(1.5f);
+
+        sprite.color = Color.white;
+
+        isHit = false;
+
+    }
+ 
+```
+
+Trigger와 코루틴을 이용하여 캐릭터의 피격시 행동을 구현 했다.
+
+캐릭터는 몬스터에게 피격당했을 때, 순간무적을 주어 가만히 있다가 손 쓸수 없는 연속 공격으로 캐릭터가 죽는 것을 방지하기 위함이다.
+
+무적 시간은 1.5초로 설정하였으며, 코루틴 함수 내에서 데미지 텍스트를 몬스터 공격시와 같이 소환 해 주었음을 볼 수 있다.
+
+이렇게 해 주고, 디버깅 창을 보게 되면
+
+![image](https://user-images.githubusercontent.com/66288087/211146619-13be55ed-c92e-46da-864f-6495f502ab7c.png)
+
+같은 순간에는 한 번만 피격이 일어났음을 볼 수 있다.
+
+<hr>
+
+## - 움직이는 몬스터 물리 문제 해결
+
+고정형 몬스터와는 다르게 움직이는 몬스터는 RigidBody와 Collider가 있어야 한다.
+
+왜냐하면 지형 위를 움직여야 하기 때문이며, 물리가 적용 되어야 하기 때문이다.
+
+물리가 적용 된다면 Collider끼리 밀려나게 된다.
+
+따라서 움직이는 몬스터와 Player간의 충돌이 일어나게 된다.
+
+보통 플랫포머 게임에서는 몬스터와 캐릭터 간의 충돌이 일어나지 않는다.
+
+따라서 충돌을 방지하기 위하여 몬스터의 Layer와 플레이어 Layer간의 물리 적용이 되지 않게 한다.
+
+![image](https://user-images.githubusercontent.com/66288087/211147506-e479cc67-3565-4259-a407-b9419ff5a320.png)
+
+Project Settings -> Physics **2D** 로 들어 가 준다. (2D로!)
+
+그곳에서 Player - Enemy간의 물리 충돌이 일어나지 않게 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/211147590-aace22cc-1d0c-429a-8190-4ffaeb152c4f.png)
+
+이렇게 위 사진처럼 플레이어-몬스터 간 길막?이 되지 않게 된다.
+
+<hr>
+
++ 그렇다면 공격은 어떻게 하나요?
+
+>> 공격은 스킬 오브젝트에서 Layer를 Atk,AtkSkill로 설정하였기에 상관 없다.
+
+
+<hr>
+
+## - 데미지 스킨 문제 발생(뒤집어져 뜨는 현상)
+
+그런데, 플레이어가 피격을 당하고 나서, 데미지 스킨이 올라가는 도중! 방향을 바꾸게 되면 어떻게 될까?
 
 플레이어 피격시 데미지 텍스트를 소환했을 때, 데미지가 같이 뒤집어져 나오는 현상을 발견하였다.
 
@@ -14,7 +115,7 @@
 
 <hr>
 
-## Solution1. 데미지 풀에서 플레이어 피격시를 구분하여 데미지 텍스트를 자식으로 넣지 않는다.
+### Solution1. 데미지 풀에서 플레이어 피격시를 구분하여 데미지 텍스트를 자식으로 넣지 않는다.
 
 말 그대로, dmgPool에 새롭게 Player가 피격을 당하고 있는지를 구분하는 bool을 추가하여, true일 때는 어느 곳에도 자식으로 넣지 않아 데미지 텍스트가 뒤집혀 뜨지 않게 해 주는 것이다.
 
@@ -24,7 +125,7 @@
 
 <hr>
 
-## Solution2. 새롭게 Player 상위 오브젝트를 만들고, 플레이어 Sprite가 적용된 오브젝트와 동등한 계층으로 데미지 텍스트가 뜨게 한다.
+### Solution2. 새롭게 Player 상위 오브젝트를 만들고, 플레이어 Sprite가 적용된 오브젝트와 동등한 계층으로 데미지 텍스트가 뜨게 한다.
 
 따라서, 캐릭터가 뒤집히는 오브젝트와, 그렇지 않은 것들을 별개로 만들어 주는 방법을 택하였다.
 
@@ -119,6 +220,12 @@ PlayerHitDmg가 체크 표시를 해 둔 기존의 Player오브젝트 아래에 
 ![image](https://user-images.githubusercontent.com/66288087/211145972-1fdcd13f-318e-4c5a-96bb-f0fcc1a2b5bd.png)
 
 PlayerSprite(전 Player)만이 좌, 우 반전 시 Scale.x가 -1이 된다.
+
+<hr>
+
+## - 움직이는 몬스터 무빙 로직 제작
+
+
 
 
 
