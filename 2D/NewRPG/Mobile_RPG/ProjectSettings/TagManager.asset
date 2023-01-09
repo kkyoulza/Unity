@@ -3,23 +3,29 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Enemy
+  - NormalType
+  - FireType
+  - IceType
+  - LandType
+  - Platform
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - 
+  - PlayerHit
   - Platform
+  - Enemy
   - 
+  - Atk
+  - AtkSkill
+  - DefSkill
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Item
   - 
   - 
   - 

@@ -9,27 +9,43 @@ public class StatInformation
     public float playerMaxSpeed;
     public float playerJumpPower;
     public int playerMaxJumpCount;
-    public int playerHP;
-    public int playerMP;
+
+    public float playerMaxHP;
+    public float playerCntHP;
+    public float playerMaxMP;
+    public float playerCntMP;
 
     public int playerStrength;
     public int playerIntelligence;
     public int playerDefense;
     public int playerDodge;
 
+    public float afterDelay;
+
     public StatInformation()
     {
         playerMaxSpeed = 3f;
         playerJumpPower = 5f;
-        playerMaxJumpCount = 2;
-        playerHP = 50;
-        playerMP = 10;
+        playerMaxJumpCount = 1;
+
+        playerMaxHP = 50;
+        playerCntHP = 50;
+        playerMaxMP = 10;
+        playerCntMP = 10;
 
         playerStrength = 10;
         playerIntelligence = 5;
         playerDefense = 3;
         playerDodge = 1;
+
+        afterDelay = 0.2f;
     }
+
+    public void minusOrAddHP(int num)
+    {
+        playerCntHP += num;
+    }
+
 
 }
 
@@ -46,6 +62,6 @@ public class PlayerStats : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+                
     }
 }
