@@ -223,6 +223,161 @@ PlayerSprite(전 Player)만이 좌, 우 반전 시 Scale.x가 -1이 된다.
 
 <hr>
 
+## - 피격 시 캐릭터 밀림 구현
+
+넉백?이라는 말을 들어 봤을 것이다.
+
+몬스터에 피격 당했을 때, 캐릭터는 뒤로 밀려나게 된다.
+
+뒤로 밀려나는 것을 구현 해 보자.
+
+일단, 몬스터에게 피격을 당하는 부분에서 캐릭터 Scale의 반대 방향으로 AddForce를 줘 보도록 하자
+
+
+```c#
+private void OnTriggerStay2D(Collider2D collision)
+    {
+
+        if (collision.gameObject.layer == 8)
+        {
+            if (!isHit)
+            {
+                isHit = true;
+                int dmg = (collision.gameObject.GetComponent<Enemy>().monsterAtk - statInfo.playerDefense);                  
+
+                StartCoroutine(playerHit(dmg));
+
+            }
+
+        }
+
+    }
+
+    public IEnumerator playerHit(int dmg)
+    {
+        sprite.color = Color.gray;
+
+        rigid.AddForce(new Vector2(playerSpriteMesh.transform.localScale.x * (-1) * 20, 1), ForceMode2D.Impulse); 
+        // 캐릭터가 향하고 있는 반대 방향으로 밀쳐진다. (세게는x)
+        statInfo.minusOrAddHP((-1) * dmg);
+        GameObject imsiDmg = pooling.GetObj(0);
+        imsiDmg.GetComponent<dmgSkins>().setDamage(dmg);
+        imsiDmg.transform.position = dmgPos.transform.position;
+
+        yield return new WaitForSeconds(1.5f);
+
+        sprite.color = Color.white;
+
+        isHit = false;
+
+    }
+```
+
+위와 같이 Player에 적용하게 되면 플레이어가 반대 방향으로 밀려나게 된다.
+
+하지만
+
+![image](https://user-images.githubusercontent.com/66288087/211312755-5eea880d-1ea2-44e3-b05f-88f4762f2ffd.png)
+
+위 사진과 같이 몬스터와 겹친 상태로 공격을 하게 되면 엄청 빠르게 멀리까지 튕겨 나가게 됨을 볼 수 있다.
+
+그 원인중에 하나가 **공격 범위도 플레이어로 인식**하여 플레이어가 직접 닿지 않고 공격이 닿아도 밀려나게 되는 것이다.
+
+왜 그런가 곰곰히 따져 보게 되니
+
+공격 범위는 플레이어의 자식에 있었다.
+
+![image](https://user-images.githubusercontent.com/66288087/211315105-56beaa14-13e2-484a-84ed-bac664e11c43.png)
+
+따라서 위 그림처럼 자식에 있는 공격 범위 Trigger도 Player.cs 코드에 있는 피격 코드에 감지되게 되는 것이다.
+
+<hr>
+
+### -> 플레이어 피격 코드 이사
+
+이에, 새롭게 PlayerHit를 감지할 수 있는 코드를 만들어 주어, 전용 Trigger를 만들어 피격을 감지 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/211315734-411ca27f-d199-4808-b2d3-5a674f418c80.png)
+
+PlayerSprite와 같은 계층의 오브젝트로 만들었기에, attack의 직계 부모가 아니다.
+
+따라서 attack까지 피격 범위가 되는 불상사는 피하게 되었다.
+
+<hr>
+
+### 문제 ] 몬스터와 비비면서 피격 시 힘이 과도하게 부여되는 현상
+
+그런데, 공격 범위 피격 현상을 해결하여도 계속 몬스터와 비비면서 공격 시, 플레이어가 과도하게 튕겨져 나가는 현상은 고쳐지지 않는 것이었다.
+
+이에, 왜 그럴까 많은 고민을 해 보았다.
+
+결론은 **AddForce에는 힘이 점점 더해지는 것**이기 때문에 **과도하게 가속도가 붙는다**는 추측을 하게 되었다.
+
+따라서 피격 시, 코루틴을 활용하여 짧은 시간 이후, velocity.x를 0으로 만들어 주어 튕겨져 나가는 한계점을 정해 주었다. (최대 속도와 비슷하다고 보면 된다.)
+
+그것을 코드로 작성하게 되면
+
+```c#
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+
+        if (collision.gameObject.layer == 8)
+        {
+            if (!isHit)
+            {
+                isHit = true;
+                int dmg = (collision.gameObject.GetComponent<Enemy>().monsterAtk - statInfo.playerDefense);                  
+                
+                StartCoroutine(playerHit(dmg));
+
+            }
+
+        }
+
+    }
+
+    public IEnumerator playerHit(int dmg)
+    {
+        sprite.color = Color.gray;
+
+        rigid.AddForce(new Vector2(playerSpriteMesh.transform.localScale.x * (-1) * 200, 5), ForceMode2D.Force); // 캐릭터가 향하고 있는 반대 방향으로 밀쳐진다. (세게는x)
+        statInfo.minusOrAddHP((-1) * dmg);
+        GameObject imsiDmg = pooling.GetObj(0);
+        imsiDmg.GetComponent<dmgSkins>().setDamage(dmg);
+        imsiDmg.transform.position = dmgPos.transform.position;
+
+        yield return new WaitForSeconds(0.2f);
+
+        // 공격 중에 밀쳐지게 되면 완전 튕겨져 나가는 것을 방지하기 위해 일정 딜레이 이후 속도를 0으로 설정 해 준다.
+        Vector2 go = rigid.velocity; 
+        go.x = 0;
+        rigid.velocity = go;
+
+        yield return new WaitForSeconds(0.4f);
+
+        sprite.color = Color.white;
+
+        isHit = false;
+
+    }
+```
+
+그리고, 한 가지 더 변경점이 있다.
+
+바로 ForceMode2D의 변경이다.
+
+Impulse -> Force로 변경 해 주어 폭발적인 힘에서 연속적인 힘을 주는 방식으로 바꾸었다.
+
+이에, 힘의 크기도 조금 더해 주었다.(폭발 -> 연속이라 힘이 가해지는 정도가 같은 값이면 약해지기 때문)
+
+
+
+
+
+
+
+<hr>
+
 ## - 움직이는 몬스터 무빙 로직 제작
 
 
