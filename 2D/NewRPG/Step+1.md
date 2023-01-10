@@ -374,9 +374,9 @@ Impulse -> Force로 변경 해 주어 폭발적인 힘에서 연속적인 힘을
 
 ### 움짤
 
-피격시 튕겨나는 부분에 대한 구현 움짤이다.
+피격시 튕겨나는 부분에 대한 구현 움짤이다.(20230110 - video로 수정하였음)
 
-![2d1+_1](https://user-images.githubusercontent.com/66288087/211319233-bae0854b-869c-437c-affc-3f0d225fbe23.gif)
+https://user-images.githubusercontent.com/66288087/211450450-01ec6e2e-70bb-4bd1-8b2d-c7332bd18fa3.mp4
 
 구현 된 것들을 정리하자면
 
