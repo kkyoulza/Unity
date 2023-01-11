@@ -456,8 +456,143 @@ public IEnumerator setState(){
 
 앞서, Enemy.cs 코드에 isFixed라는 bool 변수를 만들어 놨었는데 해당 변수가 체크되어 있으면 상태 변경 코루틴이 실행되지 않게 하였다.
 
+<hr>
 
+**Enemy.cs 코드**
 
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Enemy : MonoBehaviour
+{
+    // 이동 관련
+    public bool isFixed; // 고정 몬스터인가?
+
+    public int velocityDir; // 이동 방향
+    public int ranNum; // 행동을 결정 할 숫자
+    public float maxVel; // 최대 속력
+
+    Rigidbody2D rigid;
+
+    public Vector2 vel;
+    public bool isUsePool; // pool을 사용하여 데미지 텍스트를 출력할 것인가?(테스트용)
+
+    // 정보 관련
+    public enum Type { Normal, Fire, Ice, Land };
+    public Type monsterType; // 몬스터 속성
+
+    // 몬스터 스탯
+    public float monsterCntHP;
+    public float monsterMaxHP;
+    public int monsterAtk; 
+    public int monsterDef;
+
+    GameObject skillObj;
+    public GameObject dmg; // 데미지 Prefab
+    public GameObject dmgPos; // 데미지 생성 위치
+    dmgPool pooling; // 데미지 스킨 풀링
+
+    public GameObject HPBar; // HP Bar
+
+    // 외형 관련
+    SpriteRenderer sprite;
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        pooling = GetComponent<dmgPool>();
+        rigid = GetComponent<Rigidbody2D>();
+        velocityDir = 0; // idle
+        sprite = GetComponent<SpriteRenderer>();
+
+        if (!isFixed)
+            StartCoroutine(setState());
+    }
+
+    void FixedUpdate()
+    {
+        rigid.velocity = new Vector2(velocityDir, rigid.velocity.y);
+
+        vel = rigid.velocity;
+    }
+
+    void Update()
+    {
+        checkSprite();
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.gameObject.layer == 10)
+        {
+            skillObj = collision.gameObject;
+            StartCoroutine(attacked());
+        }
+    }
+
+    public void checkSprite()
+    {
+        sprite.flipX = rigid.velocity.x > 0 ? true : false;
+    }
+
+    public IEnumerator setState()
+    {
+        velocityDir = Random.Range(-1, 2); // -1 ~ 1
+
+        yield return new WaitForSeconds(3.5f);
+
+        StartCoroutine(setState());
+
+    }
+
+    public IEnumerator attacked() // 공격 당했을 때
+    {
+        Skills skillInfo = skillObj.GetComponent<SkillInfo>().thisSkillInfo;
+        sprite.color = Color.red; // 피격 시 빨갛게
+
+        for (int i = 0; i < skillInfo.atkCnt; i++)
+        {
+            Debug.Log((i + 1) + "타");
+
+            GameObject imsiDmg;
+
+            if (isUsePool)
+                imsiDmg = pooling.GetObj(0);
+            else
+                imsiDmg = Instantiate(dmg);
+
+            imsiDmg.GetComponent<dmgSkins>().setDamage(((int)skillInfo.skillDmg - monsterDef));
+            monsterCntHP -= ((int)skillInfo.skillDmg - monsterDef);
+            imsiDmg.transform.position = dmgPos.transform.position;
+
+            float hpRatio = (monsterCntHP / monsterMaxHP); 
+            // HP를 int로 설정 했을 때는 나눈 값에 float로 명시적 형 변환을 하면 이미 늦는다. 따라서 HP값 앞에 float로 해 주었어야 했다.
+            
+            HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
+                 
+            if (monsterCntHP <= 0)
+            {
+                Destroy(gameObject);
+                Debug.Log("몬스터 퇴치!");
+            }
+
+        }
+
+        yield return new WaitForSeconds(0.1f);
+
+        sprite.color = Color.white;
+
+    }
+
+}
+```
+
+FixedUpdate()를 통하여 몬스터의 속도를 설정 해 주었으며, 코루틴을 통하여 일정 주기마다 몬스터의 이동 방향을 설정 해 주었다.
+
+0 - 멈춤 // 1 - 오른쪽 // -1 - 왼쪽
 
 
 
