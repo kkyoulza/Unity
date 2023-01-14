@@ -594,6 +594,200 @@ FixedUpdate()를 통하여 몬스터의 속도를 설정 해 주었으며, 코�
 
 0 - 멈춤 // 1 - 오른쪽 // -1 - 왼쪽
 
+### -> 낭떠러지 떨어짐 방지
+
+몬스터가 랜덤으로 움직이다 보면 낭떠러지로 떨어질 수도 있다.
+
+그러한 부분을 방지하기 위하여 점프-착지에서 사용했던 RayCastHit2D를 사용하여 낭떠러지가 앞에 있음을 알 수 있다.
+
+**Enemy.cs 코드**
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Enemy : MonoBehaviour
+{
+    // 이동 관련
+    public bool isFixed; // 고정 몬스터인가?
+    public bool isChange; // 방향을 바꿨는가?
+
+    public int velocityDir; // 이동 방향
+    public int ranNum; // 행동을 결정 할 숫자
+    public float maxVel; // 최대 속력
+
+    Rigidbody2D rigid;
+
+    public Vector2 vel;
+    public bool isUsePool; // pool을 사용하여 데미지 텍스트를 출력할 것인가?(테스트용)
+
+    // 정보 관련
+    public enum Type { Normal, Fire, Ice, Land };
+    public Type monsterType; // 몬스터 속성
+
+    // 몬스터 스탯
+    public float monsterCntHP;
+    public float monsterMaxHP;
+    public int monsterAtk; 
+    public int monsterDef;
+
+    GameObject skillObj;
+    public GameObject dmg; // 데미지 Prefab
+    public GameObject dmgPos; // 데미지 생성 위치
+    dmgPool pooling; // 데미지 스킨 풀링
+
+    public GameObject HPBar; // HP Bar
+
+    // 외형 관련
+    SpriteRenderer sprite;
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        pooling = GetComponent<dmgPool>();
+        rigid = GetComponent<Rigidbody2D>();
+        velocityDir = 0; // idle
+        sprite = GetComponent<SpriteRenderer>();
+
+        if (!isFixed)
+            StartCoroutine(setState());
+    }
+
+    void FixedUpdate()
+    {
+        rigid.velocity = new Vector2(velocityDir, rigid.velocity.y);
+
+        vel = rigid.velocity;
+
+        checkTerraian();
+    }
+
+    void Update()
+    {
+        checkSprite();
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.gameObject.layer == 10)
+        {
+            skillObj = collision.gameObject;
+            StartCoroutine(attacked());
+        }
+    }
+
+    public void checkSprite()
+    {
+        sprite.flipX = rigid.velocity.x > 0 ? true : false;
+    }
+
+    public void checkTerraian()
+    {
+        Debug.DrawRay(rigid.position + Vector2.right * (sprite.flipX ? 1 : -1), Vector3.down, new Color(1, 0, 0)); // 레이저를 그린다. (시각적으로 보기 위함)
+
+        RaycastHit2D rayHit = Physics2D.Raycast(rigid.position + Vector2.right * (sprite.flipX ? 1 : -1), Vector3.down, 1, LayerMask.GetMask("Platform")); // 진짜 레이저 그리기 (시작위치, 방향, 거리)
+
+        if (rayHit.collider == null && !isChange)
+        {
+            // 절벽 근처에 있을 때
+
+            velocityDir *= -1; // 방향 전환
+            isChange = true;
+            Debug.Log("changeOn");
+        }
+        else if(rayHit.collider != null)
+        {
+            isChange = false;
+        }
+
+    }
+
+    public IEnumerator setState()
+    {
+        velocityDir = Random.Range(-1, 2); // -1 ~ 1
+
+        yield return new WaitForSeconds(3.5f);
+
+        StartCoroutine(setState());
+
+    }
+
+    public IEnumerator attacked() // 공격 당했을 때
+    {
+        Skills skillInfo = skillObj.GetComponent<SkillInfo>().thisSkillInfo;
+        sprite.color = Color.red; // 피격 시 빨갛게
+
+        for (int i = 0; i < skillInfo.atkCnt; i++)
+        {
+            Debug.Log((i + 1) + "타");
+
+            GameObject imsiDmg;
+
+            if (isUsePool)
+                imsiDmg = pooling.GetObj(0);
+            else
+                imsiDmg = Instantiate(dmg);
+
+            imsiDmg.GetComponent<dmgSkins>().setDamage(((int)skillInfo.skillDmg - monsterDef));
+            monsterCntHP -= ((int)skillInfo.skillDmg - monsterDef);
+            imsiDmg.transform.position = dmgPos.transform.position;
+
+            float hpRatio = (monsterCntHP / monsterMaxHP); // HP를 int로 설정 했을 때는 나눈 값에 float로 명시적 형 변환을 하면 이미 늦는다. 따라서 HP값 앞에 float로 해 주었어야 했다.
+            HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
+                 
+            if (monsterCntHP <= 0)
+            {
+                Destroy(gameObject);
+                Debug.Log("몬스터 퇴치!");
+            }
+
+        }
+
+        yield return new WaitForSeconds(0.1f);
+
+        sprite.color = Color.white;
+
+    }
+
+}
+```
+
+checkTerrarian() 함수에서 Ray를 쏘아 낭떠러지 여부를 체크하게 해 주었다.
+
+rigid.position + Vector2.right * (sprite.flipX ? 1 : -1) 으로 Ray시작점을 플레이어의 진행방향의 조금 앞에 위치하게끔 해 주었다.
+
+(**삼항연산자**를 사용하여 몬스터가 돌아보고 있는 방향의 **앞쪽에서 레이저**가 나가게 하였다.)
+
+![image](https://user-images.githubusercontent.com/66288087/212464629-b3abc186-405a-48d1-bd1f-cd9b5a856b28.png)
+
+![image](https://user-images.githubusercontent.com/66288087/212464636-bd0db422-70a2-4848-bb69-12ec62349f77.png)
+
+오른쪽/왼쪽 방향에 따라서 레이저의 시작점이 바뀌는 것을 볼 수 있다.
+
+```c#
+if (rayHit.collider == null && !isChange)
+{
+    // 절벽 근처에 있을 때
+
+    velocityDir *= -1; // 방향 전환
+    isChange = true;
+    Debug.Log("changeOn");
+}
+else if(rayHit.collider != null)
+{
+    isChange = false;
+}
+```
+
+그리고 위 조건문에서 절벽 근처에 갔을 때, 방향을 전환시켜 준다.
+
+isChange는 방향이 전환되었음을 알려주는 bool 변수이다.
+
+방향 전환을 한 번만 해 주기 위하여, 레이저가 땅에 닿을 때 false가 되는 bool 변수인 isChange를 만들고, 방향 전환 시 true로 만들어 준다.
+
+isChange가 없다면 절벽에서 방향 전환을 순간적으로 많이 이루어지게 된다. (좌,우 반전이 빠르게 일어나게 된다.)
 
 
 
