@@ -789,11 +789,80 @@ isChange는 방향이 전환되었음을 알려주는 bool 변수이다.
 
 isChange가 없다면 절벽에서 방향 전환을 순간적으로 많이 이루어지게 된다. (좌,우 반전이 빠르게 일어나게 된다.)
 
+<hr>
 
+### -> 몬스터 피격 시 밀려남
 
+몬스터도 공격을 받았을 때, 밀려나야 한다.
 
+따라서 몬스터가 피격을 당했을 때 실행되는 코루틴 함수인 attacked()를 다음과 같이 수정 해 준다.
 
+```c#
+public IEnumerator attacked() // 공격 당했을 때
+{
+    Skills skillInfo = skillObj.GetComponent<SkillInfo>().thisSkillInfo;
+    sprite.color = Color.red; // 피격 시 빨갛게
 
+    if(!isFixed)
+    {
+        rigid.AddForce(Vector2.up * 2, ForceMode2D.Impulse);
+    }
+
+    for (int i = 0; i < skillInfo.atkCnt; i++)
+    {
+        Debug.Log((i + 1) + "타");
+
+        GameObject imsiDmg;
+
+        if (isUsePool)
+            imsiDmg = pooling.GetObj(0);
+        else
+            imsiDmg = Instantiate(dmg);
+
+        imsiDmg.GetComponent<dmgSkins>().setDamage(((int)skillInfo.skillDmg - monsterDef));
+        monsterCntHP -= ((int)skillInfo.skillDmg - monsterDef);
+        imsiDmg.transform.position = dmgPos.transform.position;
+
+        float hpRatio = (monsterCntHP / monsterMaxHP); // HP를 int로 설정 했을 때는 나눈 값에 float로 명시적 형 변환을 하면 이미 늦는다. 따라서 HP값 앞에 float로 해 주었어야 했다.
+        HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
+
+        if (monsterCntHP <= 0)
+        {
+            Destroy(gameObject);
+            Debug.Log("몬스터 퇴치!");
+        }
+
+    }
+
+    yield return new WaitForSeconds(0.1f);
+
+    sprite.color = Color.white;
+
+}
+```
+
+추가 한 부분은 아래 부분이다.
+
+```c#
+if(!isFixed)
+{
+    rigid.AddForce(Vector2.up * 2, ForceMode2D.Impulse);
+}
+```
+
+몬스터가 고정 형태가 아닐 때는 y축 방향으로 일정 힘이 가해지게 설정하였다.
+
+추후에 밀기 전용 스킬도 추가를 하게 되면 더 자세한 조건을 추가해 볼 예정이다.
+
+아래 움짤은 넉백 적용 부분이다.
+
+![2d_1+_2](https://user-images.githubusercontent.com/66288087/212860636-b4859cfb-0ffe-4731-9a3f-eb0d5ec58b86.gif)
+
+고정형 몬스터인 허수아비에게는 넉백이 적용되지 않음을 볼 수 있으며, 움직이는 일반형 몬스터에게만 적용됨을 볼 수 있다.
+
+<hr>
+
+아래에는 몬스터에 대한 부분을 조금씩 업데이트 해 나갈 예정이다.
 
 
 
