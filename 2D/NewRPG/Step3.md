@@ -301,14 +301,142 @@ DestroyDmg() 함수도 inActiveDmg()로 바꾸어 주면 완벽하다.
 
 ## 오브젝트 풀링 적용 2 - 몬스터 소환
 
+### -> 일반적인 몬스터 소환
+
+우선 오브젝트 풀링을 사용하지 않고 몬스터 소환을 구현 해 보도록 하겠다.
+
+소환 로직은 다음과 같이 구성하였다.
+
+![image](https://user-images.githubusercontent.com/66288087/213618521-79a25421-f507-4f9c-a4e5-a6b4be36d6d3.png)
+
+우선, 몬스터가 각각 소환 될 스폰 장소를 게임 오브젝트로 만들어 준다.
+
+각 스폰 장소에는 스폰 장소와, 해당 장소에서 스폰이 된 몬스터를 연결해 주기 위해 SpawnPlace.cs 코드를 만들어 주어 소환 된 몬스터와 연결 해 준다.
+
+그 다음, 한 맵 내에서 스폰을 관리 해 주는 SpawnManager.cs에서 SpawnPlace가 들어 갈 리스트를 만들어 둔 다음, 일정 시간마다 스폰을 위해 리스트를 체크 해 준다.
+
+리스트 내에 있는 스폰 장소에서 **연결 된 몬스터가 없을 경우에만!** 몬스터를 Instantiate() 해 준다.
+
+이를 코드롤 나타내면 아래와 같다.
+
+<br>
+
+**SpawnPlace.cs**
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SpawnPlace : MonoBehaviour
+{
+    public GameObject spawnedMonster;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+}
+```
+Place 코드는 소환된 몬스터 할당밖에 없어서 볼게 없다.
+
+넘어가자
+
+<br>
+
+**SpawnManager.cs**
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SpawnManager : MonoBehaviour
+{
+    public List<GameObject> spawnPlaces;
+    public List<SpawnPlace> places;
+    public GameObject spawnMonster;
+    public GameObject spawnParent;
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        foreach (GameObject place in spawnPlaces)
+        {
+            SpawnPlace imsi = place.GetComponent<SpawnPlace>();
+            places.Add(imsi);
+        }
+
+        StartCoroutine(SpawnCheck());
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    IEnumerator SpawnCheck()
+    {
+
+        foreach(SpawnPlace place in places)
+        {
+            if(place.spawnedMonster == null)
+            {
+                GameObject spawnedMonster = Instantiate(spawnMonster, spawnParent.transform);
+                spawnedMonster.transform.position = place.gameObject.transform.position;
+                place.spawnedMonster = spawnedMonster;
+                // Debug.Log("Spawned");
+            }
+        }
+
+        yield return new WaitForSeconds(6.0f);
 
 
+        StartCoroutine(SpawnCheck());
 
+    }
+}
+```
 
+스폰 코드에서
 
+SpawnPlaces와 places 두 개의 리스트를 만들었는데, 해당 리스트들은 가변하지 않고, 미리 설정되기에 Awake에서 SpawnPlace 리스트로 바꾸어 준다.
 
+그렇게 하지 않으면 매 스폰 때 마다 GetComponent<>를 사용 해 주어야 한다.
 
+<br>
 
+그리고 foreach를 통하여 SpawnPlace 리스트에서 몬스터가 연결되어 있는지를 확인 해 주며, 연결되어 있지 않으면 몬스터를 생성 해 줌을 볼 수 있다.
+
+<hr>
+
+#### 스폰되는 모습
+
+움짤로 만들기에는 길이가 있어서 영상 그대로 가져왔다.
+
+https://user-images.githubusercontent.com/66288087/213622518-6604598b-10cd-48b1-985d-138c7206a611.mp4
+
+몬스터가 소환되며, 몬스터를 잡았을 때, 스폰 매니저가 체크하여 다시 소환하는 모습을 볼 수 있다.
+
+<hr>
+
+### -> 오브젝트 풀 이용하기
+
+몬스터 소환에서는 오브젝트 풀을 왜 이용할까?
+
+--> 그것은 한 사냥터에서 오랜 시간 사냥할 때, 몬스터 소환 / 제거 작업이 누적되기 때문이다.
+
+사실 실습의 의도가 더 크긴 하다..
+
+<hr>
+
+#### -> 매니저에 풀 만들기
 
 
 
