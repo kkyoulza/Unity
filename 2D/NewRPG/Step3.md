@@ -438,6 +438,310 @@ https://user-images.githubusercontent.com/66288087/213622518-6604598b-10cd-48b1-
 
 #### -> 매니저에 풀 만들기
 
+우선 스폰 매니저 코드에 데미지 풀과 같은 방법으로 리스트 배열을 만들어 준다.
+
+```c#
+public List<GameObject>[] pools; // 몬스터들이 들어 갈 pool
+```
+
+위 배열이 오브젝트들이 임시로 저장되어 사용 할 풀이다.
+
+위에서 활용한 것과 같이 풀에 오브젝트를 초기 소환하거나 비활성화 된 상태의 오브젝트를 가져 올 함수를 만들어 준다.
+
+```c#
+GameObject GetMonster(int index)
+{
+    GameObject select = null; // 풀 내부에서 놀고있는 오브젝트를 골라서 반환한다.
+
+    // 선택한 풀에서 놀고 있는(비활성화 된) 게임 오브젝트에 접근!
+
+    // 발견하면 select 변수에 할당!
+
+    foreach (GameObject mob in pools[index]) // index위치에 있는 prefab을 가진 pools 리스트에 접근 
+    {
+        if (!mob.activeSelf)
+        {
+            // 탐색중인 게임 오브젝트가 비활성화 되었으면!
+            select = mob; // 할당!
+            select.SetActive(true); // 활성화!
+            break;
+        }
+    }
+
+
+    // 놀고 있는 게임 오브젝트가 없다면! (모두가 동작 중이면)
+    if (!select)
+    {
+        // 게임오브젝트를 단독으로 사용하면 null 여부를 따지는 것이다! (없으면 false)
+
+        // 새롭게 생성(Instantiate)하여 select 변수에 할당한다.
+
+        select = Instantiate(spawnMonsters[index], spawnParent.transform);
+        // 두 번쩨 오버로딩 : 소환 할 오브젝트, 소환 할 부모 오브젝트(계층란이 지저분해지지 않게!)
+        // 부모 오브젝트를 transform으로 해 놓아서 dmgPool이 들어 간 오브젝트의 자식으로 데미지 텍스트가 뜨게 하였다.
+
+        pools[index].Add(select); // 새롭게 풀에 등록!
+
+    }
+
+
+    return select;
+}
+```
+
+원리는 위에서 본 데미지 텍스트의 경우와 같다.
+
+1. 오브젝트를 리턴 할 select 오브젝트를 null로 만들어 준다.
+2. 풀 속에서 해당 종류의 오브젝트가 미리 만들어졌는지 확인한다.
+3. 오브젝트가 있다면 비활성화 상태인지 확인하여, 비활성화 상태이면 해당 오브젝트를 select에 넣어 주고 반복문을 빠져 나온다.
+4. 만약 3번에서 조건에 맞는 오브젝트를 하나도 발견하지 못하였으면 새롭게 오브젝트를 Instantiate 해 주고, **새롭게 풀에 등록** & select에 넣어 준다.
+5. 3 or 4번을 통해 얻은 select를 리턴 해 준다. 
+
+<hr>
+
+#### -> 풀을 이용하여 몬스터를 소환하는 과정
+
+풀을 이용하여 몬스터를 소환하는 절차는 다음과 같다.
+
+1. 몬스터 스폰을 명령받는다.
+2. 스폰 시, 몬스터를 새롭게 소환하는 Instantiate() 대신, GetMonster를 통하여 오브젝트를 매칭받는다.
+3. 해당 몬스터를 스폰 지역으로 이동시키고 스폰지역에 해당 오브젝트를 할당시킨다.
+4. 몬스터에 걸린 isHit(한 번 스킬을 맞는동안 중복하여 맞지 않게끔 하는 장치)를 풀어 준다.(false로 만들어 준다.)
+
+4번은 오브젝트 풀링을 사용하기 때문에 설정 해 주었다. 관련한 내용은 아래에서 더 설명 할 것이다.
+
+아무튼 오브젝트 풀을 적용한 몬스터 소환과정을 코드로 작성하면 아래와 같이 된다.
+
+**SpawnManager.cs 중 일부**
+
+```c#
+IEnumerator SpawnCheck()
+{
+    foreach(SpawnPlace place in places)
+    {
+        if(place.spawnedMonster == null || !place.spawnedMonster.activeSelf)
+        {
+            GameObject spawnedMonster = GetMonster(0);
+            spawnedMonster.GetComponent<Enemy>().isHit = false;
+            spawnedMonster.transform.position = place.gameObject.transform.position;
+            place.spawnedMonster = spawnedMonster;
+            Debug.Log("Spawned");
+        }
+    }
+
+    yield return new WaitForSeconds(6.0f);
+
+
+    StartCoroutine(SpawnCheck());
+
+}
+
+
+GameObject GetMonster(int index)
+{
+    GameObject select = null; // 풀 내부에서 놀고있는 오브젝트를 골라서 반환한다.
+
+    // 선택한 풀에서 놀고 있는(비활성화 된) 게임 오브젝트에 접근!
+
+    // 발견하면 select 변수에 할당!
+
+    foreach (GameObject mob in pools[index]) // index위치에 있는 prefab을 가진 pools 리스트에 접근 
+    {
+        if (!mob.activeSelf)
+        {
+            // 탐색중인 게임 오브젝트가 비활성화 되었으면!
+            select = mob; // 할당!
+            select.SetActive(true); // 활성화!
+            break;
+        }
+    }
+
+
+    // 놀고 있는 게임 오브젝트가 없다면! (모두가 동작 중이면)
+    if (!select)
+    {
+        // 게임오브젝트를 단독으로 사용하면 null 여부를 따지는 것이다! (없으면 false)
+
+        // 새롭게 생성(Instantiate)하여 select 변수에 할당한다.
+
+        select = Instantiate(spawnMonsters[index], spawnParent.transform);
+        // 두 번쩨 오버로딩 : 소환 할 오브젝트, 소환 할 부모 오브젝트(계층란이 지저분해지지 않게!)
+        // 부모 오브젝트를 transform으로 해 놓아서 dmgPool이 들어 간 오브젝트의 자식으로 데미지 텍스트가 뜨게 하였다.
+
+        pools[index].Add(select); // 새롭게 풀에 등록!
+
+    }
+
+
+    return select;
+}
+```
+
+코드 상으로 크게 변한 점은 눈에 띄지 않지만, 다른 곳에서 바꿔 주어야 할 점이 있으니 놓치지 말도록 하자
+
+<hr>
+
+#### -> 몬스터 퇴치 후 재사용을 위한 처리
+
+데미지 텍스트도 그랬고, 오브젝트 풀의 핵심은 **재사용**이다.
+
+재사용을 하기 위해서는 다 쓴 것들을 새것처럼 만들어 주어야 한다.
+
+어떤 것들을 다시 세팅 해 주어야 할까?
+
+- 몬스터의 체력
+- 몬스터 외형
+- 몬스터의 피격 가능 상태(isHit)
+- 몬스터 체력 바
+
+이렇게 세 가지를 일단 생각할 수 있을 것이다.
+
+물론 체력 바는 Update에 체력바 갱신을 실시간으로 해 준다면 편할 수야 있지만, 그렇게 되면 전투가 일어나지 않을 때는 무의미한 자원 소비가 일어나게 되는 것이다.
+
+따라서 피격 시에만 바를 갱신시켜 주었으며, 이를 재사용하기 위해서는 몬스터가 퇴치된 이후에 다시 세팅 해 줄 필요가 있다.
+
+따라서 아래 코드처럼 Enemy.cs를 변형시켜 준다.
+
+```c#
+public IEnumerator attacked() // 공격 당했을 때
+{
+    Skills skillInfo = skillObj.GetComponent<SkillInfo>().thisSkillInfo;
+    sprite.color = Color.red; // 피격 시 빨갛게
+
+    if (!isFixed)
+    {
+        rigid.AddForce(Vector2.up, ForceMode2D.Impulse);
+    }
+
+    for (int i = 0; i < skillInfo.atkCnt; i++)
+    {
+        Debug.Log((i + 1) + "타");
+
+        GameObject imsiDmg;
+
+        if (isUsePool)
+            imsiDmg = pooling.GetObj(0);
+        else
+            imsiDmg = Instantiate(dmg);
+
+        imsiDmg.GetComponent<dmgSkins>().setDamage(((int)skillInfo.skillDmg - monsterDef));
+        monsterCntHP -= ((int)skillInfo.skillDmg - monsterDef);
+        imsiDmg.transform.position = dmgPos.transform.position;
+
+        float hpRatio = (monsterCntHP / monsterMaxHP); // HP를 int로 설정 했을 때는 나눈 값에 float로 명시적 형 변환을 하면 이미 늦는다. 따라서 HP값 앞에 float로 해 주었어야 했다.
+        HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(hpRatio, 0.1f);
+
+        if (monsterCntHP <= 0)
+        {
+            sprite.color = Color.white;
+
+            gameObject.SetActive(false);
+
+            monsterCntHP = monsterMaxHP;
+            HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(1.0f, 0.1f);
+            Debug.Log("몬스터 퇴치!");
+
+            yield break;
+        }
+
+    }
+
+    yield return null;
+
+    isHit = false;
+
+    yield return new WaitForSeconds(0.1f);
+
+    sprite.color = Color.white;
+
+}
+```
+
+위 코드를 보면 체력이 0 이하가 되었을 때, SetActive를 false로 해 주고, 체력 수치와 체력 바 재 세팅, 몬스터 외형 원위치 작업을 해 줌을 볼 수 있다.
+
+그리고 yield break를 통하여 피격 코루틴을 강제로 종료 해 준다.
+
+<hr>
+
+#### + 몬스터의 피격 가능상태?
+
+한 가지 미리 설명하지 못한 점이 있다.
+
+바로 몬스터의 피격 가능상태인데, 이 것은 몬스터에게 공격을 했을 때, **의도한 횟수만큼의 공격이 들어가지 않는 것을 방지**하기 위하여 bool 변수를 하나 만들어 주었다.
+
+**Enemy.cs 일부**
+
+```c#
+private void OnTriggerEnter2D(Collider2D collision)
+{
+    if(collision.gameObject.layer == 10 && !isHit)
+    {
+        Debug.Log("몬스터 피격!");
+        isHit = true;
+        skillObj = collision.gameObject;
+        StartCoroutine(attacked());
+    }
+}
+
+public IEnumerator attacked() // 공격 당했을 때
+    {
+        .
+        .
+        . (피격 코드)
+
+        yield return null;
+
+        isHit = false;
+
+        yield return new WaitForSeconds(0.1f);
+
+        sprite.color = Color.white;
+
+    }
+
+```
+
+즉, 위와 같이 Trigger2D에서 isHit을 발동시켜 주면, 의도치 않은 추가타를 방지할 수 있다.
+
+하지만, 오브젝트 풀을 사용하면서 작은 문제가 발생하게 된다.
+
+<hr>
+
+#### -> 재활용 시 isHit이 해제가 안되는 현상
+
+![image](https://user-images.githubusercontent.com/66288087/213861354-b7ebd358-c57f-45d3-bb70-d6de2773a097.png)
+
+바로 위 사진과 같이 몬스터가 재활용 되었을 때, isHit이 해제가 되지 않는 현상이 발생하였다.
+
+이에, 스폰 매니저에서
+
+```c#
+IEnumerator SpawnCheck()
+{
+
+    foreach(SpawnPlace place in places)
+    {
+        if(place.spawnedMonster == null || !place.spawnedMonster.activeSelf)
+        {
+            GameObject spawnedMonster = GetMonster(0);
+            spawnedMonster.GetComponent<Enemy>().isHit = false;
+            spawnedMonster.transform.position = place.gameObject.transform.position;
+            place.spawnedMonster = spawnedMonster;
+            Debug.Log("Spawned");
+        }
+    }
+
+    yield return new WaitForSeconds(6.0f);
+
+
+    StartCoroutine(SpawnCheck());
+
+}
+```
+
+스폰 시에, isHit을 해제하는 작업을 진행하여 문제를 해결하였다.
+
+오브젝트 풀이 적용 된 모습을 영상으로 확인 해 보자.
 
 
 
