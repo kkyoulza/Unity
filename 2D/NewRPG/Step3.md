@@ -510,7 +510,15 @@ GameObject GetMonster(int index)
 
 4번은 오브젝트 풀링을 사용하기 때문에 설정 해 주었다. 관련한 내용은 아래에서 더 설명 할 것이다.
 
-아무튼 오브젝트 풀을 적용한 몬스터 소환과정을 코드로 작성하면 아래와 같이 된다.
+위 과정 중 일부를 그림으로 설명하면 아래와 같다.
+
+![image](https://user-images.githubusercontent.com/66288087/213861593-b0f98e74-c017-4db7-9337-a23858519ddc.png)
+
+![image](https://user-images.githubusercontent.com/66288087/213861600-2451760f-071e-43af-8b7d-be7d2ca93da2.png)
+
+<br>
+
+오브젝트 풀을 적용한 몬스터 소환과정을 코드로 작성하면 아래와 같이 된다.
 
 **SpawnManager.cs 중 일부**
 
