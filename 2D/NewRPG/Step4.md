@@ -150,12 +150,252 @@ public class Manager : MonoBehaviour
 
 ## -> 경험치 계산 및 레벨업
 
+### - 경험치 및 HP/MP UI 개선 및 코드 수정
 
+경험치 계산을 구현하기 전에 우선, UI를 손 볼 필요가 있다.
+
+경험치 바에서 수치적인 값을 표시하고, HP와 MP도 수치적인 값을 표시 할 필요가 있다.
+
+![image](https://user-images.githubusercontent.com/66288087/214239310-807e7560-30b0-4080-abbd-4dbb0368bff7.png)
+
+위 사진과 같이 텍스트를 배치 해 준다.
+
+Hierarchy 관계도 중요하다.
+
+![image](https://user-images.githubusercontent.com/66288087/214239389-92027b6c-cb66-4c77-8990-2d43e0b0b72e.png)
+
+길이가 변하는 HP,MP,EXP 바는 텍스트와 대등한 라인의 계층을 가지게 하였다.
+
+왜냐하면 바의 길이가 변하게 되면 하위에 있는 오브젝트들도 위치가 변하기 때문이다.
+
+텍스트와 바의 크기는 독립적으로 될 수 있게 만들어 주었다.
 
 <hr>
 
-## -> 몬스터 퇴치 시 경험치 수급
+**코드 수정**
 
+UI에 적용하는 값들은 Manager.cs를 통해 적용하였다.
+
+추가로 변경 할 UI 사항들이 생겼으니 함수들을 만들어 알아보기 쉽게 정리 해 보자(리팩토링?)
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Manager : MonoBehaviour
+{
+    // UI Bar
+    public GameObject HPBar;
+    public GameObject MPBar;
+    public GameObject EXPBar;
+
+    // Bar 길이 정보
+    RectTransform HPRect;
+    RectTransform MPRect;
+    RectTransform EXPRect;
+
+    // 수치 정보
+    public int ExpBarLength; // 경험치 바 가로 길이
+    float expRate; // 경험치 비율
+
+    StatInformation stat; // 플레이어 스탯
+
+    // 텍스트 모음
+    public Text ExpText;
+    public Text HPText;
+    public Text MPText;
+    public Text LVText;
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        HPRect = HPBar.GetComponent<RectTransform>();
+        MPRect = MPBar.GetComponent<RectTransform>();
+        EXPRect = EXPBar.GetComponent<RectTransform>();
+    }
+
+    private void Start()
+    {
+        stat = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStats>().playerStat;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        SetEXPBar();
+        SetHPMP();
+        SetLV();
+    }
+
+    void SetEXPBar()
+    {
+        expRate = ((float)stat.playerCntExperience / (float)stat.playerMaxExperience);
+        EXPRect.sizeDelta = new Vector2(ExpBarLength * expRate, 50);
+        ExpText.text = stat.playerCntExperience + " ( " + string.Format("{0:0.00}", expRate * 100) + "% ) / " + stat.playerMaxExperience;
+    }
+
+    void SetHPMP()
+    {
+        HPRect.sizeDelta = new Vector2(250 * (stat.playerCntHP / stat.playerMaxHP), 60);
+        MPRect.sizeDelta = new Vector2(250 * (stat.playerCntMP / stat.playerMaxMP), 60);
+
+        HPText.text = stat.playerCntHP + " / " + stat.playerMaxHP;
+        MPText.text = stat.playerCntMP + " / " + stat.playerMaxMP;
+
+    }
+
+    void SetLV()
+    {
+        LVText.text = "LV " + stat.playerLevel;
+    }
+}
+```
+
+종류별로 3개의 함수를 만들어 주었다.
+
+- 경험치 바 & 텍스트 변동
+- HP,MP 바 & 텍스트 변동
+- 레벨 값 변동
+
+<hr>
+
+### string.Format 기능 정리
+
+경험치 비율을 기록하기 위해 string.Format을 통해 비율 값을 소수점 2자리까지 끊어주는 방법을 사용하였다.
+
+string.Format은 소수들의 표시 형태를 정하는 것이다.
+
+예를 들어
+
+```c#
+string.Format("{0:0.00} {1:0.000}",1.234,1.2345);
+```
+
+중괄호 {  } 속에 있는 것에서 **콜론 왼쪽**에 있는 0,1.. 은 **매개변수의 순서**이다.
+
+**콜론 오른쪽**에 있는 **형태**를 **몇 번째 매개변수에 적용** 할 것인지 설정하는 것이다.
+
+즉, 위 코드에서 출력되는 것은 **1.23 1.234** 이다.
+
+<hr>
+
+위 Format을 통해 경험치의 비율을 출력하였으며, 각 기기마다 다른 경험치 바 길이를 쉽게 설정하기 위해 **ExpBarLength** 라는 **public 변수**를 하나 만들어 주었다.
+
+그리고 expRate도 어차피 비율을 text에 적어야 하기 때문에 변수로 만들어 저장 해 주었다.
+
+<hr>
+
+또한, 위 사진에서 Hierarchy에 Exp Base라고 보일 것이다.
+
+경험치가 거의 없을 때는 경험치 수치 텍스트가 지형에 가려 보이지 않기 때문에 뒤에 하얀 배경을 깔아 주었다.
+
+이렇게 해 주면 아래 사진과 같이 UI가 세팅된다.
+
+<hr>
+
+![image](https://user-images.githubusercontent.com/66288087/214243143-ea9659fe-ef9c-4668-aa53-87f800012061.png)
+
+UI개선 후 모습이다.
+
+<hr>
+
+## -> 몬스터 퇴치 시 경험치 수급 및 레벨 업
+
+이제 몬스터를 퇴치 했을 때 경험치가 수급되게끔 만들어 주자
+
+(위 사진에서는 이미 경험치가 수급 된 모습이긴 하다.)
+
+### - 몬스터를 때린 플레이어 리스트 만들기
+
+몬스터가 잡혔을 때, 어떻게 플레이어를 추적해서 경험치를 더해 줄 수 있을까?
+
+바로 몬스터가 피격당하는 오브젝트인 스킬 오브젝트를 통하여 플레이어에 연결을 할 수 있을 것이다.
+
+스킬 오브젝트에 플레이어 오브젝트를 세팅 해 둔 다음, 몬스터 내부에서 피격 시 때린 플레이어를 저장하여 몬스터가 퇴치되었을 때, 경험치를 배달시켜 주는 것이다.
+
+![image](https://user-images.githubusercontent.com/66288087/214246138-fe3ccdf0-502b-40af-bf8a-b9e755e2d453.png)
+
+위 그림에서 일련의 과정들을 정리하였다.
+
+우선 피격 시에 캐릭터가 가진 스킬 이펙트 오브젝트를 추적하여 몬스터 내부에 때린 놈 리스트를 만들어 보도록 하자
+
+**Enemy.cs 중**
+
+```c#
+public List<GameObject> attackObj; // 몬스터를 타격하는 오브젝트 모음
+
+void checkHitList(GameObject input)
+{
+    GameObject addObj = input.GetComponent<SkillInfo>().player.gameObject;
+    // 몬스터를 때린 놈들에 대한 리스트 생성 -> 경험치 분배할 때 사용 예정
+    if(attackObj.Count == 0)
+    {
+        attackObj.Add(addObj);
+        return;
+    }
+
+    Player inputPlayerInfo = input.GetComponent<SkillInfo>().player;
+
+    for(int i = 0; i < attackObj.Count; i++)
+    {
+        if (attackObj[i].GetComponent<Player>().userId == inputPlayerInfo.userId) // 이미 등록되어 있다면
+            return; // 리턴
+    }
+
+    attackObj.Add(addObj); // 등록되어 있는 것이 없다면 새로 등록
+
+}
+```
+
+attackObj로 리스트를 만들어 주고, Trigger 이벤트에서 collision.gameObject를 매개변수로 받아 실행하는 checkHitList(input)를 만들어 주었다.
+
+**input으로 들어오는 게임오브젝트**는 **스킬 이펙트**이며, **attackObj에 저장**되는 것은 **Player 오브젝트**이다.
+
+이 점을 잘 유의하여 코드를 이해 해 보도록 하자.
+
+처음에 리스트에 아무것도 없을 때는 무조건 추가하고 함수를 종료한다.
+
+리스트에 무언가가 있다면 for문으로 리스트를 참고 해 준 다음 조건문을 통하여 Player의 userId를 체크 해 준다.
+
+같은 userId를 가진 오브젝트가 이미 있다면 함수를 끝내며, userId가 같은 것이 없을 때는 마지막에 리스트에 추가 해 준다.
+
+for문 속에 있는 조건문에서 attackObj와 inputPlayerInfo를 헷갈리지 말 것!!
+
+inputPlayerInfo는 스킬 이펙트에 있는 Player 오브젝트 속에 있는 Player 컴포넌트이다.
+
+이렇게 만들게 되면
+
+![image](https://user-images.githubusercontent.com/66288087/214248413-b41ca06e-655f-4965-b2e2-3fd314b79aa8.png)
+
+위 사진과 같이 몬스터 내부에 자동으로 몬스터를 때린 플레이어가 추가 되게 된다.
+
+### 몬스터를 퇴치했을 때, 경험치 분배하기
+
+그렇다면 지금부터는 간단하다.
+
+몬스터가 퇴치되었을 때, 경험치를 추가 해 주는 함수를 작성하면 된다.
+
+**Enemy.cs중**
+
+```c#
+void sendEXP()
+    {
+        // 몬스터가 죽었을 때, 경험치를 보낸다.
+        for(int i = 0; i < attackObj.Count; i++)
+        {
+            attackObj[i].GetComponent<PlayerStats>().playerStat.playerCntExperience += (int)((float)addExp / (float)attackObj.Count); 
+        }
+
+    }
+```
+
+아까 경험치 수급 내용을 정리한 그림에서처럼, 몬스터의 총 제공 경험치에 몬스터 퇴치에 관여한 모든 플레이어들의 수를 나누어 준 다음, 각 플레이어들에게 경험치를 분배 해 준다.
+
+![image](https://user-images.githubusercontent.com/66288087/214248880-17650a37-35f1-47ec-8045-9d4564c34a7b.png)
+
+그러면 아까 사진과 같이 경험치를 습득하게 될 것이다.
 
 <hr>
 
