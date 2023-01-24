@@ -8,6 +8,7 @@ public class dmgSkins : MonoBehaviour
     TextMeshPro dmgText;
     Color alpha;
 
+    public bool isUsePool;
     public float movingSpeed;
     public float alphaSpeed;
     public int damage;
@@ -31,7 +32,15 @@ public class dmgSkins : MonoBehaviour
 
         alpha = dmgText.color;
         alpha.a = 255f;
-        Invoke("inActiveDmg", 1.0f); // 2초 뒤에 데미지가 사라지게!
+        if(isUsePool)
+            Invoke("inActiveDmg", 1.0f); // 1초 뒤에 데미지가 사라지게!
+        else
+            Invoke("DestroyObj", 1.0f);
+    }
+
+    public void DestroyObj()
+    {
+        Destroy(gameObject);
     }
 
     public void inActiveDmg()

@@ -9,7 +9,9 @@ public class SkillInfo : MonoBehaviour
 
     // 스킬 Box On/Off 여부
     BoxCollider2D box;
-    public bool isOff; // 이미 Collider가 꺼지는 코루틴이 실행되고 있는가?
+
+    // 스킬을 사용하는 플레이어에 대한 정보
+    public Player player;
 
     // Start is called before the first frame update
     void Awake()

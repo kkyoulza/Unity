@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public int userId; // user 고유 ID
+
     // 키 입력에 대한 변수들
     int directionValue; // 방향 값 ( + 일때는 오른쪽, - 일때는 왼쪽 )
 
@@ -16,8 +18,10 @@ public class Player : MonoBehaviour
     public bool isAttack; // 공격 중일 때
     public bool isHit; // 피격 당하는 중
 
+
     // 움직임 관련
     Rigidbody2D rigid;
+    CapsuleCollider2D charCollider;
     Vector3 moveVec; // 움직이는 방향을 표현하는 벡터  
 
     // 플레아어 정보들
@@ -29,7 +33,7 @@ public class Player : MonoBehaviour
     // 플레이어 외관 및 스킬 방향
     SpriteRenderer sprite;
 
-    public GameObject playerMesh; // 플레이어 외관
+    public GameObject playerSprite; // 플레이어 외관
     public GameObject atkPoint; // 공격 이펙트가 나가는 포인트
     public GameObject dmgPos; // 플레이어 피격 데미지 생성 위치
 
@@ -47,6 +51,7 @@ public class Player : MonoBehaviour
         skillInfos = playerSkill.skillInfos;
 
         rigid = GetComponent<Rigidbody2D>();
+        charCollider = GetComponent<CapsuleCollider2D>();
 
         sprite = GetComponentInChildren<SpriteRenderer>();
         anim = GetComponentInChildren<Animator>();
@@ -110,7 +115,7 @@ public class Player : MonoBehaviour
 
     public void checkLanding()
     {
-        if(rigid.velocity.y < 0)
+        if(rigid.velocity.y < 0 || (rigid.velocity.y == 0 && anim.GetBool("isJump")))
         {
             // y축 속도가 음수 = 떨어지고 있음
             // 떨어지고 있을 때, 착지 체크를 진행한다.
@@ -126,6 +131,7 @@ public class Player : MonoBehaviour
 
                 if (rayHit.distance < 0.8f) // 일정 거리 미만으로 가까워졌을 때
                 {
+
                     anim.SetBool("isJump", false); // 점프 애니메이션 해제
                     jumpCount = statInfo.playerMaxJumpCount; // 점프 카운트 리셋
                 }
@@ -149,11 +155,11 @@ public class Player : MonoBehaviour
             {
                 if ((Input.GetAxisRaw("Horizontal") == -1) || (directionValue == -1)) // 위 조건을 똑같이 써 주어, 왼쪽을 볼 때는 scale에 (-1,1,1)벡터를 넣어 준다. (-1,0,0)넣으면 캐릭터가 사라진다.
                 {
-                    playerMesh.transform.localScale = new Vector3(-1, 1, 1); // scale의 x 좌표를 -1로 바꾸어 주면 scale에 들어가는 것이 벡터이니 방향이 바뀌게 된다.
+                    playerSprite.transform.localScale = new Vector3(-1, 1, 1); // scale의 x 좌표를 -1로 바꾸어 주면 scale에 들어가는 것이 벡터이니 방향이 바뀌게 된다.
                 }
                 else
                 {
-                    playerMesh.transform.localScale = new Vector3(1, 1, 1);
+                    playerSprite.transform.localScale = new Vector3(1, 1, 1);
                 }
             }
             else // 공격 중일 때는 방향전환 X

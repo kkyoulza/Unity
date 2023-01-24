@@ -6,6 +6,10 @@ using System.Runtime.Serialization.Formatters.Binary; // BinaryFormatter 클래스 
 [System.Serializable]
 public class StatInformation
 {
+    public int playerLevel;
+    public int playerCntExperience;
+    public int playerMaxExperience;
+
     public float playerMaxSpeed;
     public float playerJumpPower;
     public int playerMaxJumpCount;
@@ -24,6 +28,9 @@ public class StatInformation
 
     public StatInformation()
     {
+        playerLevel = 1;
+        playerMaxExperience = playerLevel * 10;
+
         playerMaxSpeed = 3f;
         playerJumpPower = 5f;
         playerMaxJumpCount = 1;
@@ -52,16 +59,42 @@ public class StatInformation
 public class PlayerStats : MonoBehaviour
 {
     public StatInformation playerStat;
+    
+    public GameObject levelUpEffect;
+    Animator levelUpAnim;
+    AudioSource levelUpAudio;
 
     // Start is called before the first frame update
     void Awake()
     {
         playerStat = new StatInformation(); // 파일 저장 로드 여부를 따져서 조건문을 사용할 것 (나중에)
+        levelUpAnim = levelUpEffect.GetComponent<Animator>();
+        levelUpAudio = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
     void Update()
     {
-                
+        CheckLevelUp();
+    }
+
+    void CheckLevelUp()
+    {
+        if(playerStat.playerCntExperience >= playerStat.playerMaxExperience)
+        {
+            playerStat.playerCntExperience -= playerStat.playerMaxExperience;
+            playerStat.playerLevel++;
+            playerStat.playerMaxExperience = playerStat.playerLevel * 10;
+
+            levelUpEffect.SetActive(true);
+            levelUpAnim.SetTrigger("LevelUp");
+            levelUpAudio.Play();
+            Invoke("offEffect", 0.8f);
+        }
+    }
+
+    void offEffect()
+    {
+        levelUpEffect.SetActive(false);
     }
 }

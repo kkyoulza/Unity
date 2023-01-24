@@ -61,6 +61,11 @@ public class PlayerHit : MonoBehaviour
             }
 
         }
+        
+        if(collision.gameObject.layer == 7)
+        {
+            
+        }
 
     }
 

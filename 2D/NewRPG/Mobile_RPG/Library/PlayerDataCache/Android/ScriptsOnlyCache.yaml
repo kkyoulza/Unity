@@ -2,11 +2,18 @@ ScriptsOnlyBuild:
   usedScripts:
     Assembly-CSharp.dll:
     - Enemy
+    - Item
     - MainCamera
+    - Manager
     - Player
+    - PlayerHit
+    - PlayerItem
     - PlayerSkills
     - PlayerStats
     - SkillInfo
+    - SpawnManager
+    - SpawnPlace
+    - dmgPool
     - dmgSkins
     Unity.2D.Animation.Editor.dll:
     - UnityEditor.U2D.Animation.BoneGizmo
@@ -70,6 +77,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 50
       Script: {instanceID: 0}
+    - Class: 58
+      Script: {instanceID: 0}
     - Class: 61
       Script: {instanceID: 0}
     - Class: 70
@@ -80,6 +89,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 82
       Script: {instanceID: 0}
+    - Class: 83
+      Script: {instanceID: 0}
     - Class: 91
       Script: {instanceID: 0}
     - Class: 95
@@ -89,7 +100,7 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 652}
     - Class: 114
-      Script: {instanceID: 1548}
+      Script: {instanceID: 1484}
     - Class: 114
       Script: {instanceID: 1610}
     - Class: 114
@@ -103,31 +114,45 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 2880}
     - Class: 114
-      Script: {instanceID: 3116}
+      Script: {instanceID: 3046}
     - Class: 114
-      Script: {instanceID: 3362}
+      Script: {instanceID: 3118}
     - Class: 114
-      Script: {instanceID: 3482}
+      Script: {instanceID: 3366}
     - Class: 114
-      Script: {instanceID: 4064}
+      Script: {instanceID: 3486}
     - Class: 114
-      Script: {instanceID: 4250}
+      Script: {instanceID: 3834}
     - Class: 114
-      Script: {instanceID: 4702}
+      Script: {instanceID: 3974}
     - Class: 114
-      Script: {instanceID: 4886}
+      Script: {instanceID: 4050}
     - Class: 114
-      Script: {instanceID: 5044}
+      Script: {instanceID: 4074}
     - Class: 114
-      Script: {instanceID: 5286}
+      Script: {instanceID: 4158}
     - Class: 114
-      Script: {instanceID: 5440}
+      Script: {instanceID: 4262}
     - Class: 114
-      Script: {instanceID: 5534}
+      Script: {instanceID: 4284}
+    - Class: 114
+      Script: {instanceID: 4698}
+    - Class: 114
+      Script: {instanceID: 4718}
+    - Class: 114
+      Script: {instanceID: 4902}
+    - Class: 114
+      Script: {instanceID: 5060}
+    - Class: 114
+      Script: {instanceID: 5302}
+    - Class: 114
+      Script: {instanceID: 5456}
     - Class: 114
       Script: {instanceID: 5550}
     - Class: 114
-      Script: {instanceID: 5730}
+      Script: {instanceID: 5566}
+    - Class: 114
+      Script: {instanceID: 5746}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -146,6 +171,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 224
       Script: {instanceID: 0}
+    - Class: 251
+      Script: {instanceID: 0}
     - Class: 19719996
       Script: {instanceID: 0}
     - Class: 156049354
@@ -157,16 +184,16 @@ ScriptsOnlyBuild:
   scriptHashData:
   - hash:
       serializedVersion: 2
-      Hash: 5ab533713adae59372fb3e10a585c186
-    assemblyName: Unity.Timeline.dll
-    namespaceName: UnityEngine.Timeline
-    className: AnimationPlayableAsset
-  - hash:
-      serializedVersion: 2
       Hash: a6e561615949734e9f12f9b61661f43e
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: Image
+  - hash:
+      serializedVersion: 2
+      Hash: 5ab533713adae59372fb3e10a585c186
+    assemblyName: Unity.Timeline.dll
+    namespaceName: UnityEngine.Timeline
+    className: AnimationPlayableAsset
   - hash:
       serializedVersion: 2
       Hash: 77aaaaa51f7a8d8ff333a879741e47d2
@@ -175,7 +202,7 @@ ScriptsOnlyBuild:
     className: TMP_InputField
   - hash:
       serializedVersion: 2
-      Hash: 095a53eeb4457807cebc6dc667b42472
+      Hash: e20dd4b356ae7c245154f96cd01938b2
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: SkillInfo
@@ -325,6 +352,12 @@ ScriptsOnlyBuild:
     className: TextMeshProUGUI
   - hash:
       serializedVersion: 2
+      Hash: 5bfd7cf2d0b6a931161455cc8f181273
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Manager
+  - hash:
+      serializedVersion: 2
       Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
     assemblyName: UnityEngine.TestRunner.dll
     namespaceName: UnityEngine.TestRunner.Utils
@@ -335,6 +368,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
     className: GraphicRaycaster
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: test
   - hash:
       serializedVersion: 2
       Hash: f40fedccd4adbc76605bea6d67537e4b
@@ -433,6 +472,12 @@ ScriptsOnlyBuild:
     className: Outline
   - hash:
       serializedVersion: 2
+      Hash: b48baf64724301bf3b4774555eb5ea3a
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: PlayerItem
+  - hash:
+      serializedVersion: 2
       Hash: c3d3430df9e3ea95e3e3d587961390fb
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
@@ -455,6 +500,18 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.EventSystems
     className: BaseInput
+  - hash:
+      serializedVersion: 2
+      Hash: 3ac6f97ea2471f9cfc0dd4212e90eb7d
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: SpawnPlace
+  - hash:
+      serializedVersion: 2
+      Hash: 114cbdb3edf6693379624a93639ebfe6
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: PlayerHit
   - hash:
       serializedVersion: 2
       Hash: 18c222bef9ae745ce69ddde9b74337ca
@@ -487,6 +544,12 @@ ScriptsOnlyBuild:
     className: PositionAsUV1
   - hash:
       serializedVersion: 2
+      Hash: 721973ee8b37066e53ac40b5a616e66d
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: SpawnManager
+  - hash:
+      serializedVersion: 2
       Hash: 87ff43d2baf3385cba327d8f803a4ebb
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
@@ -503,6 +566,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.EventSystems
     className: EventTrigger
+  - hash:
+      serializedVersion: 2
+      Hash: 7706c4334785540b562dcf9054ae8860
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: dmgPool
   - hash:
       serializedVersion: 2
       Hash: 87cef3c82381dc586f6772c3e27561b6
@@ -559,7 +628,13 @@ ScriptsOnlyBuild:
     className: ControlTrack
   - hash:
       serializedVersion: 2
-      Hash: 923a35d72deb280388749ecc34101f14
+      Hash: 5c96e1cdb608080511189a1199aefe1a
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: Item
+  - hash:
+      serializedVersion: 2
+      Hash: 5ef21b946a37c16c370228026dd674a9
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: dmgSkins
@@ -613,7 +688,7 @@ ScriptsOnlyBuild:
     className: SpriteSkinEntity
   - hash:
       serializedVersion: 2
-      Hash: fc02540d2fd33f3d3c81249a91f44f10
+      Hash: ae27c1c4ccaf144d936628b3c6cb080d
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Enemy
@@ -649,7 +724,7 @@ ScriptsOnlyBuild:
     className: TMP_ScrollbarEventHandler
   - hash:
       serializedVersion: 2
-      Hash: 7ba79645e31b5a386fd2ce2362b7f2b2
+      Hash: 32b675cdc45a8907240e4d604dd72593
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Player
@@ -685,7 +760,7 @@ ScriptsOnlyBuild:
     className: ActivationPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: d7a328b86c1e75e217edd868730d1741
+      Hash: 96d6dab4a0f3a4b37eaf19173a7e8eaa
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: PlayerStats
@@ -710,4 +785,4 @@ ScriptsOnlyBuild:
   platform: 13
   scenePathNames:
   - Assets/Scenes/Tutorial.unity
-  playerPath: C:/Users/kkyou/Desktop/test/test2_3.apk
+  playerPath: C:/UnityProject/apkTest/test3.apk

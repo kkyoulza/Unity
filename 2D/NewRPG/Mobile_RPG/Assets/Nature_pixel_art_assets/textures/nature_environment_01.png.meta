@@ -478,15 +478,19 @@ TextureImporter:
       name: nature_environment_01_0
       rect:
         serializedVersion: 2
-        x: 112
-        y: 336
+        x: 351
+        y: 244
         width: 48
         height: 48
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
+      physicsShape:
+      - - {x: -24, y: 24}
+        - {x: -24, y: -24}
+        - {x: 24, y: -24}
+        - {x: 24, y: 24}
       tessellationDetail: 0
       bones: []
       spriteID: 84610da3554f5c948a65e39d025836f1
@@ -1151,7 +1155,7 @@ TextureImporter:
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape:
-      - - {x: -24, y: -23}
+      - - {x: -24, y: -24}
         - {x: -24, y: -24}
         - {x: 24, y: -24}
         - {x: 24, y: -7}
@@ -1279,7 +1283,6 @@ TextureImporter:
       - - {x: -24, y: -7}
         - {x: -24, y: -24}
         - {x: 24, y: -24}
-        - {x: 24, y: -23}
       tessellationDetail: 0
       bones: []
       spriteID: 7f7163ac4658794429bae8fcba98c100

@@ -20,7 +20,7 @@ public class dmgPool : MonoBehaviour
             // pools의 각 자리에 리스트를 넣어 준다. (초기화!)
         }
 
-        Debug.Log(gameObject.name + pools.Length);
+        // Debug.Log(gameObject.name + pools.Length);
 
     }
 

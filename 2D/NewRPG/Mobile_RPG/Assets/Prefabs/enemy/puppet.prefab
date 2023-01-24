@@ -88,6 +88,8 @@ GameObject:
   - component: {fileID: 6469019188314022680}
   - component: {fileID: 6469019188314022681}
   - component: {fileID: -2049102434778211949}
+  - component: {fileID: -953990100670259770}
+  - component: {fileID: 6155462599470343661}
   m_Layer: 0
   m_Name: puppet
   m_TagString: Enemy
@@ -201,11 +203,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isFixed: 1
+  velocityDir: 0
+  isUsePool: 0
   monsterType: 0
   monsterCntHP: 100
   monsterMaxHP: 100
   monsterAtk: 5
   monsterDef: 1
+  ranNum: 0
   dmg: {fileID: 4896761988536935723, guid: 5cec5221e8a9d544eba1dae39e6b5871, type: 3}
   dmgPos: {fileID: 6469019188636781547}
   HPBar: {fileID: 6469019186772505771}
@@ -223,6 +228,53 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dmgPrefabs:
   - {fileID: 4896761988536935723, guid: 5cec5221e8a9d544eba1dae39e6b5871, type: 3}
+--- !u!50 &-953990100670259770
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6469019188314022661}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
+--- !u!61 &6155462599470343661
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6469019188314022661}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0.032887876, y: -0.02818966}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 0.8214649, y: 0.9436207}
+  m_EdgeRadius: 0
 --- !u!1 &6469019188324248882
 GameObject:
   m_ObjectHideFlags: 0
