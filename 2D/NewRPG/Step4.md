@@ -371,9 +371,41 @@ inputPlayerInfo는 스킬 이펙트에 있는 Player 오브젝트 속에 있는 
 
 위 사진과 같이 몬스터 내부에 자동으로 몬스터를 때린 플레이어가 추가 되게 된다.
 
+<hr>
+
+### -> 주의할 점!! (오브젝트 풀링 관련)
+
+우리는 오브젝트 풀링을 사용하는 오브젝트에 무언가를 추가하게 되면 그것이 사라질 때도 항상 고려 해 주어야 한다.
+
+즉, 몬스터에 리스트를 추가 해 주었으니 해당 몬스터가 퇴치되었을 때, 해당 리스트는 초기화가 되어야 한다.
+
+**Enemy.cs 중, attacked() 코루틴 함수 일부**
+
+```c#
+if (monsterCntHP <= 0)
+{
+    sprite.color = Color.white;
+
+    sendEXP();
+    attackObj.Clear();
+
+    gameObject.SetActive(false);
+
+    monsterCntHP = monsterMaxHP;
+    HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(1.0f, 0.1f);
+    Debug.Log("몬스터 퇴치!");
+
+    yield break;
+}
+```
+
+위 코드와 같이, attackObj를 경험치 배분(아래에 나옴)후에 Clear를 해 주어야 한다.
+
+<hr>
+
 ### - 몬스터를 퇴치했을 때, 경험치 분배하기
 
-그렇다면 지금부터는 간단하다.
+지금부터는 간단하다.
 
 몬스터가 퇴치되었을 때, 경험치를 추가 해 주는 함수를 작성하면 된다.
 
@@ -510,7 +542,23 @@ public class PlayerStats : MonoBehaviour
 }
 ```
 
+현재 경험치가 최대 경험치 이상이면
 
+현재 경험치에서 최대 경험치를 뺀 값을 현재 경험치 값으로 맞춰 주고, 레벨 업과 함께 최대 경험치 값도 다시 세팅 해 준다.
+
+현재 경험치를 무조건 0으로 리셋하면 경험치가 초과되어 레벨 업 하는 경우를 맞출 수 없게 된다.
+
+<hr>
+
+**레벨 업 이펙트**
+
+![levelUp](https://user-images.githubusercontent.com/66288087/214256689-18245d5e-b192-443f-987e-69e96045b147.png)
+
+레벨 업을 할 때, 위 이펙트를 출력시켜 주었으며, Asset Store에서 효과음을 받아 레벨 업임을 알려 주었다.
+
+![2d_4_1](https://user-images.githubusercontent.com/66288087/214257648-440eb9c9-4384-47ee-8ad9-bb7ef0deb9cf.gif)
+
+레벨업은 위와 같이 진행 된다. (움짤)
 
 
 <hr>
