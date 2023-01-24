@@ -371,7 +371,7 @@ inputPlayerInfo는 스킬 이펙트에 있는 Player 오브젝트 속에 있는 
 
 위 사진과 같이 몬스터 내부에 자동으로 몬스터를 때린 플레이어가 추가 되게 된다.
 
-### 몬스터를 퇴치했을 때, 경험치 분배하기
+### - 몬스터를 퇴치했을 때, 경험치 분배하기
 
 그렇다면 지금부터는 간단하다.
 
@@ -396,6 +396,122 @@ void sendEXP()
 ![image](https://user-images.githubusercontent.com/66288087/214248880-17650a37-35f1-47ec-8045-9d4564c34a7b.png)
 
 그러면 아까 사진과 같이 경험치를 습득하게 될 것이다.
+
+<hr>
+
+### - 레벨 업 여부 체크하여 레벨 업 진행
+
+경험치가 충분하게 쌓였으면, 레벨 업을 해야 한다.
+
+레벨 업에 대한 체크는 경험치 정보를 저장한 PlayerStats.cs에서 하는 것이 좋겠다.
+
+**PlayerStats.cs**
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.Runtime.Serialization.Formatters.Binary; // BinaryFormatter 클래스 사용을 위해 네임스페이스 추가
+
+[System.Serializable]
+public class StatInformation
+{
+    public int playerLevel;
+    public int playerCntExperience;
+    public int playerMaxExperience;
+
+    public float playerMaxSpeed;
+    public float playerJumpPower;
+    public int playerMaxJumpCount;
+
+    public float playerMaxHP;
+    public float playerCntHP;
+    public float playerMaxMP;
+    public float playerCntMP;
+
+    public int playerStrength;
+    public int playerIntelligence;
+    public int playerDefense;
+    public int playerDodge;
+
+    public float afterDelay;
+
+    public StatInformation()
+    {
+        playerLevel = 1;
+        playerMaxExperience = playerLevel * 10;
+
+        playerMaxSpeed = 3f;
+        playerJumpPower = 5f;
+        playerMaxJumpCount = 1;
+
+        playerMaxHP = 50;
+        playerCntHP = 50;
+        playerMaxMP = 10;
+        playerCntMP = 10;
+
+        playerStrength = 10;
+        playerIntelligence = 5;
+        playerDefense = 3;
+        playerDodge = 1;
+
+        afterDelay = 0.2f;
+    }
+
+    public void minusOrAddHP(int num)
+    {
+        playerCntHP += num;
+    }
+
+
+}
+
+public class PlayerStats : MonoBehaviour
+{
+    public StatInformation playerStat;
+    
+    public GameObject levelUpEffect;
+    Animator levelUpAnim;
+    AudioSource levelUpAudio;
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        playerStat = new StatInformation(); // 파일 저장 로드 여부를 따져서 조건문을 사용할 것 (나중에)
+        levelUpAnim = levelUpEffect.GetComponent<Animator>();
+        levelUpAudio = GetComponent<AudioSource>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        CheckLevelUp();
+    }
+
+    void CheckLevelUp()
+    {
+        if(playerStat.playerCntExperience >= playerStat.playerMaxExperience)
+        {
+            playerStat.playerCntExperience -= playerStat.playerMaxExperience;
+            playerStat.playerLevel++;
+            playerStat.playerMaxExperience = playerStat.playerLevel * 10;
+
+            levelUpEffect.SetActive(true);
+            levelUpAnim.SetTrigger("LevelUp");
+            levelUpAudio.Play();
+            Invoke("offEffect", 0.89f);
+        }
+    }
+
+    void offEffect()
+    {
+        levelUpEffect.SetActive(false);
+    }
+}
+```
+
+
+
 
 <hr>
 
