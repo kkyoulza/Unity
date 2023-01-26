@@ -193,6 +193,319 @@ setDialogType 이 상황을 나타내는 번호이며, cntDialogCode가 대화 �
 
 <hr>
 
+## NPC 제작
+
+받은 골드메탈님의 무료 에셋을 통하여 NPC를 만들어 주었다.
+
+![image](https://user-images.githubusercontent.com/66288087/214766378-cea311a3-77df-4ac0-b635-7162082533d7.png)
+
+이런 식으로 배치하였다.
+
+<hr>
+
+### NPC 스크립트
+
+NPC는 앞서 임시로 Manager.cs에 만들었던 코드들을 그대로 가져와 배치하였으며, NPC와 대화를 해야 한다는 점을 고려하여 대화 시작 함수도 따로 만들어 주었다.
+
+즉,
+
+- **대화 시작 함수**(파일을 읽는 함수를 먼저 호출한 뒤, UI에 대사를 출력하는 함수 호출)
+- **UI에 대사를 출력하는 함수**(만약 UI가 꺼져 있다면 UI를 키고, index가 딕셔너리 길이를 넘지 않을 때 대사를 출력한다.)
+- **파일을 읽는 함수**(파일을 읽는 함수, NPC 코드와 NPC에 설정 된 상황 변수에 맞는 대화 뭉텅이를 가져온다.)
+
+로 일차적으로 설정 하였으며, 퀘스트 정보를 세팅 해 주는 함수 등도 구현 할 예정이다.
+
+위 세 가지 함수가 구현 된 NPC코드를 
+
+**NPC.cs **
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine.UI;
+using UnityEngine;
+using TMPro;
+
+public class NPC : MonoBehaviour
+{
+    // NPC Info
+    public int npcCode; // npc 고유의 코드
+
+    public Dictionary<int, string> dialogDictionary = new Dictionary<int, string>(); // 대화 순서 - 대화 내용
+    public Dictionary<int, string> nameDictionary = new Dictionary<int, string>(); // 대화 순서 - 이름
+
+    public int setDialogType; // 어떤 상황의 대화 뭉탱이를 가져 올 것인가?
+    public int cntDialogCode; // 현재 대화가 어디까지 진행 되었는가? (이것은 대화를 끝낼 때, 무조건 0으로 세팅 해 주어야 한다.)
+
+    public TextMeshPro NPCName;
+
+    // UI Info
+    public GameObject DialogPanel; // 대화 창
+    public GameObject NextBtn; // 다음 버튼
+    public GameObject OKBtn; // 수락 버튼
+    public GameObject CancelBtn; // 취소 버튼
+
+    public Text NameTxt; // 대화 주체 이름
+    public Text DialogTxt; // 대화 텍스트
+
+    
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        DialogPanel = GameObject.FindGameObjectWithTag("UIDialog").transform.GetChild(0).gameObject;
+        NextBtn = DialogPanel.transform.GetChild(1).gameObject;
+        NameTxt = DialogPanel.transform.GetChild(0).gameObject.GetComponent<Text>();
+        DialogTxt = DialogPanel.transform.GetChild(2).gameObject.GetComponent<Text>();
+        NextBtn.GetComponent<Button>().onClick.AddListener(ShowDialogUI);
+        NPCName.text = this.name;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void StartTalkNPC()
+    {
+        ReadFile(Application.dataPath + "/test.csv");
+        ShowDialogUI();
+    }
+
+    void ShowDialogUI() // 이것은 NextBtn에서도 사용 됨
+    {
+        if (!DialogPanel.activeSelf)
+            DialogPanel.SetActive(true);
+
+        if (cntDialogCode >= nameDictionary.Count) // index가 딕셔너리 크기랑 같아지게 되면
+        {
+            DialogPanel.SetActive(false);
+            Time.timeScale = 1.0f;
+            dialogDictionary.Clear(); // 바로 클리어를 해 주어야 다른 상황의 대화 or 다른 NPC와의 대화에서 파일을 잘 읽을 수 있다.
+            nameDictionary.Clear();
+            cntDialogCode = 0; // 인덱스를 0으로 초기화 하고 리턴한다.
+            return;
+        }
+
+        NameTxt.text = nameDictionary[cntDialogCode];
+        DialogTxt.text = dialogDictionary[cntDialogCode];
+        cntDialogCode++;
+    }
+
+    public void ReadFile(string filePath)
+    {
+        FileInfo fileInfo = new FileInfo(filePath);
+        string value = "";
+
+        if (fileInfo.Exists)
+        {
+            bool isEnd = false;
+            StreamReader reader = new StreamReader(filePath);
+            while (!isEnd)
+            {
+                value = reader.ReadLine();
+                if (value == null)
+                {
+                    isEnd = true;
+                    break;
+                }
+                var data_values = value.Split(',');
+
+                if (data_values[1] == npcCode.ToString() && data_values[3] == setDialogType.ToString()) // NPC 코드와 미리 세팅 된 상황 번호가 같을 때
+                {
+                    // 딕셔너리에 저장
+                    dialogDictionary.Add(int.Parse(data_values[2]), data_values[5]);
+                    nameDictionary.Add(int.Parse(data_values[2]), data_values[4]);
+                }
+            }
+            reader.Close();
+        }
+        else
+            value = "파일이 없습니다.";
+
+        Debug.Log(nameDictionary.Count);
+
+        return;
+    }
+
+
+}
+```
+
+NPC와의 대화에서는 UI 등장이 필수이기에 UI를 연결 해 주어야 한다. 하지만, NPC를 Prefab으로 만들어 주게 되면 UI를 public GameObject에 넣은 것이 다 초기화된다.
+
+따라서 코드 내부에 있는 Awake()에서 FindGameObjectWithTag를 이용하여 Panel GameOject를 찾아 내었다. (대화 창 패널은 UIDialog라는 tag 세팅)
+
+![image](https://user-images.githubusercontent.com/66288087/214766842-93b1c8e2-09dc-4927-9199-c8b98860c271.png)
+
+그런데 Dialog는 평소에는 비활성화 된 상태이기 때문에 FindGameObjectWithTag가 통하지 않는다.
+
+따라서 위 계층 사진에서 DialogLine에 UIDialog 태그를 세팅하고, 해당 오브젝트의 자식 오브젝트를 찾아 패널 오브젝트에 넣는 작업을 먼저 진행하였다.
+
+아래는 Awake() 부분을 떼어 왔다.
+
+```c#
+ void Awake()
+{
+    DialogPanel = GameObject.FindGameObjectWithTag("UIDialog").transform.GetChild(0).gameObject;
+    NextBtn = DialogPanel.transform.GetChild(1).gameObject;
+    NameTxt = DialogPanel.transform.GetChild(0).gameObject.GetComponent<Text>();
+    DialogTxt = DialogPanel.transform.GetChild(2).gameObject.GetComponent<Text>();
+    NextBtn.GetComponent<Button>().onClick.AddListener(ShowDialogUI);
+    NPCName.text = this.name;
+}
+```
+
+DialogPanel이 위에서 말한 것 처럼 자식 오브젝트를 가져 왔음을 볼 수 있다.
+
+하위 계층에 있는 버튼들도 자식 오브젝트 가져 오듯이 가져왔다.
+
+<hr>
+
+### 플레이어 상호작용 버튼 세팅
+
+이제, 플레이어가 상호작용을 할 수 있게 버튼을 세팅 해 보도록 하자
+
+**상호작용 버튼**은 **PC**로는 **스페이스바**로 세팅하였고, **모바일**로는 일단은 **공격 버튼이 NPC 근처에서 상호작용 버튼으로 바뀌는 것**을 생각하고 있다.
+
+(만약 NPC 근처에 몬스터가 있다면 공격이 안되는 문제가 생길 수 있겠네.. 그렇지만 아예 배치를 근처에 해 놓지 않으면 될거 같기도 하다)
+
+Project Settings에 들어가 상호작용 버튼을 설정한다.
+
+![image](https://user-images.githubusercontent.com/66288087/214769987-0bec0ed3-5db4-4358-96f5-fed18767e5da.png)
+
+Space바에 상호작용 버튼을 세팅 해 주었다.
+
+상호작용 버튼이 작동하는 방식은 아래 그림과 같다.
+
+![image](https://user-images.githubusercontent.com/66288087/214770675-ab10db31-ff74-4ffd-93f9-66f75017c2fe.png)
+
+OnTriggerStay2D를 통해 플레이어 Trigger와 닿아 있는 상태인 오브젝트를 감지한다.
+
+해당 오브젝트가 NPC라면 nearObject에 해당 오브젝트를 세팅 해 준다.
+
+물론 OnTriggerExit2D를 통하여 플레이어와 닿아 있는 상태가 끝난다면 nearObject를 null로 다시 돌린다.
+
+nearObject에 NPC가 있다는 것은 계속해서 NPC 근처에 있다는 것이니 상호작용 버튼을 눌러주면 NPC와 대화가 시작되게 만들어 주면 된다.
+
+**Player.cs코드**
+
+```c#
+public void CheckInterAction()
+{
+    if(interActionKey && nearObject != null)
+    {
+        Time.timeScale = 0f;
+        playerHit.nearObject.GetComponent<NPC>().StartTalkNPC();
+    }
+}
+```
+
+처음에 Player.cs 코드 내에 만든 상호작용 함수이다.
+
+Player.cs 함수에 OnTriggerStay2D, OnTriggerExit2D를 만들어 주어 NPC와 닿으면 nearObject를 채우려 하였다.
+
+하지만, 역시 처음에 몬스터 피격을 할 때가 생각 나는가?
+
+**자식 오브젝트에 있는 Trigger, Collider는 RigidBody가 있는 부모 오브젝트에서 처리** 한다는 사실을..
+
+이번에도 마찬가지다.
+
+NPC를 향해 공격을 하게 되면 **공격 범위만 NPC에 닿게 되어도 nearObject가 채워지게 되었다.**
+
+따라서 nearObject를 PlayerHit에 만들어 주고, playerHit에 OnTriggerStay2D, OnTriggerExit2D를 만들어 주어 NPC와의 상호작용을 처리 해 주었다.
+
+**PlayerHit.cs 코드 중 일부**
+
+```c#
+private void OnTriggerStay2D(Collider2D collision)
+{
+
+    if (collision.gameObject.layer == 8)
+    {
+        if (!isHit)
+        {
+            isHit = true;
+            int dmg = (collision.gameObject.GetComponent<Enemy>().monsterAtk - statInfo.playerDefense);                  
+            // Debug.Log(GetComponentInChildren<BoxCollider2D>().gameObject.name);
+            // Debug.Log(rigid.velocity.x);
+
+            StartCoroutine(playerHit(dmg));
+
+        }
+
+    }
+
+    if(collision.gameObject.layer == 9)
+    {
+        nearObject = collision.gameObject;
+        Debug.Log(nearObject);
+    }
+
+}
+
+private void OnTriggerExit2D(Collider2D collision)
+{
+    if (collision.gameObject.layer == 9)
+    {
+        nearObject = null;
+        Debug.Log(nearObject);
+    }
+
+}
+```
+<br>
+
+![image](https://user-images.githubusercontent.com/66288087/214772504-a4c3035a-1889-4c85-81db-1c77a4328217.png)
+
+NPC 레이어는 위 사진과 같이 9번으로 설정하였기에 collision.gameObject.layer == 9가 될 때, nearObject를 세팅 해 준다.
+
+그리고 Player.cs에서
+
+```c#
+ public void CheckInterAction()
+{
+    if(interActionKey && playerHit.nearObject != null)
+    {
+        Time.timeScale = 0f;
+        playerHit.nearObject.GetComponent<NPC>().StartTalkNPC();
+    }
+}
+```
+
+PlayerHit에 있는 nearObject를 이용하였다.
+
+<hr>
+
+### 대화 장면
+
+![image](https://user-images.githubusercontent.com/66288087/214774654-3ba31f4e-5b1b-4875-bc07-6b8c2c2e2413.png)
+
+![image](https://user-images.githubusercontent.com/66288087/214774693-79d15016-6a3f-4107-8f96-803189a1de64.png)
+
+Next 버튼을 누르면 대사가 넘어감을 볼 수 있다.
+
+<hr>
+
+## NPC 심화 -> 몬스터 퇴치 퀘스트 부여
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
