@@ -477,6 +477,53 @@ NPC 레이어는 위 사진과 같이 9번으로 설정하였기에 collision.ga
 
 PlayerHit에 있는 nearObject를 이용하였다.
 
+또한, 상호작용 때, Time.timeScale을 0으로 설정하였는데, 이것은 모바일 게임 특성상 대화를 시작하게 되면 화면을 다 가리게 되어 몬스터가 오거나 다른 상황에서 제대로 대응하기 어렵다.
+
+따라서 잠시 대화를 할 동안에는 시간을 멈추어 주었다.
+
+NPC.cs 코드에서 대화를 보여주는 함수인 ShowDialog()를 잘 보게 되면 대화를 끝마칠 때, Time.timeScale을 1로 설정하여 시간을 다시 흐르게 하는 것을 볼 수 있을 것이다.
+
+<hr>
+
+### 모바일에서의 상호작용
+
+모바일에서는 공격 버튼을 nearObject가 있을 때 한정으로 상호작용 버튼화 시켜주면 된다.
+
+**Player.cs**
+
+```c#
+public void GetButtonDown(string whatBtn)
+{
+    switch (whatBtn)
+    {
+        case "L":
+            directionValue = -1;
+            break;
+        case "R":
+            directionValue = 1;
+            break;
+        case "Jump":
+            jumpKey = true;
+            tojump();
+            break;
+        case "Attack":
+            if(playerHit.nearObject == null)
+            {
+                attackKey = true;
+                normalAttack();
+            }
+            else
+            {
+                interActionKey = true;
+                CheckInterAction();
+            }
+            break;
+    }
+}
+```
+
+Attack 부분에 새로 조건을 추가 해 주어 NPC 근처에서 상호작용을 할 수 있게 하였다.
+
 <hr>
 
 ### 대화 장면
@@ -491,8 +538,172 @@ Next 버튼을 누르면 대사가 넘어감을 볼 수 있다.
 
 ## NPC 심화 -> 몬스터 퇴치 퀘스트 부여
 
+몬스터 퇴치 퀘스트 부여 이전에, 먼저 추가를 할 것이 있다.
+
+<hr>
+
+### 보상 규칙 추가
+
+바로 보상을 주는 대화를 추가하는 것이다.
+
+앞서 대화를 저장하는 csv 파일을 봤을 텐데, 거기에서 자동으로 보상을 부여할 수 있게끔 하는 규칙을 추가 할 것이다.
+
+#### Type 수정
+
+Type은 위에서는 0과 1밖에 없었다.
+
+새롭게 2를 추가하여, Type에 2가 나오게 되면 대화 내용을 리워드 지급 관련으로 해석하라는 의미가 된다.
+
+**대화 내용 규칙**은 아래와 같다.
+
+앞서 퀘스트 내용을 주는 대화내용과 형태는 같다.
+
+하지만 일부가 다른데,
+
+e - exp 경험치이다.
+g - gold 골드이다.
+i - item 아이템이다.
+
+즉, 예를 들어 e.0.1500:g.0.4000:i.2.3: 라고 하면, 경험치 +1500, 골드 +4000, 2번 코드 아이템 +3개 인 것이다.
+
+골드와 경험치에 코드는 형태를 통일시키기 위해 적은 것이다.
+
+<hr>
+
+### 대화 딕셔너리 변경! (리팩토링!)
+
+퀘스트 함수를 만들기 전에 변경해야 할 사항이 있다.
+
+바로 딕셔너리인데.. 너무 고정관념에 빠져 있었다.
+
+**Dictionary**의 **Value 값 속**에 **배열**이 들어가지 못할 것이라 생각했던 것이다...
+
+Value값 속에 배열을 넣게 되면 이름 딕셔너리, 대화 딕셔너리 두 개를 만들 필요가 없어지게 되며, 모든 정보들을 한 번에 가져올 수 있게 되어 Type을 체크해야 하는 퀘스트 체크 함수와도 딱 맞게 된다.
+
+<br>
+
+**NPC.cs 딕셔너리 줄임 버전**
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine.UI;
+using UnityEngine;
+using TMPro;
+
+public class NPC : MonoBehaviour
+{
+    // NPC Info
+    public int npcCode; // npc 고유의 코드
+
+    public Dictionary<int, string[]> dicitonaryInfo = new Dictionary<int, string[]>(); // 대화 순서 - 대화 Bundle
+
+    public int setDialogType; // 어떤 상황의 대화 뭉탱이를 가져 올 것인가?
+    public int cntDialogCode; // 현재 대화가 어디까지 진행 되었는가? (이것은 대화를 끝낼 때, 무조건 0으로 세팅 해 주어야 한다.)
+
+    public TextMeshPro NPCName;
+
+    // UI Info
+    public GameObject DialogPanel; // 대화 창
+    public GameObject NextBtn; // 다음 버튼
+    public GameObject OKBtn; // 수락 버튼
+    public GameObject CancelBtn; // 취소 버튼
+
+    public Text NameTxt; // 대화 주체 이름
+    public Text DialogTxt; // 대화 텍스트
+
+    
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        DialogPanel = GameObject.FindGameObjectWithTag("UIDialog").transform.GetChild(0).gameObject;
+        NextBtn = DialogPanel.transform.GetChild(1).gameObject;
+        NameTxt = DialogPanel.transform.GetChild(0).gameObject.GetComponent<Text>();
+        DialogTxt = DialogPanel.transform.GetChild(2).gameObject.GetComponent<Text>();
+        NextBtn.GetComponent<Button>().onClick.AddListener(ShowDialogUI);
+        NPCName.text = this.name;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void StartTalkNPC()
+    {
+        ReadFile(Application.dataPath + "/test.csv");
+        ShowDialogUI();
+    }
+
+    void ShowDialogUI() // 이것은 NextBtn에서도 사용 됨
+    {
+        if (!DialogPanel.activeSelf)
+            DialogPanel.SetActive(true);
+
+        if (cntDialogCode >= dicitonaryInfo.Count) // index가 딕셔너리 크기랑 같아지게 되면
+        {
+            DialogPanel.SetActive(false);
+            Time.timeScale = 1.0f;
+            dicitonaryInfo.Clear(); // 바로 클리어를 해 주어야 다른 상황의 대화 or 다른 NPC와의 대화에서 파일을 잘 읽을 수 있다.
+            cntDialogCode = 0; // 인덱스를 0으로 초기화 하고 리턴한다.
+            return;
+        }
+
+        NameTxt.text = dicitonaryInfo[cntDialogCode][4];
+        DialogTxt.text = dicitonaryInfo[cntDialogCode][5];
+        cntDialogCode++;
+    }
+
+    public void ReadFile(string filePath)
+    {
+        FileInfo fileInfo = new FileInfo(filePath);
+        string value = "";
+
+        if (fileInfo.Exists)
+        {
+            bool isEnd = false;
+            StreamReader reader = new StreamReader(filePath);
+            while (!isEnd)
+            {
+                value = reader.ReadLine();
+                if (value == null)
+                {
+                    isEnd = true;
+                    break;
+                }
+                var data_values = value.Split(',');
+
+                if (data_values[1] == npcCode.ToString() && data_values[3] == setDialogType.ToString())  // NPC 코드와 미리 세팅 된 상황 번호가 같을 때
+                {
+                    // 필요 정보만을 딕셔너리에 저장
+                    dicitonaryInfo.Add(int.Parse(data_values[2]), data_values); // 대화 번들 추가(한 줄로 전부!)
+                }
+            }
+            reader.Close();
+        }
+        else
+            value = "파일이 없습니다.";
+
+        Debug.Log(dicitonaryInfo.Count);
+
+        return;
+    }
 
 
+}
+```
+<br>
+
+![image](https://user-images.githubusercontent.com/66288087/214989821-b53faed7-379f-4e9b-aab8-8aff23eaf481.png)
+
+**결과는 똑같이** 나오지만, **사용하는 딕셔너리를 하나로 줄이고**, **한 개의 딕셔너리**로 **퀘스트 관련 함수까지 확장**하였기에 더욱 코드가 괜찮아졌다.
+
+<hr>
+
+### 퀘스트 관련 함수 제작
 
 
 
