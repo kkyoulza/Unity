@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
@@ -11,13 +13,13 @@ public class Player : MonoBehaviour
 
     bool jumpKey;
     bool attackKey;
+    bool interActionKey;
 
     // 상태에 대한 변수들
     int jumpCount;
 
     public bool isAttack; // 공격 중일 때
     public bool isHit; // 피격 당하는 중
-
 
     // 움직임 관련
     Rigidbody2D rigid;
@@ -30,12 +32,16 @@ public class Player : MonoBehaviour
     StatInformation statInfo;
     Skills[] skillInfos; // 스킬 명단들
 
+    public PlayerHit playerHit;
+
     // 플레이어 외관 및 스킬 방향
     SpriteRenderer sprite;
 
     public GameObject playerSprite; // 플레이어 외관
     public GameObject atkPoint; // 공격 이펙트가 나가는 포인트
     public GameObject dmgPos; // 플레이어 피격 데미지 생성 위치
+
+    public TextMeshPro PlayerName;
 
     // 애니메이션
     Animator anim;
@@ -58,6 +64,8 @@ public class Player : MonoBehaviour
 
         pooling = GetComponent<dmgPool>();
         jumpCount = statInfo.playerMaxJumpCount;
+
+        PlayerName.text = statInfo.playerName;
     }
 
     // Update is called once per frame
@@ -67,9 +75,11 @@ public class Player : MonoBehaviour
         getKeys();
         tojump();
         normalAttack();
+        CheckInterAction();
         checkLanding();
         checkSprite();
         toStop();
+
     }
 
     void FixedUpdate()
@@ -80,8 +90,18 @@ public class Player : MonoBehaviour
 
     void getKeys()
     {
-        jumpKey = Input.GetKeyDown(KeyCode.LeftAlt); // 왼쪽 Alt 키를 통해 점프를 할 수 있음
-        attackKey = Input.GetKeyDown(KeyCode.LeftControl); // 왼쪽 Control 키를 통해 공격한다. 
+        jumpKey = Input.GetButtonDown("JumpKey"); // 왼쪽,오른쪽 Alt 키를 통해 점프를 할 수 있음
+        attackKey = Input.GetKeyDown(KeyCode.LeftControl); // 왼쪽 Control 키를 통해 공격한다.
+        interActionKey = Input.GetButtonDown("InterAction"); // 상호작용 키
+    }
+
+    public void CheckInterAction()
+    {
+        if(interActionKey && playerHit.nearObject != null)
+        {
+            Time.timeScale = 0f;
+            playerHit.nearObject.GetComponent<NPC>().StartTalkNPC();
+        }
     }
 
     public void normalAttack()
@@ -222,8 +242,16 @@ public class Player : MonoBehaviour
                 tojump();
                 break;
             case "Attack":
-                attackKey = true;
-                normalAttack();
+                if(playerHit.nearObject == null)
+                {
+                    attackKey = true;
+                    normalAttack();
+                }
+                else
+                {
+                    interActionKey = true;
+                    CheckInterAction();
+                }
                 break;
         }
     }
@@ -245,8 +273,10 @@ public class Player : MonoBehaviour
                 break;
             case "Attack":
                 attackKey = false;
+                interActionKey = false;
                 break;
         }
     }
+
 
 }

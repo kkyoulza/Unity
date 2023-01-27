@@ -203,17 +203,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isFixed: 1
+  isChange: 0
   velocityDir: 0
+  ranNum: 0
+  vel: {x: 0, y: 0}
   isUsePool: 0
+  isHit: 0
   monsterType: 0
+  monsterCode: 0
+  attackObj: []
   monsterCntHP: 100
   monsterMaxHP: 100
   monsterAtk: 5
   monsterDef: 1
-  ranNum: 0
+  addExp: 0
   dmg: {fileID: 4896761988536935723, guid: 5cec5221e8a9d544eba1dae39e6b5871, type: 3}
   dmgPos: {fileID: 6469019188636781547}
   HPBar: {fileID: 6469019186772505771}
+  bronzeCoin: {fileID: 0}
 --- !u!114 &-2049102434778211949
 MonoBehaviour:
   m_ObjectHideFlags: 0

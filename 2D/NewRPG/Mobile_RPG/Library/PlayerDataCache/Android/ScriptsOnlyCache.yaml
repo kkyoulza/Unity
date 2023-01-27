@@ -3,8 +3,10 @@ ScriptsOnlyBuild:
     Assembly-CSharp.dll:
     - Enemy
     - Item
+    - LogManager
     - MainCamera
     - Manager
+    - NPC
     - Player
     - PlayerHit
     - PlayerItem
@@ -39,10 +41,8 @@ ScriptsOnlyBuild:
     UnityEditor.Graphs.dll:
     - UnityEditor.Graphs.AnimationBlendTree.Graph
     - UnityEditor.Graphs.AnimationBlendTree.GraphGUI
-    - UnityEditor.Graphs.AnimationStateMachine.AnyStateNode
     - UnityEditor.Graphs.AnimationStateMachine.Graph
     - UnityEditor.Graphs.AnimationStateMachine.GraphGUI
-    - UnityEditor.Graphs.AnimationStateMachine.StateNode
     - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
@@ -70,6 +70,10 @@ ScriptsOnlyBuild:
     - Class: 23
       Script: {instanceID: 0}
     - Class: 28
+      Script: {instanceID: 0}
+    - Class: 33
+      Script: {instanceID: 0}
+    - Class: 43
       Script: {instanceID: 0}
     - Class: 48
       Script: {instanceID: 0}
@@ -104,55 +108,59 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 1610}
     - Class: 114
-      Script: {instanceID: 1868}
+      Script: {instanceID: 1720}
     - Class: 114
-      Script: {instanceID: 2274}
+      Script: {instanceID: 1870}
     - Class: 114
-      Script: {instanceID: 2282}
+      Script: {instanceID: 2276}
     - Class: 114
-      Script: {instanceID: 2708}
+      Script: {instanceID: 2284}
     - Class: 114
-      Script: {instanceID: 2880}
+      Script: {instanceID: 2664}
     - Class: 114
-      Script: {instanceID: 3046}
+      Script: {instanceID: 2712}
     - Class: 114
-      Script: {instanceID: 3118}
+      Script: {instanceID: 2884}
     - Class: 114
-      Script: {instanceID: 3366}
+      Script: {instanceID: 3050}
     - Class: 114
-      Script: {instanceID: 3486}
+      Script: {instanceID: 3122}
     - Class: 114
-      Script: {instanceID: 3834}
+      Script: {instanceID: 3370}
     - Class: 114
-      Script: {instanceID: 3974}
+      Script: {instanceID: 3490}
     - Class: 114
-      Script: {instanceID: 4050}
+      Script: {instanceID: 3838}
     - Class: 114
-      Script: {instanceID: 4074}
+      Script: {instanceID: 3978}
     - Class: 114
-      Script: {instanceID: 4158}
+      Script: {instanceID: 4054}
     - Class: 114
-      Script: {instanceID: 4262}
+      Script: {instanceID: 4078}
     - Class: 114
-      Script: {instanceID: 4284}
+      Script: {instanceID: 4162}
     - Class: 114
-      Script: {instanceID: 4698}
+      Script: {instanceID: 4266}
     - Class: 114
-      Script: {instanceID: 4718}
+      Script: {instanceID: 4288}
     - Class: 114
-      Script: {instanceID: 4902}
+      Script: {instanceID: 4702}
     - Class: 114
-      Script: {instanceID: 5060}
+      Script: {instanceID: 4722}
     - Class: 114
-      Script: {instanceID: 5302}
+      Script: {instanceID: 4906}
     - Class: 114
-      Script: {instanceID: 5456}
+      Script: {instanceID: 5064}
     - Class: 114
-      Script: {instanceID: 5550}
+      Script: {instanceID: 5306}
     - Class: 114
-      Script: {instanceID: 5566}
+      Script: {instanceID: 5460}
     - Class: 114
-      Script: {instanceID: 5746}
+      Script: {instanceID: 5554}
+    - Class: 114
+      Script: {instanceID: 5570}
+    - Class: 114
+      Script: {instanceID: 5750}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -238,6 +246,12 @@ ScriptsOnlyBuild:
     className: LayoutElement
   - hash:
       serializedVersion: 2
+      Hash: bbf58f125a452f39413cea7f84ec319b
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: LogManager
+  - hash:
+      serializedVersion: 2
       Hash: 6bc76e17f0d5e93f3eea7f5a2fe227f3
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -310,6 +324,12 @@ ScriptsOnlyBuild:
     className: IKManager2D
   - hash:
       serializedVersion: 2
+      Hash: aca0dff0dd48863e731b44f56f68f9b8
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: NPC
+  - hash:
+      serializedVersion: 2
       Hash: a1aa98c78061c6f03a8c124cda576e67
     assemblyName: UnityEngine.UI.dll
     namespaceName: UnityEngine.UI
@@ -352,7 +372,7 @@ ScriptsOnlyBuild:
     className: TextMeshProUGUI
   - hash:
       serializedVersion: 2
-      Hash: 5bfd7cf2d0b6a931161455cc8f181273
+      Hash: d7bedc558c1e3a208ae624cdc20944dd
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Manager
@@ -508,7 +528,7 @@ ScriptsOnlyBuild:
     className: SpawnPlace
   - hash:
       serializedVersion: 2
-      Hash: 114cbdb3edf6693379624a93639ebfe6
+      Hash: d14c484d53368b653645525d3936b9d1
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: PlayerHit
@@ -688,7 +708,7 @@ ScriptsOnlyBuild:
     className: SpriteSkinEntity
   - hash:
       serializedVersion: 2
-      Hash: ae27c1c4ccaf144d936628b3c6cb080d
+      Hash: 154c5d5f034203578c10b35213505c83
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Enemy
@@ -724,7 +744,7 @@ ScriptsOnlyBuild:
     className: TMP_ScrollbarEventHandler
   - hash:
       serializedVersion: 2
-      Hash: 32b675cdc45a8907240e4d604dd72593
+      Hash: 1ca33a1cfea9d8bd8f986e6eeb462832
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: Player
@@ -760,7 +780,7 @@ ScriptsOnlyBuild:
     className: ActivationPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: 96d6dab4a0f3a4b37eaf19173a7e8eaa
+      Hash: f9221f5dfbdc2b427bcf9e7e86d2e030
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: PlayerStats
@@ -785,4 +805,4 @@ ScriptsOnlyBuild:
   platform: 13
   scenePathNames:
   - Assets/Scenes/Tutorial.unity
-  playerPath: C:/UnityProject/apkTest/test3.apk
+  playerPath: C:/UnityProject/apkTest/test4.apk

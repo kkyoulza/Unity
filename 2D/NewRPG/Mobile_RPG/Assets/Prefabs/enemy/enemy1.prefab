@@ -129,15 +129,17 @@ MonoBehaviour:
   isUsePool: 1
   isHit: 0
   monsterType: 0
+  monsterCode: 1
   attackObj: []
-  monsterCntHP: 500
-  monsterMaxHP: 500
+  monsterCntHP: 10
+  monsterMaxHP: 10
   monsterAtk: 5
   monsterDef: 1
   addExp: 6
   dmg: {fileID: 4896761988536935723, guid: 5cec5221e8a9d544eba1dae39e6b5871, type: 3}
   dmgPos: {fileID: 9046508528352736957}
   HPBar: {fileID: 9046508528225771006}
+  bronzeCoin: {fileID: 7868062690544622663, guid: e937e55637372f9468b82e34c1c5d9f8, type: 3}
 --- !u!114 &9046508526507056459
 MonoBehaviour:
   m_ObjectHideFlags: 0

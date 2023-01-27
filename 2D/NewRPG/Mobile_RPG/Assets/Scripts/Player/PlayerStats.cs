@@ -6,6 +6,8 @@ using System.Runtime.Serialization.Formatters.Binary; // BinaryFormatter 클래스 
 [System.Serializable]
 public class StatInformation
 {
+    public string playerName;
+
     public int playerLevel;
     public int playerCntExperience;
     public int playerMaxExperience;
@@ -28,6 +30,8 @@ public class StatInformation
 
     public StatInformation()
     {
+        playerName = "James";
+
         playerLevel = 1;
         playerMaxExperience = playerLevel * 10;
 
@@ -53,13 +57,14 @@ public class StatInformation
         playerCntHP += num;
     }
 
-
 }
 
 public class PlayerStats : MonoBehaviour
 {
+    // 스탯 정보
     public StatInformation playerStat;
     
+    // 레벨 업 관련
     public GameObject levelUpEffect;
     Animator levelUpAnim;
     AudioSource levelUpAudio;

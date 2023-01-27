@@ -29,10 +29,12 @@ public class Item : MonoBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
+            Debug.Log(collision.gameObject.name);
             switch (type)
             {
                 case ItemType.coin:
-                    collision.gameObject.GetComponent<PlayerItem>().addGold(10);
+                    collision.gameObject.GetComponent<PlayerItem>().addGold(addGold);
+                    Debug.Log("add Bronze Coin!");
                     Destroy(gameObject);
                     break;
             }
@@ -51,5 +53,6 @@ public class Item : MonoBehaviour
         }
 
     }
+
 
 }

@@ -23,6 +23,9 @@ public class PlayerHit : MonoBehaviour
 
     Rigidbody2D rigid;
 
+    // NPC¿Í ´ê¾ÒÀ» ¶§
+    public GameObject nearObject;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -62,9 +65,20 @@ public class PlayerHit : MonoBehaviour
 
         }
         
-        if(collision.gameObject.layer == 7)
+        if(collision.gameObject.layer == 9)
         {
-            
+            nearObject = collision.gameObject;
+            // Debug.Log(nearObject);
+        }
+
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.layer == 9)
+        {
+            nearObject = null;
+            // Debug.Log(nearObject);
         }
 
     }

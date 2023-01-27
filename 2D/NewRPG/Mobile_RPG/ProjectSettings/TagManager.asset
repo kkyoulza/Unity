@@ -10,6 +10,9 @@ TagManager:
   - IceType
   - LandType
   - Platform
+  - UIDialog
+  - NPC
+  - AttackBtn
   layers:
   - Default
   - TransparentFX
@@ -20,7 +23,7 @@ TagManager:
   - PlayerHit
   - Platform
   - Enemy
-  - 
+  - NPC
   - Atk
   - AtkSkill
   - DefSkill

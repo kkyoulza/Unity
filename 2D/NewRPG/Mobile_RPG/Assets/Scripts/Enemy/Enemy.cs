@@ -24,6 +24,7 @@ public class Enemy : MonoBehaviour
     // 정보 관련
     public enum Type { Normal, Fire, Ice, Land };
     public Type monsterType; // 몬스터 속성
+    public int monsterCode; // 몬스터 코드
 
     public List<GameObject> attackObj; // 몬스터를 타격하는 오브젝트 모음
 
@@ -45,7 +46,10 @@ public class Enemy : MonoBehaviour
     SpriteRenderer sprite;
     Animator anim;
 
-    // Start is called before the first frame update
+    // 보상 관련
+    public GameObject bronzeCoin;
+
+
     void Awake()
     {
         pooling = GetComponent<dmgPool>();
@@ -92,7 +96,7 @@ public class Enemy : MonoBehaviour
     {
         Debug.DrawRay(rigid.position + Vector2.right * (sprite.flipX ? 1 : -1), Vector3.down, new Color(1, 0, 0)); // 레이저를 그린다. (시각적으로 보기 위함)
 
-        RaycastHit2D rayHit = Physics2D.Raycast(rigid.position + Vector2.right * (sprite.flipX ? 1 : -1), Vector3.down, 1, LayerMask.GetMask("Platform")); // 진짜 레이저 그리기 (시작위치, 방향, 거리)
+        RaycastHit2D rayHit = Physics2D.Raycast(rigid.position + Vector2.right * (sprite.flipX ? 1 : -1), Vector3.down, 2, LayerMask.GetMask("Platform")); // 진짜 레이저 그리기 (시작위치, 방향, 거리)
 
         if (rayHit.collider == null && !isChange)
         {
@@ -160,9 +164,10 @@ public class Enemy : MonoBehaviour
 
                 sendEXP();
                 attackObj.Clear();
+                DropItems();
 
                 gameObject.SetActive(false);
-
+                
                 monsterCntHP = monsterMaxHP;
                 HPBar.GetComponent<RectTransform>().sizeDelta = new Vector2(1.0f, 0.1f);
                 Debug.Log("몬스터 퇴치!");
@@ -210,8 +215,26 @@ public class Enemy : MonoBehaviour
         for(int i = 0; i < attackObj.Count; i++)
         {
             attackObj[i].GetComponent<PlayerStats>().playerStat.playerCntExperience += (int)((float)addExp / (float)attackObj.Count);
+            attackObj[i].GetComponent<LogManager>().playerLog.addMonsterCount(monsterCode);
             // Debug.Log("Exp Add + "+(int)((float)addExp / (float)attackObj.Count));
-            // Debug.Log(string.Format("{0:0.00} {1:0.000}", 2.3232323, 2.1111111)); // format 사용 법 메모 앞 숫자 - 몇 번째 매개변수, 뒤 숫자 - 표기 형태
+        }
+
+    }
+
+    void DropItems()
+    {
+        int ran = Random.Range(0, 2); // 0 ~ 1
+
+        switch (ran)
+        {
+            case 0:
+                Instantiate(bronzeCoin,transform.position,transform.rotation);
+                break;
+            case 1:
+                Instantiate(bronzeCoin, transform.position, transform.rotation);
+                Instantiate(bronzeCoin, transform.position, transform.rotation);
+                break;
+
         }
 
     }
