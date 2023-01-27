@@ -133,7 +133,7 @@ public class Item : MonoBehaviour
 
 <hr>
 
-**-> Physics2D 세팅에서 상호작용을 못하게 하면 되지 않나요?**
+**-> Physics2D 세팅에서 Player와 Item이 상호작용을 못하게 하면 되지 않나요?**
 
 --> 그러면 코인 획득도 못하기 때문에 안됩니다!
 
