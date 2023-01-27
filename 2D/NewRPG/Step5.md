@@ -382,11 +382,11 @@ Space바에 상호작용 버튼을 세팅 해 주었다.
 
 ![image](https://user-images.githubusercontent.com/66288087/214770675-ab10db31-ff74-4ffd-93f9-66f75017c2fe.png)
 
-OnTriggerStay2D를 통해 플레이어 Trigger와 닿아 있는 상태인 오브젝트를 감지한다.
+**OnTriggerStay2D**를 통해 **플레이어 Trigger와 닿아 있는 상태**인 **오브젝트를 감지**한다.
 
 해당 오브젝트가 NPC라면 nearObject에 해당 오브젝트를 세팅 해 준다.
 
-물론 OnTriggerExit2D를 통하여 플레이어와 닿아 있는 상태가 끝난다면 nearObject를 null로 다시 돌린다.
+물론 **OnTriggerExit2D**를 통하여 **플레이어와 닿아 있는 상태가 끝**난다면 **nearObject를 null로** 다시 돌린다.
 
 nearObject에 NPC가 있다는 것은 계속해서 NPC 근처에 있다는 것이니 상호작용 버튼을 눌러주면 NPC와 대화가 시작되게 만들어 주면 된다.
 
