@@ -703,7 +703,89 @@ public class NPC : MonoBehaviour
 
 <hr>
 
+## 중요! 안드로이드에서 CSV 파일을 읽지 못하는 현상!!!
+
+위 부분에서 NPC와의 대화를 구현하고 기분좋게 안드로이드 어플로 빌드하여 실행을 해 보려는데.. NPC와의 대화가 시작되지 않는 현상이 발생하였다!!!
+
+즉, **안드로이드에서 실행** 시 **csv 파일**을 **읽는 부분**에서 **문제**가 생겨버린 것이었다...
+
+따라서 열심히 구글링을 해 본 결과, 처음에는 [이 분](https://darkfrog.tistory.com/m/entry/Unity3D-%EB%AA%A8%EB%B0%94%EC%9D%BC-%EB%94%94%EB%B0%94%EC%9D%B4%EC%8A%A4%EC%97%90%EC%84%9C-%ED%8C%8C%EC%9D%BC%EC%83%9D%EC%84%B1-%EB%B0%8F-%EC%9D%BD%EA%B3%A0-%EC%93%B0%EA%B8%B0) 것을 찾았다.
+
+모바일에서 파일을 읽는 방법이라고 하길래, 안드로이드에서와 윈도우, 아이폰에서와의 시작 경로가 다르구나 싶어서 적용하여 해 보았다.
+
+하지만, 역시나 모바일에서는 NPC와의 대화가 진행되지 않았다.
+
+다른 글들을 뒤적이다가 처음 csv를 읽는 코드를 짜는 데 많은 도움을 준 **[블로거분의 글](https://foxtrotin.tistory.com/m/128)에서** 실마리를 찾았다.
+
+그분도 바로 안드로이드에서 실험 해 본 결과, 같은 현상이 발생하신듯 하였다.
+
+그분도 [유니티 포럼](https://forum.unity.com/threads/reading-a-text-file-with-stream-reader-on-android.640189/)에서 관련 내용을 찾으셨던 것이었다.
+
+[일본 프로그래머 분의 깃 헙](https://github.com/furukazu/UnityCSVReader)에도 정리되어 있다.
+
+<hr>
+
+## 해결책!
+
+요약하자면 안드로이드에서나, PC에서나 **Resources 폴더**에 **해당 파일(csv)을 저장**하여, 리소스에서 불러오되, **StringReader를 사용**하여 불러오는 방법을 채택하였던 것이다.
+
+코드를 가져오면 아래와 같다.
+
+```c#
+public void ReadFile()
+{
+    TextAsset csvFile;
+
+    csvFile = Resources.Load("CSV/test") as TextAsset;
+
+    StringReader reader = new StringReader(csvFile.text);
+
+    while (reader.Peek() > -1)
+    {
+        string value = reader.ReadLine();
+        var data_values = value.Split(',');
+
+        if (data_values[1] == npcCode.ToString() && data_values[3] == setDialogType.ToString())  // NPC 코드와 미리 세팅 된 상황 번호가 같을 때
+        {
+            // 필요 정보만을 딕셔너리에 저장
+            dicitonaryInfo.Add(int.Parse(data_values[2]), data_values); // 대화 번들 추가(한 줄로 전부!)
+        }
+
+    }
+
+}
+```
+
+**csv 파일**은 **TextAsset 형태**로 불러오며, **StringReader를 사용**하여 텍스트를 읽어 낸다.
+
+### reader.Peek()
+
+reader.Peek()는 텍스트를 읽으면서 사용할 수 있는 문자가 더 이상 없거나 스트림에서 검색을 지원하지 않을 경우 -1을 출력한다.
+
+따라서 위에 있는 while문은 텍스트를 읽을 수 있을 때 까지 출력 한다는 것이다.
+
+while문 안에는 앞과 비슷하다. StringReader에도 ReadLine()이 있기 때문에 여기서 부터는 동일하게 해 주면 된다.
+
+이렇게 해 주면.. 안드로이드에서도 파일을 읽어서 NPC와 대화를 할 수 있게 됨을 볼 수 있다.
+
+<hr>
+
+### 몬스터 퇴치 로그 및 플레이어-퀘스트 관리 체계 구현
+
+
+
+
+
+<hr>
+
 ### 퀘스트 관련 함수 제작
+
+퀘스트와 관련 된 함수를 제작하기에 앞서 Step+4에서 몬스터 퇴치를 기록하는 것에 대해 정리를 해 놓았다.
+
+그것과 연관 된 부분이니 한 번 확인 해 보고 오는 것도 좋을 것이다.
+
+
+
 
 
 
