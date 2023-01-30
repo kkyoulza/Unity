@@ -952,6 +952,361 @@ NPC 컴포넌트를 만들 때 목표 중 3번에 NPC 컴포넌트에서 퀘스�
 
 정작 이걸 만들 때는 머릿 속으로만 낑낑대며 했었는데.. 차라리 손으로 메모하면서 했으면 어땠을까 생각이 든다.
 
+<hr>
+
+### NPC 컴포넌트 코드 설명
+
+**NPC.cs 코드 전문**
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine.UI;
+using UnityEngine;
+using TMPro;
+
+public class NPC : MonoBehaviour
+{
+    // NPC Info
+    public int npcCode; // npc 고유의 코드
+    public int cntQuestCode = -1; // 현재 퀘스트 코드
+
+    public Dictionary<int, string[]> dicitonaryInfo = new Dictionary<int, string[]>(); // 대화 순서 - 대화 Bundle
+
+    public int setDialogType; // 어떤 상황의 대화 뭉탱이를 가져 올 것인가?
+    public int cntDialogCode; // 현재 대화가 어디까지 진행 되었는가? (이것은 대화를 끝낼 때, 무조건 0으로 세팅 해 주어야 한다.)
+
+    public TextMeshPro NPCName;
+
+    LogManager playerLogManager;
+
+    // UI Info
+    public GameObject DialogPanel; // 대화 창
+    public GameObject NextBtn; // 다음 버튼
+    public GameObject OKBtn; // 수락 버튼
+    public GameObject CancelBtn; // 취소 버튼
+
+    public Text NameTxt; // 대화 주체 이름
+    public Text DialogTxt; // 대화 텍스트
+
+    
+
+    // Start is called before the first frame update
+    void Awake()
+    {
+        DialogPanel = GameObject.FindGameObjectWithTag("UIDialog").transform.GetChild(0).gameObject;
+        NextBtn = DialogPanel.transform.GetChild(1).gameObject;
+        NameTxt = DialogPanel.transform.GetChild(0).gameObject.GetComponent<Text>();
+        DialogTxt = DialogPanel.transform.GetChild(2).gameObject.GetComponent<Text>();
+        OKBtn = DialogPanel.transform.GetChild(3).gameObject;
+        CancelBtn = DialogPanel.transform.GetChild(4).gameObject;
+
+        CancelBtn.GetComponent<Button>().onClick.AddListener(CancelDialog);
+        NextBtn.GetComponent<Button>().onClick.AddListener(ShowDialogUI);
+
+        playerLogManager = GameObject.FindGameObjectWithTag("Player").GetComponent<LogManager>();
+        NPCName.text = this.name;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+    public void StartTalkNPC()
+    {
+        if(cntQuestCode != -1)
+        {
+            CheckQuest();
+            return;
+        }
+        ReadFile(setDialogType);
+        ShowDialogUI();
+    }
+
+    void CancelDialog()
+    {
+        DialogPanel.SetActive(false);
+        Time.timeScale = 1.0f;
+        dicitonaryInfo.Clear(); // 바로 클리어를 해 주어야 다른 상황의 대화 or 다른 NPC와의 대화에서 파일을 잘 읽을 수 있다.
+        cntDialogCode = 0; // 인덱스를 0으로 초기화 하고 리턴한다.
+    }
+
+    void ShowDialogUI() // 이것은 NextBtn에서도 사용 됨
+    {
+        if (!DialogPanel.activeSelf)
+            DialogPanel.SetActive(true);
+
+        if (cntDialogCode >= dicitonaryInfo.Count) // index가 딕셔너리 크기랑 같아지게 되면
+        {
+            DialogPanel.SetActive(false);
+            Time.timeScale = 1.0f;
+            dicitonaryInfo.Clear(); // 바로 클리어를 해 주어야 다른 상황의 대화 or 다른 NPC와의 대화에서 파일을 잘 읽을 수 있다.
+            cntDialogCode = 0; // 인덱스를 0으로 초기화 하고 리턴한다.
+            return;
+        }
+
+        // 퀘스트 여부 체크
+        if(dicitonaryInfo[cntDialogCode][0] == "1")
+        {
+            // 퀘스트라면..? -> 퀘스트는 항상 마지막에 준다!
+            SetQuest(); // 퀘스트 정보 부여
+            cntDialogCode = 0;
+            setDialogType++;
+            DialogPanel.SetActive(false);
+            Time.timeScale = 1.0f;
+            dicitonaryInfo.Clear(); // 바로 클리어를 해 주어야 다른 상황의 대화 or 다른 NPC와의 대화에서 파일을 잘 읽을 수 있다.
+            return;
+        }
+        else if(dicitonaryInfo[cntDialogCode][0] == "2")
+        {
+            // 보상 부여
+            GetReward();
+            cntDialogCode = 0;
+            setDialogType += 2;
+            DialogPanel.SetActive(false);
+            Time.timeScale = 1.0f;
+            dicitonaryInfo.Clear();
+            return;
+        }
+
+        // 분기 여부 체크
+
+
+        NameTxt.text = dicitonaryInfo[cntDialogCode][4];
+        DialogTxt.text = dicitonaryInfo[cntDialogCode][5];
+        cntDialogCode++;
+    }
+
+    public void ReadFile(int inputType)
+    {
+        TextAsset csvFile;
+
+        csvFile = Resources.Load("CSV/test") as TextAsset;
+
+        StringReader reader = new StringReader(csvFile.text);
+
+        while (reader.Peek() > -1)
+        {
+            string value = reader.ReadLine();
+            var data_values = value.Split(',');
+
+            if (data_values[1] == npcCode.ToString() && data_values[3] == inputType.ToString())  // NPC 코드와 미리 세팅 된 상황 번호가 같을 때
+            {
+                // 필요 정보만을 딕셔너리에 저장
+                dicitonaryInfo.Add(int.Parse(data_values[2]), data_values); // 대화 번들 추가(한 줄로 전부!)
+            }
+
+        }
+
+    }
+
+    void CheckQuest()
+    {
+        // 퀘스트 완료 여부를 따지는 함수
+
+        int count = 0;
+
+        // 사냥 확인
+        for(int i=0;i< playerLogManager.playerLog.huntList.Count; i++)
+        {
+            if (playerLogManager.playerLog.huntList[i][4] == npcCode
+                && playerLogManager.playerLog.huntList[i][0] == cntQuestCode
+                && playerLogManager.playerLog.huntList[i][2] == playerLogManager.playerLog.huntList[i][3])
+            {
+                // 완료할 NPC 코드가 일치 + 설정 된 퀘스트 코드랑 맞을 때 + n번째 사냥 조건을 만족했을 때
+                count++;
+            }
+        }
+
+        for(int i=0;i<playerLogManager.playerLog.gainList.Count; i++)
+        {
+            if (playerLogManager.playerLog.gainList[i][4] == npcCode
+                && playerLogManager.playerLog.gainList[i][0] == cntQuestCode
+                && playerLogManager.playerLog.gainList[i][2] == playerLogManager.playerLog.gainList[i][3])
+            {
+                // 완료할 NPC 코드가 일치 + 설정 된 퀘스트 코드랑 맞을 때 + 특정 아이템을 얻는 조건을 만족했을 때
+                count++;
+            }
+        }
+        
+        if(playerLogManager.playerLog.questComplete[cntQuestCode, 1] == count)
+        {
+            ReadFile(setDialogType);
+            ShowDialogUI();
+        }
+        else
+        {
+            // 조건을 만족하지 않았을 때
+            ReadFile(setDialogType+1);
+            ShowDialogUI();
+        }
+
+    }
+    
+    void GetReward()
+    {
+        string value = dicitonaryInfo[cntDialogCode][5];
+        var data_values = value.Split(':');
+
+        int[] imsiArr = new int[3];
+
+        for (int i = 0; i < data_values.Length; i++)
+        {
+            // 보상 종류
+
+            var values_info = data_values[i].Split('.');
+
+            if (values_info[0] == "e")
+            {
+                // 경험치 보상
+
+                playerLogManager.gameObject.GetComponent<PlayerStats>().playerStat.playerCntExperience += int.Parse(values_info[2]);
+
+            }
+            else if (values_info[0] == "g")
+            {
+                // 골드 보상
+
+                playerLogManager.gameObject.GetComponent<PlayerItem>().cntGold += int.Parse(values_info[2]);
+
+            }else if(values_info[0] == "i")
+            {
+                // 아이템 증가
+
+
+
+            }
+        }
+    }
+
+    void SetQuest()
+    {
+        // 대화 내용 파싱
+        string value = dicitonaryInfo[cntDialogCode][5];
+        var data_values = value.Split(':');
+
+        int[] imsiArr = new int[5];
+
+        for(int i = 0; i < data_values.Length; i++)
+        {
+            var values_info = data_values[i].Split('.');
+
+            if (playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] != 0)
+            {
+                break; // 한 개의 대화에서 한 종류의 퀘스트만 주어지기 때문에 만약 퀘스트 코드 자리에 있는 값이 0(퀘스트 수행 전)이 아니면 퀘스트받는 것을 끝낸다.(방어장치)
+            }
+
+            if(values_info[0] == "h")
+            {
+                // 만약 사냥 미션이라면
+
+                imsiArr[0] = int.Parse(values_info[3]); // 퀘스트 코드
+                imsiArr[1] = int.Parse(values_info[1]); // 잡아야 할 몬스터 코드
+                imsiArr[2] = int.Parse(values_info[2]); // 잡아야 할 몬스터 마릿수
+                imsiArr[3] = 0; // 현재 잡은 마릿수 (퀘스트를 받는 시점에는 무조건 0으로 초기화 해 줘야 한다.)
+                imsiArr[4] = int.Parse(values_info[4]); // 퀘스트를 완료 할 npc 코드
+
+                playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] = 1;
+                playerLogManager.playerLog.questComplete[int.Parse(values_info[3]), 1]++; // 퀘스트 조건 카운트 추가
+                cntQuestCode = int.Parse(values_info[3]);
+                playerLogManager.playerLog.huntList.Add(imsiArr);
+
+            }
+            else if(values_info[0] == "g")
+            {
+                // 획득 미션이라면
+
+                imsiArr[0] = int.Parse(values_info[3]); // 퀘스트 코드
+                imsiArr[1] = int.Parse(values_info[1]); // 획득해야 할 아이템 코드
+                imsiArr[2] = int.Parse(values_info[2]); // 획득해야 할 아이템 개수
+                imsiArr[3] = 0; // 현재 얻은 아이템 개수 -> 퀘스트 아이템이라면 0으로 초기화가 맞지만 기존에 있던 아이템이라면 아이템을 가져 와야 한다.
+                                // 이건 PlayerItem 코드에서 아이템 코드를 넣으면 개수를 출력 해 주는 함수를 만들어야 할 것 같다. (나중에 수정!)
+                imsiArr[4] = int.Parse(values_info[4]); // 퀘스트를 완료 할 npc 코드
+
+                playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] = 1;
+                cntQuestCode = int.Parse(values_info[3]);
+                playerLogManager.playerLog.gainList.Add(imsiArr);
+
+            }
+        }
+      
+    }
+
+}
+```
+
+<br>
+
+일단 NPC.cs 코드의 전문을 가져 왔다.
+
+여기서 함수들을 하나씩 뜯어 살펴 보도록 하겠다.
+
+가장 먼저, NPC에 있는 변수들을 간단히 설명 하도록 하겠다.
+
+<hr>
+
+#### 변수들 설명
+
+
+
+
+<hr>
+
+이제 함수들에 대해 설명하도록 할텐데 그 중에서 가장 먼저, NPC에게 처음 말을 걸었을 때 실행되는 함수인 StartTalkNPC()를 먼저 살펴 보도록 하자
+
+<hr>
+
+#### StartTalkNPC()
+
+```c#
+public void StartTalkNPC()
+{
+    if(cntQuestCode != -1)
+    {
+        CheckQuest();
+        return;
+    }
+    ReadFile(setDialogType);
+    ShowDialogUI();
+}
+```
+
+이 곳에서는 퀘스트가 진행 중인지 여부를 먼저 따진다. 
+
+QuestCode를 초기에 -1로 설정 해 놓았는데, 그대로 -1이면 퀘스트가 진행 중이지 않은 것으로 판단하여 퀘스트 완료 여부를 판단하지 않고 바로 현재 대화 흐름에 맞는 대사를 불러오게 된다.(ReadFile(setDialogType))
+
+<hr>
+
+
+
+
+<hr>
+
+## 일반 퀘스트 시연
+
+
+![image](https://user-images.githubusercontent.com/66288087/215468642-35189839-8b9e-4b94-98e7-707ab6d45f73.png)
+
+퀘스트를 받는 모습
+
+![image](https://user-images.githubusercontent.com/66288087/215468764-320430fc-395c-48f2-8111-eb1ef2b6db4b.png)
+
+퀘스트를 받았을 때 오른쪽 상단에 잡아야 할 마릿수가 생겼음을 볼 수 있다.
+
+![image](https://user-images.githubusercontent.com/66288087/215469211-d44a0dbd-a160-4fc4-b628-29218d808f53.png)
+
+퀘스트 완료 시 나오는 스크립트
+
+![image](https://user-images.githubusercontent.com/66288087/215469293-971d730b-38f6-4cb7-a00e-0b799d5b624f.png)
+
+보상을 받고 레벨 업 한 모습 (마릿수가 그대로인 것을 보아 퀘스트 경험치를 통해 레벨 업 했음을 볼 수 있다.)
+
+![image](https://user-images.githubusercontent.com/66288087/215469412-341244be-9803-42bc-ab20-13375a994647.png)
+
+퀘스트 조건을 완료하지 못했을 때 나오는 모습
 
 
 
