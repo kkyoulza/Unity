@@ -34,10 +34,11 @@
 
 ### Type : String에 들어 갈 종류 결정
 
-대화 창에 있는 것을 대사로 볼 것인지, 퀘스트 설정을 위한 특수 문자로 볼 것인지를 구분해 주는 부분이다.
+대화 창에 있는 것을 대사로 볼 것인지, 퀘스트 설정 또는 보상 을 위한 특수 문자로 볼 것인지를 구분해 주는 부분이다.
 
 0 - 일반 대화
 1 - 퀘스트 수락 시 퀘스트 클리어 조건을 적음(조건은 아래 서술)
+2 - 보상 지급 시 보상에 대한 정보를 적음(조건은 아래에 있음)
 
 <br>
 
@@ -96,7 +97,7 @@ Type이 1이면 퀘스트를 세팅하는 라인이기 때문이다.
 **h(hunting 줄임말).몬스터 코드.잡아야 할 마릿수**
 **g(gain 줄임말).아이템 코드.획득해야 할 개수**
 
-ex > 12번 코드 몬스터를 50마리 잡고, 3번 코드 아이템을 30개 획득하시오 --> **h.12.50:g.3.30:**
+ex > (퀘스트 코드 1) 12번 코드 몬스터를 50마리 잡고, 3번 코드 아이템을 30개 획득하시오 그리고 2번 npc한테 가서 알려주시오. --> **h.12.50.1.2:g.3.30.1.2**
 
 #### parsing 순서 
 
@@ -772,17 +773,178 @@ while문 안에는 앞과 비슷하다. StringReader에도 ReadLine()이 있기 
 
 ### 몬스터 퇴치 로그 및 플레이어-퀘스트 관리 체계 구현
 
+우선, 먼저 생각해야 할 부분이 있다.
+
+바로, 퀘스트에 대한 진행 부분은 NPC가 아닌라, Player쪽에서 관리해야 한다는 것이다.
+
+(물론 본격적인 데이터베이스를 사용하게 되면 그쪽에서 관리하는 것이 맞지만.. 일단 코드로 자료구조를 만들어 관리하는 입장에서는 플레이어가 관리하는 것이 최선이라 생각하였다.
+
+-> 왜냐하면, 플레이어가 씬 이동을 하게 될 때, DontDestroyOnLoad()를 사용하여 사라지지 않게 만들면 씬 이동 시 마다 NPC의 QuestCode와 DialogType등을 재 세팅할 수 있기 때문이다.)
+
+<br>
+
+#### 로그 기록을 위한 코드 연결
+
+로그 기록을 위해서는 코드를 연결 시켜 주어야 한다.
+
+![image](https://user-images.githubusercontent.com/66288087/215460742-0e79e11d-bb25-402a-a9f0-02a8c744a8a9.png)
+
+즉, 위 그림처럼 Player가 몬스터를 퇴치하게 되면 경험치 전달과 함께, 플레이어로 몬스터 퇴치 정보를 다시 보내준다.
+
+**Enemy.cs 코드** 중 경험치를 보내는 함수이다.
+
+```c#
+void sendEXP()
+{
+    // 몬스터가 죽었을 때, 경험치를 보낸다.
+    for(int i = 0; i < attackObj.Count; i++)
+    {
+        attackObj[i].GetComponent<PlayerStats>().playerStat.playerCntExperience += (int)((float)addExp / (float)attackObj.Count);
+        attackObj[i].GetComponent<LogManager>().playerLog.addMonsterCount(monsterCode);
+        // Debug.Log("Exp Add + "+(int)((float)addExp / (float)attackObj.Count));
+    }
+
+}
+```
+경험치를 보내는 것 바로 아래에 LogManager를 불러 와 해당 몬스터 코드의 퇴치 마릿수를 더하는 부분이 보일 것이다.
+
+<br>
+
+로그 매니저를 Manager속에 배치 시키지 않은 이유는, 퇴치 값을 주기 위해 매니저를 불러 와야 하기 때문이다.
+
+UI를 통해 몬스터 퇴치 수를 표시하게 되면
+
+![image](https://user-images.githubusercontent.com/66288087/215461085-cd02c214-db59-4819-9fe0-4d34ec87e70a.png)
+
+오른쪽 상단 위에 표시 된 부분이 가산되었음을 볼 수 있다.
+
+<hr>
+
+#### 플레이어 로그 매니저 코드
+
+플레이어 속에 있는 로그 매니저 코드이다.
+
+파일로 저장 해 내기 편하게 class를 따로 만들어 그 안에 배열을 넣어 주었으며, 각 몬스터 코드별로 마릿수를 따로 저장하게끔 하였다.
+
+**LogManagger.cs**
+
+```c#
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary; // BinaryFormatter 클래스 사용을 위해 네임스페이스 추가
+
+[System.Serializable]
+public class LogRecord
+{
+    private int[] huntingCount = new int[10]; // 각 몬스터들의 퇴치 마릿수를 저장하기 위한 int 배열 (전체 마릿수는 해당 배열 원소들을 합산하면 된다.)
+
+    // 퀘스트 관련
+    public List<int[]> huntList = new List<int[]>(); // 어떤 몬스터를 잡아야 하는지 리스트로 저장 [퀘스트 코드, 몬스터 코드, 잡아야 하는 마릿수, 현재 잡은 마릿수,완료 할 npc 코드]
+    public List<int[]> gainList = new List<int[]>(); // 어떤 아이템을 얻어야 하는지 리스트로 저장 [퀘스트 코드, 아이템 코드, 얻어야 하는 개수, 현재 가지고 있는 개수,완료 할 npc 코드]
+
+    public int[,] questComplete = new int[1000,2]; // 퀘스트 완료 여부 기록 ( 0 - 시작 전, 1 - 진행 중, 2 - 완료 ) + 퀘스트 완료 조건 개수
+    // 나중에 용량을 늘릴 때, 정보를 옮겨 주어야 한다..? DB로 관리하면 편하긴 하겠다..
+
+    // npc 코드에서 씬이 호출 될 때 마다 npc들을 호출해서 해당되는 퀘스트 코드를 세팅해 줘야 한다..?
 
 
+    public LogRecord()
+    {
+        
+    }
 
+    void CheckQuest(int index)
+    {
+        for(int i = 0; i < huntList.Count; i++)
+        {
+            if(huntList[i][1] == index && huntList[i][3] < huntList[i][2])
+            {
+                huntList[i][3]++;
+            }
+        }
+    }
+
+    public void addMonsterCount(int index)
+    {
+        CheckQuest(index);
+        this.huntingCount[index]++;
+    }
+
+    public int returnMonsterCount(int index)
+    {
+        return this.huntingCount[index];
+    }
+
+}
+
+public class LogManager : MonoBehaviour
+{
+    public LogRecord playerLog = new LogRecord();
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+}
+```
+
+huntingCount에 퇴치 마릿수를 저장하였으며, 아래에 설명 할 퀘스트에 사용 될 huntList와 gainList는 int 배열 타입의 List로 만들어 주었다.
+
+왜 이렇게 저장하였는지는 아래에 설명 하도록 하겠다.
 
 <hr>
 
 ### 퀘스트 관련 함수 제작
 
-퀘스트와 관련 된 함수를 제작하기에 앞서 Step+4에서 몬스터 퇴치를 기록하는 것에 대해 정리를 해 놓았다.
+이제 본격적으로 퀘스트를 제작 해 보도록 하겠다.
 
-그것과 연관 된 부분이니 한 번 확인 해 보고 오는 것도 좋을 것이다.
+일반적인 퀘스트의 종류는 세 가지로 볼 수 있지만.. 엄밀히 따지자면? 두 가지로 볼 수 있을 것이다.
+
+#### 1. 몬스터 퇴치 퀘스트
+
+말 그대로 몬스터를 일정 마리 퇴치하면 퀘스트 조건이 완료된다.
+
+앞서 **dialogString 내부 규칙**이라는 부분을 보았을 것이다.
+
+그 곳에서 **퀘스트임이 체크** 되어 있다면 **대화 내용**을 **퀘스트에 대한 정보로 인식**하게끔 하며, **대화 내용을 그에 걸맞는 규칙에 따라 작성**해야 된다는 내용이었다.
+
+그렇게 만든 규칙이 **(사냥 or 수집 구분).(잡아야 할 몬스터 코드).(잡아야 할 마릿수).(퀘스트 코드).(완료 할 npc 코드)** 이다.
+
+즉, CSV 파일의 Type을 구분해 주어, 1일때는 대화 내용으로부터 위 규칙에 따라서 정보를 추출 해 내는 것이다.
+
+예를 들어, *h.12.30.1.2* 라고 하면 몬스터 코드가 12번인 놈을 30마리 잡고, 2번 npc한테 가서 완료해라 라는 것이며, 해당 퀘스트는 1번 코드인 퀘스트이다.
+
+
+#### 2. 아이템 수집 퀘스트
+
+1번과 유사하게 하지만 맨 앞에 오는 알파벳이 g가 오게 된다.
+
+**(사냥 or 수집 구분).(수집해야 할 아이템 코드).(수집해야 할 개수).(퀘스트 코드).(완료 할 npc 코드)** 로 유사한 규칙을 가졌음을 볼 수 있다.
+
+
+#### 3. 특수 퀘스트
+
+사실 특수 퀘스트는 종류가 다양하며, 그에 따른 코드를 일일히 작성하는 것은 어렵다.
+
+따라서 앞선 퀘스트들과 같은 퀘스트 정보를 가지되, 예를 들어 그냥 다른 사람에게 말을 거는 것은 아무 몬스터나 0마리를 잡는 것을 조건으로 걸고, 다른 대상 npc에게 완료하게 되면 그만이다.
+
+이렇게 응용을 할 수 있다.
+
+<hr>
+
+### 퀘스트 진행 순서도
+
+
 
 
 
