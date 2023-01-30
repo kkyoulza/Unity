@@ -13,6 +13,9 @@ public class LogRecord
     public List<int[]> huntList = new List<int[]>(); // 어떤 몬스터를 잡아야 하는지 리스트로 저장 [퀘스트 코드, 몬스터 코드, 잡아야 하는 마릿수, 현재 잡은 마릿수,완료 할 npc 코드]
     public List<int[]> gainList = new List<int[]>(); // 어떤 아이템을 얻어야 하는지 리스트로 저장 [퀘스트 코드, 아이템 코드, 얻어야 하는 개수, 현재 가지고 있는 개수,완료 할 npc 코드]
 
+    public int[,] questComplete = new int[1000,2]; // 퀘스트 완료 여부 기록 ( 0 - 시작 전, 1 - 진행 중, 2 - 완료 ) + 퀘스트 완료 조건 개수
+    // 나중에 용량을 늘릴 때, 정보를 옮겨 주어야 한다..? DB로 관리하면 편하긴 하겠다..
+
     // npc 코드에서 씬이 호출 될 때 마다 npc들을 호출해서 해당되는 퀘스트 코드를 세팅해 줘야 한다..?
 
 

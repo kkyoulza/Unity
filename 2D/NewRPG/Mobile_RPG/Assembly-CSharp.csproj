@@ -726,6 +726,9 @@
  <Reference Include="Unity.2D.PixelPerfect.Editor">
  <HintPath>C:/UnityProject/Projects/Mobile_RPG/Library/ScriptAssemblies/Unity.2D.PixelPerfect.Editor.dll</HintPath>
  </Reference>
+ <Reference Include="Unity.Mobile.AndroidLogcat.Editor">
+ <HintPath>C:/UnityProject/Projects/Mobile_RPG/Library/ScriptAssemblies/Unity.Mobile.AndroidLogcat.Editor.dll</HintPath>
+ </Reference>
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/UnityProject/Projects/Mobile_RPG/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>

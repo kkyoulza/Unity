@@ -9,7 +9,7 @@ public class NPC : MonoBehaviour
 {
     // NPC Info
     public int npcCode; // npc 고유의 코드
-    public int cntQuestCode; // 현재 퀘스트 코드
+    public int cntQuestCode = -1; // 현재 퀘스트 코드
 
     public Dictionary<int, string[]> dicitonaryInfo = new Dictionary<int, string[]>(); // 대화 순서 - 대화 Bundle
 
@@ -17,6 +17,8 @@ public class NPC : MonoBehaviour
     public int cntDialogCode; // 현재 대화가 어디까지 진행 되었는가? (이것은 대화를 끝낼 때, 무조건 0으로 세팅 해 주어야 한다.)
 
     public TextMeshPro NPCName;
+
+    LogManager playerLogManager;
 
     // UI Info
     public GameObject DialogPanel; // 대화 창
@@ -42,6 +44,7 @@ public class NPC : MonoBehaviour
         CancelBtn.GetComponent<Button>().onClick.AddListener(CancelDialog);
         NextBtn.GetComponent<Button>().onClick.AddListener(ShowDialogUI);
 
+        playerLogManager = GameObject.FindGameObjectWithTag("Player").GetComponent<LogManager>();
         NPCName.text = this.name;
     }
 
@@ -53,7 +56,12 @@ public class NPC : MonoBehaviour
 
     public void StartTalkNPC()
     {
-        ReadFile(Application.dataPath + "/test.csv");
+        if(cntQuestCode != -1)
+        {
+            CheckQuest();
+            return;
+        }
+        ReadFile(setDialogType);
         ShowDialogUI();
     }
 
@@ -91,6 +99,17 @@ public class NPC : MonoBehaviour
             dicitonaryInfo.Clear(); // 바로 클리어를 해 주어야 다른 상황의 대화 or 다른 NPC와의 대화에서 파일을 잘 읽을 수 있다.
             return;
         }
+        else if(dicitonaryInfo[cntDialogCode][0] == "2")
+        {
+            // 보상 부여
+            GetReward();
+            cntDialogCode = 0;
+            setDialogType += 2;
+            DialogPanel.SetActive(false);
+            Time.timeScale = 1.0f;
+            dicitonaryInfo.Clear();
+            return;
+        }
 
         // 분기 여부 체크
 
@@ -100,39 +119,106 @@ public class NPC : MonoBehaviour
         cntDialogCode++;
     }
 
-    public void ReadFile(string filePath)
+    public void ReadFile(int inputType)
     {
-        FileInfo fileInfo = new FileInfo(filePath);
-        string value = "";
+        TextAsset csvFile;
 
-        if (fileInfo.Exists)
+        csvFile = Resources.Load("CSV/test") as TextAsset;
+
+        StringReader reader = new StringReader(csvFile.text);
+
+        while (reader.Peek() > -1)
         {
-            bool isEnd = false;
-            StreamReader reader = new StreamReader(filePath);
-            while (!isEnd)
-            {
-                value = reader.ReadLine();
-                if (value == null)
-                {
-                    isEnd = true;
-                    break;
-                }
-                var data_values = value.Split(',');
+            string value = reader.ReadLine();
+            var data_values = value.Split(',');
 
-                if (data_values[1] == npcCode.ToString() && data_values[3] == setDialogType.ToString())  // NPC 코드와 미리 세팅 된 상황 번호가 같을 때
-                {
-                    // 필요 정보만을 딕셔너리에 저장
-                    dicitonaryInfo.Add(int.Parse(data_values[2]), data_values); // 대화 번들 추가(한 줄로 전부!)
-                }
+            if (data_values[1] == npcCode.ToString() && data_values[3] == inputType.ToString())  // NPC 코드와 미리 세팅 된 상황 번호가 같을 때
+            {
+                // 필요 정보만을 딕셔너리에 저장
+                dicitonaryInfo.Add(int.Parse(data_values[2]), data_values); // 대화 번들 추가(한 줄로 전부!)
             }
-            reader.Close();
+
+        }
+
+    }
+
+    void CheckQuest()
+    {
+        // 퀘스트 완료 여부를 따지는 함수
+
+        int count = 0;
+
+        // 사냥 확인
+        for(int i=0;i< playerLogManager.playerLog.huntList.Count; i++)
+        {
+            if (playerLogManager.playerLog.huntList[i][4] == npcCode
+                && playerLogManager.playerLog.huntList[i][0] == cntQuestCode
+                && playerLogManager.playerLog.huntList[i][2] == playerLogManager.playerLog.huntList[i][3])
+            {
+                // 완료할 NPC 코드가 일치 + 설정 된 퀘스트 코드랑 맞을 때 + n번째 사냥 조건을 만족했을 때
+                count++;
+            }
+        }
+
+        for(int i=0;i<playerLogManager.playerLog.gainList.Count; i++)
+        {
+            if (playerLogManager.playerLog.gainList[i][4] == npcCode
+                && playerLogManager.playerLog.gainList[i][0] == cntQuestCode
+                && playerLogManager.playerLog.gainList[i][2] == playerLogManager.playerLog.gainList[i][3])
+            {
+                // 완료할 NPC 코드가 일치 + 설정 된 퀘스트 코드랑 맞을 때 + 특정 아이템을 얻는 조건을 만족했을 때
+                count++;
+            }
+        }
+        
+        if(playerLogManager.playerLog.questComplete[cntQuestCode, 1] == count)
+        {
+            ReadFile(setDialogType);
+            ShowDialogUI();
         }
         else
-            value = "파일이 없습니다.";
+        {
+            // 조건을 만족하지 않았을 때
+            ReadFile(setDialogType+1);
+            ShowDialogUI();
+        }
 
-        Debug.Log(dicitonaryInfo.Count);
+    }
+    
+    void GetReward()
+    {
+        string value = dicitonaryInfo[cntDialogCode][5];
+        var data_values = value.Split(':');
 
-        return;
+        int[] imsiArr = new int[3];
+
+        for (int i = 0; i < data_values.Length; i++)
+        {
+            // 보상 종류
+
+            var values_info = data_values[i].Split('.');
+
+            if (values_info[0] == "e")
+            {
+                // 경험치 보상
+
+                playerLogManager.gameObject.GetComponent<PlayerStats>().playerStat.playerCntExperience += int.Parse(values_info[2]);
+
+            }
+            else if (values_info[0] == "g")
+            {
+                // 골드 보상
+
+                playerLogManager.gameObject.GetComponent<PlayerItem>().cntGold += int.Parse(values_info[2]);
+
+            }else if(values_info[0] == "i")
+            {
+                // 아이템 증가
+
+
+
+            }
+        }
     }
 
     void SetQuest()
@@ -145,8 +231,13 @@ public class NPC : MonoBehaviour
 
         for(int i = 0; i < data_values.Length; i++)
         {
-            LogManager playerLogManager = GameObject.FindGameObjectWithTag("Player").GetComponent<LogManager>();
             var values_info = data_values[i].Split('.');
+
+            if (playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] != 0)
+            {
+                break; // 한 개의 대화에서 한 종류의 퀘스트만 주어지기 때문에 만약 퀘스트 코드 자리에 있는 값이 0(퀘스트 수행 전)이 아니면 퀘스트받는 것을 끝낸다.(방어장치)
+            }
+
             if(values_info[0] == "h")
             {
                 // 만약 사냥 미션이라면
@@ -157,16 +248,13 @@ public class NPC : MonoBehaviour
                 imsiArr[3] = 0; // 현재 잡은 마릿수 (퀘스트를 받는 시점에는 무조건 0으로 초기화 해 줘야 한다.)
                 imsiArr[4] = int.Parse(values_info[4]); // 퀘스트를 완료 할 npc 코드
 
+                playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] = 1;
+                playerLogManager.playerLog.questComplete[int.Parse(values_info[3]), 1]++; // 퀘스트 조건 카운트 추가
+                cntQuestCode = int.Parse(values_info[3]);
                 playerLogManager.playerLog.huntList.Add(imsiArr);
 
-                Debug.Log(playerLogManager.playerLog.huntList[0][0]);
-                Debug.Log(playerLogManager.playerLog.huntList[0][1]);
-                Debug.Log(playerLogManager.playerLog.huntList[0][2]);
-                Debug.Log(playerLogManager.playerLog.huntList[0][3]);
-                Debug.Log(playerLogManager.playerLog.huntList[0][4]);
-
             }
-            else if(values_info[i][0] == 'g')
+            else if(values_info[0] == "g")
             {
                 // 획득 미션이라면
 
@@ -177,14 +265,13 @@ public class NPC : MonoBehaviour
                                 // 이건 PlayerItem 코드에서 아이템 코드를 넣으면 개수를 출력 해 주는 함수를 만들어야 할 것 같다. (나중에 수정!)
                 imsiArr[4] = int.Parse(values_info[4]); // 퀘스트를 완료 할 npc 코드
 
+                playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] = 1;
+                cntQuestCode = int.Parse(values_info[3]);
                 playerLogManager.playerLog.gainList.Add(imsiArr);
 
             }
         }
-
-        
-
-        
+      
     }
 
 }
