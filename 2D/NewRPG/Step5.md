@@ -314,7 +314,7 @@ public class NPC : MonoBehaviour
                 }
                 var data_values = value.Split(',');
 
-                if (data_values[1] == npcCode.ToString() && data_values[3] == setDialogType.ToString()) // NPC 코드와 미리 세팅 된 상황 번호가 같을 때
+                if (data_values[1] == npcCode.ToString() && data_values[3] == setDialogType.ToString()) 
                 {
                     // 딕셔너리에 저장
                     dialogDictionary.Add(int.Parse(data_values[2]), data_values[5]);
@@ -1250,12 +1250,27 @@ public class NPC : MonoBehaviour
 
 #### 변수들 설명
 
+- **npcCode** : NPC 고유 코드
+- **cntQuestCode** : 현재 NPC가 진행중인 퀘스트를 표시하는 변수
+- **setDialogType** : NPC의 대화 타입(상황)을 나타내는 변수
+- **cntDialogCode** : NPC의 대화 상황 속에서 대사 순서를 나타내는 변수
+- **dictionaryInfo** : NPC와의 대화 중 한 개의 대화 타입에 속하는 대사들의 뭉탱이를 저장하는 딕셔너리
 
+**setDialogType**에 대해 추가로 설명하자면, **NPC와의 대화**는 **여러 상황**에서 이루어 지게 된다.
 
+예를 들어 NPC가 플레이어에게 임무를 주기 전의 상황과 임무를 수행하고 돌아 온 상황은 다를 것이다.
+
+따라서 그러한 **상황들을 번호로 구분** 해 주게 되며, 그 **번호가 저장되는 변수**가 **setDialogType**이다.
+
+NPC와 대화를 하게 되면, NPC에 기록 된 상황 변수에 따라서 한 상황에 포함되는 모든 대화 번들을 dictionaryInfo 딕셔너리에 저장하게 되고, UI에 차근 차근 표시 해 주게 된다.
+
+**한 번들의 대화가 종료**되면 **상황 변수가 조정**되게 되고, 다시 말을 걸게 되면 조정 된 상황 변수에 따른 대화 번들이 출력 되게 된다.
+
+아래 함수들에 대한 설명에서 자세한 과정을 설명하겠다.
 
 <hr>
 
-이제 함수들에 대해 설명하도록 할텐데 그 중에서 가장 먼저, NPC에게 처음 말을 걸었을 때 실행되는 함수인 StartTalkNPC()를 먼저 살펴 보도록 하자
+이제 함수들에 대해 설명하도록 할텐데 그 중에서 가장 먼저, **NPC에게 처음 말을 걸었을 때 실행**되는 함수인 **StartTalkNPC**를 먼저 살펴 보도록 하자
 
 <hr>
 
@@ -1274,11 +1289,335 @@ public void StartTalkNPC()
 }
 ```
 
-이 곳에서는 퀘스트가 진행 중인지 여부를 먼저 따진다. 
+이 곳에서는 **퀘스트가 진행 중인지 여부**를 먼저 따진다. 
 
-QuestCode를 초기에 -1로 설정 해 놓았는데, 그대로 -1이면 퀘스트가 진행 중이지 않은 것으로 판단하여 퀘스트 완료 여부를 판단하지 않고 바로 현재 대화 흐름에 맞는 대사를 불러오게 된다.(ReadFile(setDialogType))
+**QuestCode를 초기에 -1로 설정** 해 놓았는데, 그대로 **-1이면 퀘스트가 진행 중이지 않은 것**으로 판단하여 **퀘스트 완료 여부를 판단하지 않고** 바로 현재 대화 흐름에 맞는 대사를 불러오게 된다.(ReadFile(setDialogType))
+
+퀘스트 체크는 퀘스트 세팅 함수 다음에 살펴 보도록 하자
 
 <hr>
+
+#### ReadFile(int inputType)
+
+```c#
+public void ReadFile(int inputType)
+{
+    TextAsset csvFile;
+
+    csvFile = Resources.Load("CSV/test") as TextAsset;
+
+    StringReader reader = new StringReader(csvFile.text);
+
+    while (reader.Peek() > -1)
+    {
+        string value = reader.ReadLine();
+        var data_values = value.Split(',');
+
+        if (data_values[1] == npcCode.ToString() && data_values[3] == inputType.ToString()) 
+        {
+            // NPC 코드도 같고, 미리 세팅 된 상황 번호도 같은 라인일 때
+            // 필요 정보만을 딕셔너리에 저장
+            dicitonaryInfo.Add(int.Parse(data_values[2]), data_values); 
+            // 대화 번들 추가(한 줄로 전부!)
+        }
+
+    }
+
+}
+```
+
+**파일을 읽는 함수**이다.
+
+CSV 파일을 한 줄씩 읽어 내려가면서 **NPC코드와, 파일에 적힌 NPC 코드가 같고 상황 번호도 파일에 적힌 부분과 같은 라인**을 **딕셔너리에 저장** 해 나간다.
+
+즉, 중요한 부분은 NPC가 누구인지와 어떤 상황인지가 중요하다!
+
+해당 함수에서는 상황 변수를 매개변수로 받아 오게 된다.
+
+이렇게 하지 않고 cntDialogType을 사용해도 되지만 이렇게 한 이유는 **CheckQuest()** 에서 설명하도록 하겠다.
+
+<hr>
+
+#### ShowDialog()
+
+```c#
+void ShowDialogUI() // 이것은 NextBtn에서도 사용 됨
+{
+    if (!DialogPanel.activeSelf)
+        DialogPanel.SetActive(true);
+
+    if (cntDialogCode >= dicitonaryInfo.Count) // index가 딕셔너리 크기랑 같아지게 되면
+    {
+        DialogPanel.SetActive(false);
+        Time.timeScale = 1.0f;
+        dicitonaryInfo.Clear(); // 바로 클리어를 해 주어야 다른 상황의 대화 or 다른 NPC와의 대화에서 파일을 잘 읽을 수 있다.
+        cntDialogCode = 0; // 인덱스를 0으로 초기화 하고 리턴한다.
+        return;
+    }
+
+    // 퀘스트 여부 체크
+    if(dicitonaryInfo[cntDialogCode][0] == "1")
+    {
+        // 퀘스트라면..? -> 퀘스트는 항상 마지막에 준다!
+        SetQuest(); // 퀘스트 정보 부여
+        cntDialogCode = 0;
+        setDialogType++;
+        DialogPanel.SetActive(false);
+        Time.timeScale = 1.0f;
+        dicitonaryInfo.Clear();
+        return;
+    }
+    else if(dicitonaryInfo[cntDialogCode][0] == "2")
+    {
+        // 보상 부여
+        GetReward();
+        cntDialogCode = 0;
+        setDialogType += 2;
+        DialogPanel.SetActive(false);
+        Time.timeScale = 1.0f;
+        dicitonaryInfo.Clear();
+        return;
+    }
+
+    // 분기 여부 체크
+
+    NameTxt.text = dicitonaryInfo[cntDialogCode][4];
+    DialogTxt.text = dicitonaryInfo[cntDialogCode][5];
+    cntDialogCode++;
+}
+```
+
+파일을 읽었으니, 이제 **대화를 출력**해야 한다.
+
+초반부에는 **만약 대화 창이 떠 있지 않으면 대화창을 켜 주고**, **cntDialogCode가 딕셔너리 크기랑 같아**지게 되면 **한 상황에서의 대화가 끝**난 것이기에 **딕셔너리를 초기화** 해 주고, **cntDialogCode를 다시 0으로 세팅** 해 준 다음, **함수를 종료** 해 준다.
+
+그리고, 대화 중에 Type이 1이면 퀘스트 조건 부여를 해 주는 단계라는 의미기에 대화 창에 저장 된 대화 내용이 다르게 적혀있다.
+
+이에 해당 대화 내용을 해석하여 퀘스트 조건을 세팅 해 주기 위해 **SetQuest()** 로 이동 해 준다.
+
+Type이 2면 보상을 주기 위해 **GetReward()** 로 이동 해 준다.
+
+<hr>
+
+#### CancelDialog()
+
+```c#
+void CancelDialog()
+{
+    DialogPanel.SetActive(false);
+    Time.timeScale = 1.0f;
+    dicitonaryInfo.Clear();
+    cntDialogCode = 0; // 인덱스를 0으로 초기화 하고 리턴한다.
+}
+```
+
+**대화 창을 종료** 해 주는 함수이다.
+
+버튼을 통해서 실행이 되며, **UI랑 연결**이 되어야 하는 함수이다.
+
+그런데, NPC는 여러 명이 존재하며 UI는 한 개이므로 무작정 Inspector에서 특정 NPC와 대응시킬 수 없다.
+
+따라서 아래와 같이 Awake()에서 **동적으로 버튼에 OnClick()을 세팅** 해 주게 된다.
+
+```c#
+CancelBtn.GetComponent<Button>().onClick.AddListener(CancelDialog);
+NextBtn.GetComponent<Button>().onClick.AddListener(ShowDialogUI);
+```
+
+일단 세팅은 이렇게 했지만, ShowDialogUI()에서도 UI를 off 하는 부분이 있기에 당장은 사용되지 않는 부분이다.
+
+
+<hr>
+
+#### SetQuest()
+
+```c#
+void SetQuest()
+{
+    // 대화 내용 파싱
+    string value = dicitonaryInfo[cntDialogCode][5];
+    var data_values = value.Split(':');
+
+    int[] imsiArr = new int[5];
+
+    for(int i = 0; i < data_values.Length; i++)
+    {
+        var values_info = data_values[i].Split('.');
+
+        if (playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] != 0)
+        {
+            break; // 한 개의 대화에서 한 종류의 퀘스트만 주어지기 때문에 만약 퀘스트 코드 자리에 있는 값이 0(퀘스트 수행 전)이 아니면 퀘스트받는 것을 끝낸다.(방어장치)
+        }
+
+        if(values_info[0] == "h")
+        {
+            // 만약 사냥 미션이라면
+
+            imsiArr[0] = int.Parse(values_info[3]); // 퀘스트 코드
+            imsiArr[1] = int.Parse(values_info[1]); // 잡아야 할 몬스터 코드
+            imsiArr[2] = int.Parse(values_info[2]); // 잡아야 할 몬스터 마릿수
+            imsiArr[3] = 0; // 현재 잡은 마릿수 (퀘스트를 받는 시점에는 무조건 0으로 초기화 해 줘야 한다.)
+            imsiArr[4] = int.Parse(values_info[4]); // 퀘스트를 완료 할 npc 코드
+
+            playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] = 1;
+            playerLogManager.playerLog.questComplete[int.Parse(values_info[3]), 1]++; // 퀘스트 조건 카운트 추가
+            cntQuestCode = int.Parse(values_info[3]);
+            playerLogManager.playerLog.huntList.Add(imsiArr);
+
+        }
+        else if(values_info[0] == "g")
+        {
+            // 획득 미션이라면
+
+            imsiArr[0] = int.Parse(values_info[3]); // 퀘스트 코드
+            imsiArr[1] = int.Parse(values_info[1]); // 획득해야 할 아이템 코드
+            imsiArr[2] = int.Parse(values_info[2]); // 획득해야 할 아이템 개수
+            imsiArr[3] = 0; // 현재 얻은 아이템 개수 -> 퀘스트 아이템이라면 0으로 초기화가 맞지만 기존에 있던 아이템이라면 아이템을 가져 와야 한다.
+                            // 이건 PlayerItem 코드에서 아이템 코드를 넣으면 개수를 출력 해 주는 함수를 만들어야 할 것 같다. (나중에 수정!)
+            imsiArr[4] = int.Parse(values_info[4]); // 퀘스트를 완료 할 npc 코드
+
+            playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] = 1;
+            cntQuestCode = int.Parse(values_info[3]);
+            playerLogManager.playerLog.gainList.Add(imsiArr);
+
+        }
+    }
+
+}
+```
+
+**퀘스트 조건 세팅 함수**이다.
+
+퀘스트는 특정 조건을 만족해 주어야 하며, 해당 조건을 관리 해 주는 것은 Player에 속한 LogManager.cs 컴포넌트이다.
+
+위에서 몬스터 퇴치 마릿수를 기록하는 체계를 간단하게 그림으로 표현 한 것을 봤을 것이다.
+
+그 부분에서 퀘스트 중인 특정 몬스터를 퇴치 했을 때, 퀘스트 조건에 있는 마릿수도 같이 더해 주게 되면 퀘스트 조건을 체크할 수 있을 것이다.
+
+코드를 하나하나 보면
+
+```c#
+// 대화 내용 파싱
+string value = dicitonaryInfo[cntDialogCode][5];
+var data_values = value.Split(':');
+```
+
+SetQuest()가 실행되면서 **퀘스트 조건이 담겨있는 대화 내용을 다시 파싱** 하여 **value에 저장**시켜 준다.
+
+이번 파싱은 퀘스트 조건 별로 뭉탱이로 파싱하는 것이다.
+
+ex > "h.1.25" , "g.2.10" 이렇게 퀘스트 세부 임무 별로 구분!
+
+```c#
+int[] imsiArr = new int[5];
+```
+
+그리고 PlayerLog의 조건 리스트에 들어 갈 int 배열을 하나 만들어 준다.
+
+해당 배열에는 순서대로 **퀘스트 코드, 몬스터 코드, 잡아야 하는 마릿수, 현재 잡은 마릿수,완료 할 npc 코드** 가 들어가게 된다.
+
+```c#
+for(int i = 0; i < data_values.Length; i++)
+```
+
+그리고 임무 속에서 정보를 끌어내기 위해 **for문을 사용하여 임무별로 참조**를 진행한다.
+
+
+
+
+
+<hr>
+
+#### CheckQuest()
+
+```c#
+void CheckQuest()
+{
+    // 퀘스트 완료 여부를 따지는 함수
+
+    int count = 0;
+
+    // 사냥 확인
+    for(int i=0;i< playerLogManager.playerLog.huntList.Count; i++)
+    {
+        if (playerLogManager.playerLog.huntList[i][4] == npcCode
+            && playerLogManager.playerLog.huntList[i][0] == cntQuestCode
+            && playerLogManager.playerLog.huntList[i][2] == playerLogManager.playerLog.huntList[i][3])
+        {
+            // 완료할 NPC 코드가 일치 + 설정 된 퀘스트 코드랑 맞을 때 + n번째 사냥 조건을 만족했을 때
+            count++;
+        }
+    }
+
+    for(int i=0;i<playerLogManager.playerLog.gainList.Count; i++)
+    {
+        if (playerLogManager.playerLog.gainList[i][4] == npcCode
+            && playerLogManager.playerLog.gainList[i][0] == cntQuestCode
+            && playerLogManager.playerLog.gainList[i][2] == playerLogManager.playerLog.gainList[i][3])
+        {
+            // 완료할 NPC 코드가 일치 + 설정 된 퀘스트 코드랑 맞을 때 + 특정 아이템을 얻는 조건을 만족했을 때
+            count++;
+        }
+    }
+
+    if(playerLogManager.playerLog.questComplete[cntQuestCode, 1] == count)
+    {
+        ReadFile(setDialogType);
+        ShowDialogUI();
+    }
+    else
+    {
+        // 조건을 만족하지 않았을 때
+        ReadFile(setDialogType+1);
+        ShowDialogUI();
+    }
+
+}
+```
+
+
+
+<hr>
+
+#### GetReward()
+
+```c#
+void GetReward()
+{
+    string value = dicitonaryInfo[cntDialogCode][5];
+    var data_values = value.Split(':');
+
+    int[] imsiArr = new int[3];
+
+    for (int i = 0; i < data_values.Length; i++)
+    {
+        // 보상 종류
+
+        var values_info = data_values[i].Split('.');
+
+        if (values_info[0] == "e")
+        {
+            // 경험치 보상
+
+            playerLogManager.gameObject.GetComponent<PlayerStats>().playerStat.playerCntExperience += int.Parse(values_info[2]);
+
+        }
+        else if (values_info[0] == "g")
+        {
+            // 골드 보상
+
+            playerLogManager.gameObject.GetComponent<PlayerItem>().cntGold += int.Parse(values_info[2]);
+
+        }else if(values_info[0] == "i")
+        {
+            // 아이템 증가
+
+
+
+        }
+    }
+}
+```
 
 
 
