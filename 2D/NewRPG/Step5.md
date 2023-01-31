@@ -1506,7 +1506,7 @@ SetQuest()가 실행되면서 **퀘스트 조건이 담겨있는 대화 내용�
 
 이번 파싱은 퀘스트 조건 별로 뭉탱이로 파싱하는 것이다.
 
-ex > "h.1.25" , "g.2.10" 이렇게 퀘스트 세부 임무 별로 구분!
+ex > "h.1.25.0.1" , "g.2.10.0.1" 이렇게 퀘스트 세부 임무 별로 구분!
 
 ```c#
 int[] imsiArr = new int[5];
@@ -1514,7 +1514,7 @@ int[] imsiArr = new int[5];
 
 그리고 PlayerLog의 조건 리스트에 들어 갈 int 배열을 하나 만들어 준다.
 
-해당 배열에는 순서대로 **퀘스트 코드, 몬스터 코드, 잡아야 하는 마릿수, 현재 잡은 마릿수,완료 할 npc 코드** 가 들어가게 된다.
+해당 배열에는 순서대로 **0 - 퀘스트 코드, 1 - 몬스터 코드, 2 - 잡아야 하는 마릿수, 3 - 현재 잡은 마릿수, 4 - 완료 할 npc 코드** 가 들어가게 된다.
 
 ```c#
 for(int i = 0; i < data_values.Length; i++)
@@ -1522,9 +1522,98 @@ for(int i = 0; i < data_values.Length; i++)
 
 그리고 임무 속에서 정보를 끌어내기 위해 **for문을 사용하여 임무별로 참조**를 진행한다.
 
+```c#
+var values_info = data_values[i].Split('.');
 
+if (playerLogManager.playerLog.questComplete[int.Parse(values_info[3]),0] != 0)
+{
+    break; // 한 개의 대화에서 한 종류의 퀘스트만 주어지기 때문에 만약 퀘스트 코드 자리에 있는 값이 0(퀘스트 수행 전)이 아니면 퀘스트받는 것을 끝낸다.(방어장치)
+}
+```
+각 세부 임무를 다시 쪼개서 values_info에 저장 한 다음, 퀘스트 클리어 여부를 판단 한다.
 
+**questComplete에서 판단**하며, **0 - 시작 전, 1 - 진행 중, 2 - 완료** 이다.
 
+```c#
+imsiArr[0] = int.Parse(values_info[3]); // 퀘스트 코드
+imsiArr[1] = int.Parse(values_info[1]); // 잡아야 할 몬스터 코드 or 수집해야 할 아이템 개수
+imsiArr[2] = int.Parse(values_info[2]); // 잡아야 할 몬스터 마릿수 or 수집해야 할 아이템 개수
+
+imsiArr[4] = int.Parse(values_info[4]); // 퀘스트를 완료 할 npc 코드
+
+playerLogManager.playerLog.questComplete[int.Parse(values_info[3]), 0] = 1;
+playerLogManager.playerLog.questComplete[int.Parse(values_info[3]), 1]++; // 퀘스트 조건 카운트 추가
+cntQuestCode = int.Parse(values_info[3]);
+```
+
+임시배열에 퀘스트에 대한 정보들을 저장 한다.
+
+그리고, **해당 퀘스트 코드**에서 **몇 개의 세부 임무**가 있는지 **카운트를 questComplete의 두 번째 원소에 저장** 해 준다. (이차원 배열!)
+
+```c#
+if (values_info[0] == "h")
+{
+    // 만약 사냥 미션이라면
+    imsiArr[3] = 0; // 현재 잡은 마릿수 (퀘스트를 받는 시점에는 무조건 0으로 초기화 해 줘야 한다.)
+
+    playerLogManager.playerLog.huntList.Add(imsiArr);
+
+}
+else if(values_info[0] == "g")
+{
+    // 획득 미션이라면
+
+    imsiArr[3] = 0; // 현재 얻은 아이템 개수 -> 퀘스트 아이템이라면 0으로 초기화가 맞지만 기존에 있던 아이템이라면 아이템을 가져 와야 한다.
+                    // 이건 PlayerItem 코드에서 아이템 코드를 넣으면 개수를 출력 해 주는 함수를 만들어야 할 것 같다. (나중에 수정!)
+
+    playerLogManager.playerLog.gainList.Add(imsiArr);
+
+}
+```
+
+그리고 사냥 or 수집 퀘스트 별로 구분 해 주어 PlayerLog에 있는 사냥 or 수집 리스트에 저장 해 준다.
+
+몬스터 사냥 시 **LogManager.cs 내부에 있는 CheckQuest(int index) 코드**를 통하여 **해당하는 몬스터 코드의 사냥 마릿수를 늘려 주게 된다.**
+
+**Enemy.cs 코드에서 몬스터 퇴치 마릿수를 전달하는 과정**
+
+```c#
+void sendEXP()
+{
+    // 몬스터가 죽었을 때, 경험치를 보낸다.
+    for(int i = 0; i < attackObj.Count; i++)
+    {
+        attackObj[i].GetComponent<PlayerStats>().playerStat.playerCntExperience += (int)((float)addExp / (float)attackObj.Count);
+        attackObj[i].GetComponent<LogManager>().playerLog.addMonsterCount(monsterCode); // 몬스터 사냥 카운트
+    }
+
+}
+```
+
+**LogManager.cs 코드**
+
+```c#
+void CheckQuest(int index)
+{
+    for(int i = 0; i < huntList.Count; i++)
+    {
+        if(huntList[i][1] == index && huntList[i][3] < huntList[i][2])
+        {
+            huntList[i][3]++;
+        }
+    }
+}
+
+public void addMonsterCount(int index)
+{
+    CheckQuest(index);
+    this.huntingCount[index]++;
+}
+```
+
+LogManager.cs에서는 리스트에 저장했었던 **플레이어의 현재 퇴치 마릿수를 갱신** 해 주게 된다.
+
+위 정보가 퀘스트를 완료하는 데 있어서 중요한 역할을 하게 된다.
 
 <hr>
 
@@ -1575,6 +1664,21 @@ void CheckQuest()
 }
 ```
 
+앞서 플로우 차트를 봤을 때, 퀘스트 코드가 -1이 아니면 퀘스트 완료 여부를 먼저 판단한다고 했다.
+
+그것에 사용되는 함수가 위 함수다.
+
+퀘스트 체크는 **퀘스트 코드에 해당하는 세부 임무들**을 **모두 수행**했는지를 체크 해 주어야 한다.
+
+**지역변수**로 **count**를 만들어 주고, 사냥 임무를 쭉 둘러보면서 **조건을 채운 임무**가 있다면 **count를 올려 준다.**
+
+수집도 같은 방법으로 해 주고 퀘스트 완료 여부에 있는 카운트와 같다면 ReadFile을 통해 퀘스트 완료 스크립트를 읽어오게끔 한다. 
+
+만약 조건을 만족하지 못한다면 퀘스트 완료 상황에서 + 1을 한 상황의 스크립트를 읽어오게 된다.
+
+이것 때문에 ReadFile() 함수에 매개변수를 통해 상황 변수를 전달 한 것이다.
+
+cntDialogType을 통해 전달하게 되면 값 자체를 가산/감산 해 주어야 하기 때문이다.
 
 
 <hr>
@@ -1612,15 +1716,24 @@ void GetReward()
         {
             // 아이템 증가
 
-
-
         }
     }
 }
 ```
 
+퀘스트 완료 시에 보상을 주는 함수이며, csv 파일에서 Type이 2로 세팅되어 있을 때, 대화 내용에 보상 내용이 담겨 있다.
 
+따라서 이 함수에서는 해당 대화 내용을 해석하여 보상을 세팅 해 주는 함수이다.
 
+LogManager를 통해 Player를 참고하여 Palyer의 경험치와 골드를 가산 해 주게 된다.
+
+아이템 부분은 아이템을 구현하고 난 뒤에 채울 예정이다.
+
+<hr>
+
+이렇게 NPC 컴포넌트의 함수들에 대한 설명을 끝마쳤다.
+
+이제 퀘스트가 어떻게 진행되는지 아래 시연 사진을 통해 보도록 하겠다.
 
 <hr>
 
@@ -1648,23 +1761,5 @@ void GetReward()
 퀘스트 조건을 완료하지 못했을 때 나오는 모습
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+이제, 다음으로는 아이템에 대한 구현을 해야 하지만.. 현 시점에서 스탯 강화를 아직 구현하지 않았기 때문에 스탯 강화와 아이템 창 등의 UI를 먼저 구현 해 보도록 하겠다.
 
